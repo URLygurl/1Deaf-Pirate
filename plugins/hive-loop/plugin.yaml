@@ -1,0 +1,9 @@
+name: hive-loop
+version: "0.1"
+description: >-
+  The HIVE operating loop as Hermes hooks. Capture → Retrieval → Source-Truth →
+  Permissions → Feedback, wired to the shared brain under hive/. What one learns,
+  all learn. Writes to local hive/ files — no external memory backend required yet.
+
+# Optional: point the loop at a different brain root (defaults to <repo>/hive).
+# requires_env: [HIVE_ROOT]
