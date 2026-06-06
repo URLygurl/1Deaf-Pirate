@@ -2,7 +2,7 @@
   <img src="assets/header.png" alt="Hermes' Music Orchestration Hub — Backstage All-Access Dashboard" width="850">
 </p>
 
-# 1Deaf-Pirate 🏴‍☠️
+# 1Deaf-Pirate <img src="assets/skull.svg" alt="" height="30" valign="middle">
 
 **The DefPirate / Deadsound agent platform** — a 15-agent swarm orchestrated by **Hermes**, backed by a shared **HIVE** memory ("what one learns, all learn"), wrapped in a fully fleshed-out rock-legend world build.
 
