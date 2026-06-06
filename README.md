@@ -1,5 +1,8 @@
 # 1Deaf-Pirate 🏴‍☠️
 
+![Uploading IMG_5477.PNG…]()
+
+
 **The DefPirate / Deadsound agent platform** — a 15-agent swarm orchestrated by **Hermes**, backed by a shared **HIVE** memory ("what one learns, all learn"), wrapped in a fully fleshed-out rock-legend world build.
 
 > Memory is raw material. Retrieval is the operating layer.
