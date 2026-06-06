@@ -34,12 +34,18 @@ HITL gate.
 
 - `HIVE_ROOT` — override the brain root (defaults to `<repo>/hive`).
 
-## Heads-up
+## Hook contracts
 
-`post_tool_call` uses the documented `(tool_name, params, result)` signature; the
-other hooks accept `**kwargs` defensively. Confirm exact payloads against the
-[Event Hooks reference](https://hermes-agent.nousresearch.com/docs/user-guide/features/hooks#plugin-hooks)
-before locking this in for production.
+Confirmed against the [Event Hooks reference](https://hermes-agent.nousresearch.com/docs/user-guide/features/hooks#plugin-hooks).
+Hermes invokes hooks with keyword args, so callbacks bind by name + `**kwargs`:
+
+| Hook | Signature | Return |
+|---|---|---|
+| `post_tool_call` | `(tool_name, result, duration_ms=0, **kwargs)` | ignored |
+| `pre_tool_call` | `(tool_name, args, task_id, **kwargs)` | `{"action":"block","message":str}` to veto |
+| `pre_llm_call` | `(session_id, user_message, is_first_turn, **kwargs)` | `{"context":str}` to inject |
+
+(`pre_tool_call` also accepts the Claude-Code shape `{"decision":"block","reason":str}` — Hermes normalises both.)
 
 Runtime brain content (`log.jsonl`, `facts.md`, `rules.md`, `deny.txt`) is
 gitignored — it's generated, not source.

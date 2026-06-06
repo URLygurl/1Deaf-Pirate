@@ -1,0 +1,6 @@
+name: reveal-gate
+version: "0.1"
+description: >-
+  Staged-reveal / double-HITL enforcement. Blocks dispatch to any specialist
+  whose agent.json isn't status:live with its hitl_locks satisfied. Nothing goes
+  live without sign-off — the rule from docs/architecture.md, in code.

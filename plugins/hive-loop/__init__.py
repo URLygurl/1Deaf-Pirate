@@ -18,10 +18,14 @@ No external memory backend is required — everything reads/writes local hive/ f
 the Honcho/Mem0/Hindsight decision (architecture.md, parked) can stay parked while the
 loop is live.
 
-NOTE ON HOOK SIGNATURES: post_tool_call is documented as
-`(tool_name, params, result)`. The other lifecycle hooks pass their payloads but the
-exact kwargs vary by Hermes version, so the callbacks below accept `**kwargs`
-defensively. Confirm against the Event Hooks reference when locking this in:
+Hook signatures (confirmed against the Event Hooks reference) — Hermes invokes
+hooks with keyword arguments, so callbacks bind by name and ignore the rest via
+`**kwargs`:
+
+    post_tool_call(tool_name, result, duration_ms=0, **kwargs)   # return ignored
+    pre_tool_call(tool_name, args, task_id, **kwargs)            # {"action":"block","message":str} to veto
+    pre_llm_call(session_id, user_message, is_first_turn, **kwargs)  # {"context":str} to inject
+
 https://hermes-agent.nousresearch.com/docs/user-guide/features/hooks#plugin-hooks
 """
 
@@ -64,15 +68,17 @@ def register(ctx):
     deny_file = hive / "4-permissions" / "deny.txt"
 
     # ----- Capture: every tool call lands in the brain ------------------------
-    def capture(tool_name, params=None, result=None, **kwargs):
-        del kwargs
+    # post_tool_call(tool_name, result, duration_ms=0, **kwargs) — invoked by
+    # keyword, so tool input may arrive as `args` or `params`. Return is ignored.
+    def capture(tool_name, result=None, **kwargs):
+        tool_input = kwargs.get("args", kwargs.get("params"))
         _append_jsonl(
             capture_log,
             {
                 "ts": time.time(),
                 "stage": "capture",
                 "tool": tool_name,
-                "params": params,
+                "input": tool_input,
                 "ok": _looks_ok(result),
             },
         )
@@ -80,6 +86,8 @@ def register(ctx):
     ctx.register_hook("post_tool_call", capture)
 
     # ----- Retrieval: inject active rules + source-truth into the turn --------
+    # pre_llm_call(session_id, user_message, is_first_turn, **kwargs).
+    # Return {"context": str} to prepend context to the user message.
     def retrieve(**kwargs):
         del kwargs
         rules = _read_lines(rules_file, limit=15)
@@ -96,13 +104,15 @@ def register(ctx):
     ctx.register_hook("pre_llm_call", retrieve)
 
     # ----- Permissions: a tool listed in deny.txt never runs ------------------
+    # pre_tool_call(tool_name, args, task_id, **kwargs). Return
+    # {"action": "block", "message": str} to veto before the approval system.
     def gate(tool_name=None, **kwargs):
         del kwargs
         denied = set(_read_lines(deny_file, limit=1000))
         if tool_name and tool_name in denied:
             return {
-                "action": "deny",
-                "reason": f"hive/4-permissions: '{tool_name}' is blocked. "
+                "action": "block",
+                "message": f"hive/4-permissions: '{tool_name}' is blocked. "
                 "One big brain with no walls is dangerous.",
             }
         return None

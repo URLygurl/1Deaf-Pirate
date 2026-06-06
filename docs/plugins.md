@@ -44,7 +44,7 @@ consent.
 | Plugin | Type | What it does | Maps to |
 |---|---|---|---|
 | **`hermes-router`** | command + dispatch | DIME's routing table: `register_command("route")` + `ctx.dispatch_tool()` fans work to specialists and synthesizes back | DIME `agent.json`, build step 3 |
-| **`reveal-gate`** | `pre_tool_call` hook | Refuses to dispatch any agent not `status: live`; enforces `hitl_locks: 2` | double-HITL reveal rule |
+| **`reveal-gate`** ✅ | `pre_tool_call` hook | Refuses to dispatch any agent not `status: live`; enforces `hitl_locks` via the reveal ledger | double-HITL reveal rule |
 
 ### Tier 3 — specialists & front door
 
@@ -63,8 +63,8 @@ consent.
 ## Status
 
 - [x] `hive-loop` — scaffolded in `plugins/hive-loop/`
+- [x] `reveal-gate` — scaffolded in `plugins/reveal-gate/`
 - [ ] `hive` memory provider
 - [ ] `hermes-router`
-- [ ] `reveal-gate`
 - [ ] agent-as-plugin reference (NEIL or DIME)
 - [ ] `naked-gateway` platform adapter
