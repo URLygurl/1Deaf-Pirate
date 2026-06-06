@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "_comment": "Add MCP servers here. Tokens come from env, never hardcoded.",
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-github"],
+      "env": { "GITHUB_TOKEN": "${GITHUB_TOKEN}" }
+    }
+  }
+}

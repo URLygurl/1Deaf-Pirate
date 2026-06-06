@@ -1,0 +1,21 @@
+# Agent wiring. Copy into agents/open|closed/<NAME>/
+name: <AGENT_NAME>
+legend: <ROCK_LEGEND>
+type: open            # open | closed
+status: parked        # parked | staged | live
+owner: DIME           # orchestrator
+
+model: claude-sonnet-4-6   # open=stronger/interactive · closed=cheap+fast where it fits
+
+memory:
+  hive: true          # reads/writes shared brain (hive/)
+  session: true       # keeps own session memory
+
+reveal:
+  stage: parked
+  hitl_locks: 2       # double-HITL before live
+
+# what work routes to this agent
+routing:
+  owns: []            # domains this agent owns
+  triggers: []        # phrases / events that route here

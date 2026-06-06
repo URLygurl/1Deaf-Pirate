@@ -1,0 +1,18 @@
+# Allowed tools / connectors for this agent.
+# Open specialists get a broad toolbox; closed specialists get a scoped, locked set.
+
+open_toolbox:        # uncomment per agent as needed
+  - web_search
+  - code_interpreter
+  - browser
+  - file_system
+  - database
+  - repl
+  - terminal
+  - github
+  - slack
+  - notion
+  - memory
+
+closed_scoped:       # closed = only what the workflow needs, nothing more
+  - []

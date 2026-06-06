@@ -1,0 +1,26 @@
+# secrets — NEVER commit
+.env
+.env.local
+*.key
+*.pem
+**/secrets/*
+!**/secrets/.gitkeep
+
+# Railway / deploy
+.railway/
+
+# node / build
+node_modules/
+dist/
+build/
+.next/
+*.log
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# claude local
+.claude/settings.local.json
