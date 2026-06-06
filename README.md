@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/header.png" alt="Hermes' Music Orchestration Hub — Backstage All-Access Dashboard" width="850">
+</p>
+
 # 1Deaf-Pirate 🏴‍☠️
 
 ![Uploading IMG_5477.PNG…]()
