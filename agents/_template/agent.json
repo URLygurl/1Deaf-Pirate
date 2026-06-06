@@ -1,0 +1,11 @@
+{
+  "name": "AGENT_NAME",
+  "legend": "Rock Legend",
+  "type": "open",
+  "status": "parked",
+  "role": "one line — what this agent is for",
+  "voice": "how it speaks",
+  "owns": ["domain-one", "domain-two"],
+  "triggers": ["word", "phrase"],
+  "skills": ["thing it can do", "another thing it can do"]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "deafpirate-platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Hermes runtime — routes work to the 15-agent Deadsound squad.",
+  "scripts": {
+    "hermes": "node --experimental-strip-types src/index.ts",
+    "list": "node --experimental-strip-types src/index.ts --list"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.69.0"
+  }
+}
