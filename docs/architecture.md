@@ -25,7 +25,27 @@ You → Hermes (route) → Specialist (open chat OR closed run) → HIVE (captur
 - Permissions gate the shared brain (`hive/4-permissions/`).
 - Secrets live in `.env` only — never committed.
 
+## Decisions (logged)
+- **Topology** — the squad is **15 Hermes profiles** (persistent named agents)
+  collaborating over **one Kanban board**; DIME = `orchestrator_profile`.
+  `delegate_task` is for in-character grunt parallelism. See `docs/squad-topology.md`.
+- **Memory / brains** — *dual-strain, by purpose* (Hermes allows one external
+  provider live at a time, so "dual" = a custom dual-write provider):
+  - **Honcho** — primary squad brain (multi-agent: shared workspace + per-profile
+    AI peer = the HIVE). Live provider.
+  - **Hindsight** — second strain: knowledge-graph + `reflect` synthesis (relationship
+    reasoning), via a **dual-write memory provider** we build so both populate.
+  - **Obsidian (Claude ↔ Obsidian)** — third brain: the user's file/notes "second
+    brain" for file management (a shared vault, not an LLM memory provider).
+  - **HIVE + git** — always-on, version-controlled redundancy (the `hive-loop` hooks).
+  - Built-in `MEMORY.md`/`USER.md` stays on beneath all of it.
+- **Routing/intent** — each profile's `description` is the routing key, derived from
+  its skills (`hermes profile describe --auto`); peer-reviewed, de-conflicted by DIME.
+  See `docs/intent-authoring.md`.
+
 ## Open questions / parked
 - Railway MCP auth — needs a project-scoped `RAILWAY_API_TOKEN` (parked).
-- Final names/legends for roster slots 05–15.
-- Memory provider decision (Honcho / Mem0 / Hindsight) for the HIVE backend.
+- Sequencing: launch on Honcho live first; **dual-write (Honcho+Hindsight)** as a
+  fast-follow build so it doesn't block the first squad test.
+- Exact Claude↔Obsidian integration shape (shared `dir:` vault vs dedicated skill) —
+  verify when wiring file management.
