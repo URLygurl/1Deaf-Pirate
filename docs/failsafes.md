@@ -45,13 +45,32 @@ message.** One `touch FREEZE` halts all action squad-wide without killing proces
 
 ## Containment that doesn't depend on the agents behaving
 
-**The squad runs on a private server** — so every hardware/OS/network control is
-ours, including a true physical kill (power, console, network cable). That's the
-strongest possible Tier-4: nothing the agents do can touch the host's control of
-the host.
+**The squad runs on Lightning AI** (cloud GPU). Honest trust-chain note: it's
+**not** physical ownership — Lightning (and the underlying cloud) sit in the trust
+chain. Lightning's posture helps (SOC2/HIPAA, audit logs, observability, cost
+alerts), and the **"Run on your cloud" (BYOC)** option puts the compute + network
+in *your own* cloud account for tighter control. There's no literal "pull the
+cable" — the equivalent is **stop/destroy the Studio or deployment** from the
+console, plus **scale-to-zero**.
+
+Architecture on Lightning: one **Studio/DevBox** runs the Hermes host (all 15
+profiles + Kanban) and the **self-hosted brains** (Honcho/Hindsight local); a
+**LitServe/vLLM** engine on the GPU serves the model, and Hermes points its model
+`base_url` at it. So **inference is local to the environment** — the off-switch
+becomes "stop the LitServe server," a process you own.
 
 ⚠️ Hermes profiles **do not sandbox** (same FS/network reach as the host user). So
-the hard failsafes must live **below** Hermes — which, on our own box, we fully own:
+the hard failsafes live **below** Hermes — on Lightning that means:
+
+- **Process/host:** stop or delete the Studio/deployment from the console;
+  scale-to-zero. Atomic halt of everything.
+- **Local inference:** stop the LitServe/vLLM engine → the squad can't think.
+- **Network egress:** in-guest firewall; **with BYOC, your cloud's VPC /
+  security-group egress controls** (the real leash — yours to set).
+- **Spend + audit:** Lightning's native **cost alerts + audit logs** feed the spend
+  circuit breaker and the recovery audit directly.
+- **Credentials:** local inference means no cloud model key to leak; any remaining
+  keys held in the environment, revocable without touching an agent.
 
 - **Network:** OS/container egress firewall with a domain allow-list. Pull it and
   the squad is deaf to the outside world instantly.
