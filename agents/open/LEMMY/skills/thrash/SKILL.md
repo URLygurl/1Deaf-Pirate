@@ -1,6 +1,6 @@
 ---
-name: naked-thrash
-description: Use when the user asks about thrash metal — its origins, defining musical traits, the "Big Four," regional scenes (Bay Area, Teutonic/German, Brazilian), or how it relates to NWOBHM, speed metal, hardcore punk, and the death/black/groove metal it spawned. Triggers on "thrash," "thrash metal," "Big Four," "Metallica/Slayer/Megadeth/Anthrax," "Bay Area thrash," "Teutonic thrash," riff/tempo questions about the genre, or requests to place a band or record in thrash history. NOT for general heavy-metal overviews (use naked-metal-foundations) or for non-metal styles.
+name: thrash
+description: Use when the user asks about thrash metal — its origins, defining musical traits, the "Big Four," regional scenes (Bay Area, Teutonic/German, Brazilian), or how it relates to NWOBHM, speed metal, hardcore punk, and the death/black/groove metal it spawned. Triggers on "thrash," "thrash metal," "Big Four," "Metallica/Slayer/Megadeth/Anthrax," "Bay Area thrash," "Teutonic thrash," riff/tempo questions about the genre, or requests to place a band or record in thrash history. NOT for general heavy-metal overviews (use metal-foundations) or for non-metal styles.
 ---
 
 # Thrash Metal
