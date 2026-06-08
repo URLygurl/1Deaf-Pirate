@@ -49,6 +49,30 @@ gig-management · acoustic-panel & stage-equipment builder · marketing/branding
 That's the spread of a small company — engineering, marketing, content, comms, finance, ops,
 research, strategy, and a PM holding it together.
 
+## The full-stack build team (real repos & tasks, not advice)
+
+The engineering lane is a genuine full-stack crew that **builds and ships real repositories and
+tasks end-to-end** — including continuing the repos Cory already started, from his very first one.
+
+| Layer | Owner(s) |
+|------|----------|
+| Architecture / system design / tech specs | **GEDDY** |
+| Frontend + backend feature build, webapp improvements, APIs | **EDDIE** |
+| Fast scripts, automations, scaffolding, one-shot tasks | **SLASH** |
+| Infrastructure, hosting, CI/CD, deploy pipelines | **LEMMY** |
+| QA, tests, security review, correctness | **HALFORD** |
+| Debugging, root-cause, ops reliability, incident runbooks | **HETFIELD** |
+| Orchestration of multi-step builds across a repo | **DIME** |
+
+**How a real build runs:** DIME takes a build request and uses Hermes' heavier execution modes —
+`workspace-dispatch` (a 2–6 task mission with machine-checkable exit criteria: file exists, `tsc`
+compiles, tests pass) and `kanban-orchestrator` (parallel lanes, audit trail, HITL gates) — to drive
+specialists through plan → build → test → review against an actual repo. Workers self-verify; nothing
+merges or deploys without the build lock (developer) and the action lock (Cory).
+
+**To make it live, the squad needs repo access** (GitHub + terminal/filesystem via `tools.yaml`) and
+to be pointed at the existing repo(s). That's a tomorrow item — see below.
+
 ## Tonight (done, branch-only, reversible)
 
 1. `## Productive range` section added to all 15 `soul.md` files (in-character, additive).
@@ -57,6 +81,9 @@ research, strategy, and a PM holding it together.
 
 ## Tomorrow (needs Cory / developer — review & approve)
 
+- **Bring in the existing repos.** Point the squad at the repo(s) Cory already made (starting with
+  the very first one) so the full-stack team can pick up real building. Needs GitHub access + the
+  repo list.
 - **Approve the lane mapping** above (rename/reassign any lane before we build on it).
 - **Build out the ⏳ skills** per agent (one reviewed batch per agent, like the music skills).
 - **`tools.yaml` wiring** — which real tools/connectors each agent gets (GitHub, web, email/CRM,
