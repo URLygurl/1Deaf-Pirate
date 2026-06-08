@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>The Peach — Component</title>
+<style>
+/* PeachyWeb design tokens — live in the host app, not the component */
+:root {
+  --coral: #FF6B5B; --peach: #FFB088; --bg: #0A0A0A; --bg-alt: #141414;
+  --text: #F5F1EA; --text-dim: #6B6660; --text-paper: #E8E4DC;
+  --border: #1F1F1F; --border-bright: #2A2A2A;
+  --green: #4ADE80; --amber: #FBBF24; --red: #F87171; --blue: #60A5FA;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body {
+  background: var(--bg); color: var(--text);
+  font-family: ui-sans-serif, -apple-system, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; min-height: 100dvh; overflow-x: hidden;
+}
+body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+  padding-bottom: env(safe-area-inset-bottom);
+  display: flex; flex-direction: column;
+}
+/* demo host app styles */
+header {
+  padding: 14px 18px 10px; border-bottom: 1px solid var(--border);
+  background: var(--bg); position: sticky; top: 0; z-index: 10;
+  flex-shrink: 0;
+}
+.header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.logo { display: flex; align-items: center; gap: 8px; }
+.logo-mark {
+  width: 22px; height: 22px; border-radius: 6px; background: var(--coral);
+  display: grid; place-items: center; font-weight: 700; color: #000;
+  font-size: 11px; font-family: ui-monospace, monospace;
+}
+.logo-text { font-family: ui-serif, Georgia, serif; font-size: 13px; }
+.doc-meta { font-family: ui-monospace, monospace; font-size: 10px; color: var(--text-dim); letter-spacing: 0.08em; }
+h1 { font-family: ui-serif, Georgia, serif; font-size: 20px; font-weight: 400; letter-spacing: -0.01em; }
+h1 em { font-style: italic; color: var(--coral); }
+main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 20px 120px; }
+.status-strip {
+  background: var(--bg-alt); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 12px; display: flex; align-items: center; gap: 8px;
+  font-family: ui-monospace, monospace; font-size: 10px; color: var(--text-dim);
+  margin-bottom: 20px;
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; animation: pulse 2s ease-in-out infinite; }
+.status-dot.offline { background: var(--red); animation: none; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.4)} 50%{box-shadow:0 0 0 4px rgba(74,222,128,0)} }
+.status-flag { margin-left: auto; background: rgba(251,191,36,.1); color: var(--amber); font-size: 9px; padding: 2px 7px; border-radius: 4px; }
+.body-text { font-family: ui-serif, Georgia, serif; font-size: 16px; line-height: 1.65; color: var(--text-paper); }
+.body-text h2 { font-size: 21px; font-weight: 400; letter-spacing: -.01em; margin-bottom: 14px; color: var(--text); }
+.body-text p { margin-bottom: 16px; }
+code { font-family: ui-monospace, monospace; font-size: 13px; color: var(--blue); background: rgba(96,165,250,.08); padding: 1px 5px; border-radius: 4px; }
+.sim-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 24px; }
+.sim-btn {
+  font-family: ui-monospace, monospace; font-size: 10px; padding: 7px 12px; border-radius: 7px; cursor: pointer; border: 1px solid; letter-spacing: .06em;
+}
+.sim-read  { background: rgba(74,222,128,.08); border-color: rgba(74,222,128,.25); color: var(--green); }
+.sim-write { background: rgba(96,165,250,.08); border-color: rgba(96,165,250,.25); color: var(--blue); }
+.sim-atk   { background: rgba(251,191,36,.08); border-color: rgba(251,191,36,.25); color: var(--amber); }
+.sim-bar p { font-family: ui-monospace, monospace; font-size: 9px; color: var(--text-dim); width: 100%; letter-spacing: .08em; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     DEMO HOST APP — replace this with any PeachyWeb app
+     ═══════════════════════════════════════════════════════════ -->
+<header>
+  <div class="header-row">
+    <div class="logo"><div class="logo-mark">Pw</div><span class="logo-text">PeachyWeb</span></div>
+    <div class="doc-meta" id="host-meta">BILINGUAL · READ-ONLY</div>
+  </div>
+  <h1>The Peach — <em>Component Demo</em></h1>
+</header>
+
+<main>
+  <div class="status-strip">
+    <div class="status-dot" id="host-dot"></div>
+    <span id="host-status">AGENT ENABLED</span>
+    <span class="status-flag" id="host-flag">READ-ONLY TRIAL</span>
+  </div>
+
+  <div class="body-text">
+    <h2>Drop-in owner controls for any PeachyWeb app</h2>
+    <p>The Peach is a self-contained component — one script block, zero dependencies. Any PeachyWeb app mounts it with a single call: <code>PeachyWeb.mount(config)</code>. The app logs events with <code>PeachyWeb.log(...)</code>. Everything else — the floating button, the slide-up panel, BroadcastChannel sync with the Ops Center — is handled inside the component.</p>
+    <p>The component is deliberately absent from the agent's manifest. No <code>open_settings</code>. No <code>set_policy</code>. No <code>peach.*</code> namespace. The control plane lives outside the data plane — by design, not by ACL.</p>
+  </div>
+
+  <div class="sim-bar">
+    <p>// SIMULATE AGENT OPERATIONS</p>
+    <button class="sim-btn sim-read"  onclick="simOp('read')">agent · get_document</button>
+    <button class="sim-btn sim-read"  onclick="simOp('search')">agent · search</button>
+    <button class="sim-btn sim-write" onclick="simOp('insert')">agent · insert_block</button>
+    <button class="sim-btn sim-write" onclick="simOp('replace')">agent · replace_block</button>
+    <button class="sim-btn sim-write" onclick="simOp('delete')">agent · delete_block</button>
+    <button class="sim-btn sim-atk"  onclick="simOp('attack')">agent · open_settings ⚡</button>
+  </div>
+</main>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     THE PEACH COMPONENT
+     ───────────────────────────────────────────────────────────
+     Copy everything between START and END into any PeachyWeb app.
+     Then call PeachyWeb.mount(config) — see integration guide below.
+     ═══════════════════════════════════════════════════════════ -->
+<!-- ── START PEACH COMPONENT ── -->
+<script>
+window.PeachyWeb = (() => {
+  'use strict';
+
+  /* ── DEFAULTS ──────────────────────────────────────── */
+  const DEFAULT_MANIFEST = [
+    { name: 'get_document',  args: '',              writeOp: false, destructive: false },
+    { name: 'list_blocks',   args: '',              writeOp: false, destructive: false },
+    { name: 'get_block',     args: 'id',            writeOp: false, destructive: false },
+    { name: 'search',        args: 'query',         writeOp: false, destructive: false },
+    { name: 'insert_block',  args: 'afterId, text', writeOp: true,  destructive: false },
+    { name: 'replace_block', args: 'id, text',      writeOp: true,  destructive: false },
+    { name: 'set_title',     args: 'text',          writeOp: true,  destructive: false },
+    { name: 'delete_block',  args: 'id',            writeOp: true,  destructive: true  },
+    { name: 'delete_all',    args: '',              writeOp: true,  destructive: true  },
+  ];
+
+  const DEFAULT_POLICY = {
+    bilingual: true, readOnly: true, requireApproval: false, noDelete: true,
+  };
+
+  /* ── STATE ─────────────────────────────────────────── */
+  let cfg        = null;
+  let policy     = {};
+  let manifest   = [];
+  let auditLog   = [];
+  let logFilter  = 'all';
+  let activeTab  = 'controls';
+  let panelOpen  = false;
+  let bc         = null;
+  let calls      = 0;
+  let blocked    = 0;
+  let toastTimer = null;
+
+  /* ── STYLES ─────────────────────────────────────────── */
+  function injectStyles() {
+    if (document.getElementById('pw-styles')) return;
+    const s = document.createElement('style');
+    s.id = 'pw-styles';
+    s.textContent = `
+/* ── PEACH FLOAT ── */
+.pw-float {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 40px);
+  right: 20px; z-index: 9000;
+  display: flex; flex-direction: column; align-items: flex-end;
+}
+.pw-chip {
+  font-family: ui-monospace, monospace; font-size: 9px; letter-spacing: .08em;
+  color: var(--text-dim, #6B6660);
+  background: var(--bg-alt, #141414); border: 1px solid var(--border-bright, #2A2A2A);
+  padding: 4px 9px; border-radius: 6px; margin-bottom: 8px; white-space: nowrap;
+  pointer-events: none; opacity: 0; transform: translateY(4px);
+  transition: opacity .15s, transform .15s;
+}
+.pw-float:hover .pw-chip { opacity: 1; transform: translateY(0); }
+.pw-btn {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(145deg,#FFC4A0 0%,#FFB088 30%,#FF8B6B 70%,#FF6B5B 100%);
+  border: 1.5px solid rgba(255,255,255,.12); cursor: pointer; position: relative;
+  transition: transform .14s, box-shadow .2s;
+  box-shadow: 0 4px 20px rgba(255,107,91,.4),0 2px 6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.15);
+  display: grid; place-items: center;
+}
+.pw-btn:active { transform: scale(.88); }
+.pw-btn::before {
+  content:''; position:absolute; top:-4px; right:12px;
+  width:8px; height:11px; background:#5A7040;
+  border-radius:50% 50% 0 50%; transform:rotate(28deg);
+  z-index:1; box-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+.pw-btn::after {
+  content:''; position:absolute;
+  width:8px; height:8px; border-radius:50%;
+  background:rgba(255,255,255,.32); top:11px; left:12px; filter:blur(2px);
+}
+.pw-badge {
+  position:absolute; bottom:0; right:0;
+  width:16px; height:16px; border-radius:50%;
+  border:2.5px solid var(--bg,#0A0A0A); transition:background .25s;
+}
+.pw-badge-online  { background:var(--green,#4ADE80); }
+.pw-badge-readonly{ background:var(--amber,#FBBF24); }
+.pw-badge-offline { background:var(--red,#F87171);   }
+
+/* ── OVERLAY ── */
+.pw-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.65);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  z-index:9010; opacity:0; pointer-events:none; transition:opacity .25s;
+}
+.pw-overlay.pw-open { opacity:1; pointer-events:all; }
+
+/* ── PANEL ── */
+.pw-panel {
+  position:fixed; bottom:0; left:0; right:0;
+  background:var(--bg,#0A0A0A);
+  border-top:1px solid var(--border-bright,#2A2A2A);
+  border-top-left-radius:20px; border-top-right-radius:20px;
+  z-index:9020; transform:translateY(100%);
+  transition:transform .32s cubic-bezier(.16,1,.3,1);
+  max-height:88dvh; display:flex; flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.pw-panel.pw-open { transform:translateY(0); }
+.pw-grabber {
+  width:36px; height:4px; background:var(--border-bright,#2A2A2A);
+  border-radius:2px; margin:10px auto 0; flex-shrink:0;
+}
+.pw-head { padding:12px 20px 0; flex-shrink:0; }
+.pw-title-row {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;
+}
+.pw-title-left { display:flex; align-items:center; gap:10px; }
+.pw-icon {
+  width:30px; height:30px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(145deg,#FFC4A0,#FF6B5B);
+  box-shadow:0 2px 8px rgba(255,107,91,.35); position:relative;
+}
+.pw-icon::before {
+  content:''; position:absolute; top:-2px; right:8px;
+  width:5px; height:8px; background:#5A7040;
+  border-radius:50% 50% 0 50%; transform:rotate(28deg);
+}
+.pw-icon::after {
+  content:''; position:absolute; width:6px; height:6px;
+  border-radius:50%; background:rgba(255,255,255,.28);
+  top:6px; left:6px; filter:blur(1px);
+}
+.pw-title-text {
+  font-family:ui-serif,Georgia,serif; font-size:19px; font-weight:400; letter-spacing:-.01em;
+}
+.pw-title-text em { font-style:italic; color:var(--coral,#FF6B5B); }
+.pw-close {
+  width:30px; height:30px; border-radius:50%;
+  background:var(--bg-alt,#141414); border:1px solid var(--border,#1F1F1F);
+  color:var(--text-dim,#6B6660); font-size:18px; cursor:pointer;
+  display:grid; place-items:center; transition:background .12s;
+}
+.pw-close:active { background:var(--border,#1F1F1F); }
+.pw-arch-note {
+  font-family:ui-monospace,monospace; font-size:9.5px; color:var(--text-dim,#6B6660);
+  letter-spacing:.06em; padding:6px 10px; margin-bottom:12px;
+  background:rgba(255,107,91,.05); border:1px solid rgba(255,107,91,.12); border-radius:7px;
+}
+.pw-tabs {
+  display:flex; gap:2px; background:var(--bg-alt,#141414);
+  padding:3px; border-radius:10px; border:1px solid var(--border,#1F1F1F);
+}
+.pw-tab {
+  flex:1; background:transparent; color:var(--text-dim,#6B6660); border:none;
+  padding:9px 4px; font-family:ui-monospace,monospace; font-size:10px;
+  letter-spacing:.1em; text-transform:uppercase; cursor:pointer;
+  border-radius:8px; transition:background .15s,color .15s; font-weight:500;
+}
+.pw-tab.pw-tab-active { background:var(--coral,#FF6B5B); color:#000; font-weight:700; }
+
+/* ── PANEL BODY ── */
+.pw-body {
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:16px 20px 12px;
+}
+.pw-pane { display:none; }
+.pw-pane.pw-pane-active { display:block; }
+
+/* ── CONTROLS ── */
+.pw-banner {
+  background:rgba(255,107,91,.07); border:1px solid rgba(255,107,91,.18);
+  border-radius:10px; padding:10px 14px; display:flex; align-items:flex-start;
+  gap:10px; margin-bottom:18px;
+}
+.pw-banner-icon { font-size:15px; flex-shrink:0; margin-top:1px; }
+.pw-banner-text { font-family:ui-monospace,monospace; font-size:10px; color:var(--text-dim,#6B6660); line-height:1.55; }
+.pw-banner-text strong { color:var(--coral,#FF6B5B); font-weight:600; }
+.pw-slabel {
+  font-family:ui-monospace,monospace; font-size:9px; letter-spacing:.15em;
+  text-transform:uppercase; color:var(--text-dim,#6B6660); margin-bottom:4px; margin-top:18px;
+}
+.pw-slabel:first-child { margin-top:0; }
+.pw-trow {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  padding:13px 0; border-bottom:1px solid var(--border,#1F1F1F); gap:14px;
+}
+.pw-trow:last-child { border-bottom:none; }
+.pw-tinfo { flex:1; }
+.pw-tname { font-size:14px; font-weight:500; margin-bottom:3px; letter-spacing:-.01em; }
+.pw-tdesc { font-family:ui-monospace,monospace; font-size:10px; color:var(--text-dim,#6B6660); line-height:1.45; }
+.pw-toggle { position:relative; width:44px; height:26px; flex-shrink:0; margin-top:2px; }
+.pw-toggle input { opacity:0; width:0; height:0; position:absolute; }
+.pw-track {
+  position:absolute; inset:0; border-radius:13px;
+  background:var(--border-bright,#2A2A2A); cursor:pointer; transition:background .2s;
+}
+.pw-track::after {
+  content:''; position:absolute; width:20px; height:20px; border-radius:50%;
+  background:#fff; top:3px; left:3px; transition:transform .2s;
+  box-shadow:0 1px 4px rgba(0,0,0,.45);
+}
+.pw-toggle input:checked + .pw-track { background:var(--coral,#FF6B5B); }
+.pw-toggle input:checked + .pw-track::after { transform:translateX(18px); }
+
+/* ── MANIFEST ── */
+.pw-mslabel {
+  font-family:ui-monospace,monospace; font-size:9px; letter-spacing:.15em;
+  text-transform:uppercase; color:var(--text-dim,#6B6660); margin:0 0 6px;
+}
+.pw-mbox {
+  background:rgba(74,222,128,.04); border:1px solid rgba(74,222,128,.14);
+  border-radius:10px; padding:10px 12px; font-family:ui-monospace,monospace;
+  font-size:10.5px; margin-bottom:16px;
+}
+.pw-mbox.pw-absent-box {
+  background:rgba(248,113,113,.04); border-color:rgba(248,113,113,.14);
+}
+.pw-op-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:5px 0; border-bottom:1px solid rgba(255,255,255,.04); gap:8px;
+}
+.pw-op-row:last-child { border-bottom:none; }
+.pw-op-row.pw-op-blocked { color:var(--red,#F87171); text-decoration:line-through; opacity:.55; }
+.pw-op-name { color:var(--blue,#60A5FA); }
+.pw-op-args { color:var(--amber,#FBBF24); }
+.pw-op-absent { color:var(--red,#F87171); font-style:italic; }
+.pw-badge-pill {
+  font-size:9px; padding:1px 6px; border-radius:4px; flex-shrink:0; letter-spacing:.04em;
+}
+.pw-badge-ok   { background:rgba(74,222,128,.14); color:var(--green,#4ADE80); }
+.pw-badge-blk  { background:rgba(248,113,113,.14); color:var(--red,#F87171);  }
+.pw-badge-appr { background:rgba(251,191,36,.14);  color:var(--amber,#FBBF24);}
+.pw-badge-abs  { background:rgba(248,113,113,.08); color:var(--red,#F87171);  }
+.pw-mnote {
+  font-family:ui-monospace,monospace; font-size:10px; color:var(--text-dim,#6B6660);
+  padding:10px 12px; background:rgba(255,255,255,.02); border-radius:8px;
+  border:1px solid var(--border,#1F1F1F); line-height:1.65;
+}
+.pw-mnote strong { color:var(--text,#F5F1EA); font-weight:600; }
+
+/* ── AUDIT LOG ── */
+.pw-filters { display:flex; gap:4px; margin-bottom:12px; flex-wrap:wrap; }
+.pw-filt {
+  background:var(--bg-alt,#141414); border:1px solid var(--border,#1F1F1F);
+  color:var(--text-dim,#6B6660); font-family:ui-monospace,monospace; font-size:9px;
+  letter-spacing:.08em; padding:5px 9px; border-radius:6px; cursor:pointer; transition:background .12s,color .12s;
+}
+.pw-filt.pw-filt-active { background:var(--border-bright,#2A2A2A); color:var(--text,#F5F1EA); }
+.pw-filt.pw-filt-blocked.pw-filt-active { background:rgba(248,113,113,.14); color:var(--red,#F87171); border-color:rgba(248,113,113,.2); }
+.pw-log { font-family:ui-monospace,monospace; font-size:10.5px; }
+.pw-log-entry { padding:8px 0; border-bottom:1px dashed rgba(255,255,255,.05); animation:pw-in .22s ease; }
+.pw-log-entry:last-child { border-bottom:none; }
+.pw-log-entry.pw-log-blocked { background:rgba(248,113,113,.12); border-radius:5px; padding:7px 8px; margin:1px -4px; border:none; }
+@keyframes pw-in { from{opacity:0;transform:translateX(-3px)} to{opacity:1;transform:translateX(0)} }
+.pw-lt  { color:var(--text-dim,#6B6660); font-size:9px; }
+.pw-lh  { color:var(--coral,#FF6B5B); font-weight:600; }
+.pw-la  { color:var(--green,#4ADE80); font-weight:600; }
+.pw-ls  { color:var(--amber,#FBBF24); font-weight:600; }
+.pw-lac { color:var(--text,#F5F1EA); }
+.pw-lac.pw-blk { color:var(--red,#F87171); }
+.pw-ld  { color:var(--text-dim,#6B6660); font-size:10px; padding-left:8px; margin-top:2px; }
+.pw-empty { color:var(--text-dim,#6B6660); font-size:10px; text-align:center; padding:12px 0; }
+
+/* ── TOAST ── */
+.pw-toast {
+  position:fixed; top:calc(env(safe-area-inset-top,0px) + 14px);
+  left:50%; transform:translateX(-50%) translateY(-10px);
+  background:var(--bg-alt,#141414); border:1px solid var(--border-bright,#2A2A2A);
+  color:var(--text,#F5F1EA); font-family:ui-monospace,monospace; font-size:11px;
+  padding:8px 14px; border-radius:10px; white-space:nowrap;
+  z-index:9030; opacity:0; pointer-events:none;
+  transition:opacity .18s,transform .18s; box-shadow:0 4px 12px rgba(0,0,0,.4);
+}
+.pw-toast.pw-toast-show { opacity:1; transform:translateX(-50%) translateY(0); }
+    `;
+    document.head.appendChild(s);
+  }
+
+  /* ── DOM BUILDER ───────────────────────────────────── */
+  function buildDOM() {
+    if (document.getElementById('pw-root')) return;
+
+    document.body.insertAdjacentHTML('beforeend', `
+      <div class="pw-float" id="pw-root">
+        <div class="pw-chip">OWNER CONTROLS</div>
+        <button class="pw-btn" id="pw-btn" aria-label="Open owner controls" aria-haspopup="dialog">
+          <span class="pw-badge pw-badge-readonly" id="pw-badge"></span>
+        </button>
+      </div>
+
+      <div class="pw-overlay" id="pw-overlay" role="presentation"></div>
+
+      <div class="pw-panel" id="pw-panel" role="dialog" aria-label="Owner controls" aria-modal="true">
+        <div class="pw-grabber"></div>
+        <div class="pw-head">
+          <div class="pw-title-row">
+            <div class="pw-title-left">
+              <div class="pw-icon"></div>
+              <div class="pw-title-text">The <em>Peach</em></div>
+            </div>
+            <button class="pw-close" id="pw-close" aria-label="Close">×</button>
+          </div>
+          <div class="pw-arch-note">// GUI-only · absent from agent manifest · control plane ≠ data plane</div>
+          <div class="pw-tabs" role="tablist">
+            <button class="pw-tab pw-tab-active" role="tab" data-tab="controls" id="pw-t-controls">Controls</button>
+            <button class="pw-tab"               role="tab" data-tab="manifest" id="pw-t-manifest">Manifest</button>
+            <button class="pw-tab"               role="tab" data-tab="audit"    id="pw-t-audit">Audit Log</button>
+          </div>
+        </div>
+
+        <div class="pw-body">
+
+          <div class="pw-pane pw-pane-active" id="pw-pane-controls">
+            <div class="pw-banner">
+              <div class="pw-banner-icon">🔒</div>
+              <div class="pw-banner-text">
+                <strong>READ-ONLY TRIAL</strong> — agents can read, not write.
+                Unlock writes per-app once you've seen bilingual behaviour in practice.
+              </div>
+            </div>
+            <div class="pw-slabel">Agent access</div>
+            <div class="pw-trow">
+              <div class="pw-tinfo">
+                <div class="pw-tname">Bilingual mode</div>
+                <div class="pw-tdesc">Exposes the agent endpoint.<br>Off = agent locked out entirely.</div>
+              </div>
+              <label class="pw-toggle"><input type="checkbox" id="pw-c-bilingual" onchange="PeachyWeb._onToggle('bilingual')"><span class="pw-track"></span></label>
+            </div>
+            <div class="pw-trow">
+              <div class="pw-tinfo">
+                <div class="pw-tname">Read-only posture</div>
+                <div class="pw-tdesc">Agent may read. All writes blocked.<br>Default: ON during trial.</div>
+              </div>
+              <label class="pw-toggle"><input type="checkbox" id="pw-c-readonly" onchange="PeachyWeb._onToggle('readOnly')"><span class="pw-track"></span></label>
+            </div>
+            <div class="pw-slabel">Write controls</div>
+            <div class="pw-trow">
+              <div class="pw-tinfo">
+                <div class="pw-tname">Require approval</div>
+                <div class="pw-tdesc">Agent writes queue for owner<br>sign-off before applying.</div>
+              </div>
+              <label class="pw-toggle"><input type="checkbox" id="pw-c-approval" onchange="PeachyWeb._onToggle('requireApproval')"><span class="pw-track"></span></label>
+            </div>
+            <div class="pw-trow">
+              <div class="pw-tinfo">
+                <div class="pw-tname">Block deletions</div>
+                <div class="pw-tdesc">Prevents agent from calling any<br><code style="font-family:ui-monospace,monospace;font-size:9px;color:var(--red,#F87171)">delete_*</code> operation.</div>
+              </div>
+              <label class="pw-toggle"><input type="checkbox" id="pw-c-nodelete" onchange="PeachyWeb._onToggle('noDelete')"><span class="pw-track"></span></label>
+            </div>
+          </div>
+
+          <div class="pw-pane" id="pw-pane-manifest">
+            <div class="pw-mslabel">In manifest — agent vocabulary</div>
+            <div class="pw-mbox" id="pw-mbox"></div>
+            <div class="pw-mslabel">Absent by design</div>
+            <div class="pw-mbox pw-absent-box">
+              <div class="pw-op-row"><span class="pw-op-absent">open_settings()</span><span class="pw-badge-pill pw-badge-abs">ABSENT</span></div>
+              <div class="pw-op-row"><span class="pw-op-absent">set_policy( … )</span><span class="pw-badge-pill pw-badge-abs">ABSENT</span></div>
+              <div class="pw-op-row"><span class="pw-op-absent">peach.*( … )</span><span class="pw-badge-pill pw-badge-abs">ABSENT</span></div>
+            </div>
+            <div class="pw-mnote"><strong>Sovereignty by absence.</strong><br>The agent cannot call what isn't declared. No ACL, no permission model — these methods do not exist in the agent's vocabulary.</div>
+          </div>
+
+          <div class="pw-pane" id="pw-pane-audit">
+            <div class="pw-filters">
+              <button class="pw-filt pw-filt-active" data-lf="all"     onclick="PeachyWeb._setFilter('all')">ALL</button>
+              <button class="pw-filt"                data-lf="human"   onclick="PeachyWeb._setFilter('human')">HUMAN</button>
+              <button class="pw-filt"                data-lf="agent"   onclick="PeachyWeb._setFilter('agent')">AGENT</button>
+              <button class="pw-filt"                data-lf="system"  onclick="PeachyWeb._setFilter('system')">SYSTEM</button>
+              <button class="pw-filt pw-filt-blocked" data-lf="blocked" onclick="PeachyWeb._setFilter('blocked')">BLOCKED</button>
+            </div>
+            <div class="pw-log" id="pw-log"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="pw-toast" id="pw-toast"></div>
+    `);
+
+    // Wire events
+    document.getElementById('pw-btn').addEventListener('click', openPanel);
+    document.getElementById('pw-overlay').addEventListener('click', closePanel);
+    document.getElementById('pw-close').addEventListener('click', closePanel);
+    document.querySelectorAll('.pw-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+  }
+
+  /* ── PANEL ──────────────────────────────────────────── */
+  function openPanel() {
+    document.getElementById('pw-overlay').classList.add('pw-open');
+    document.getElementById('pw-panel').classList.add('pw-open');
+    if (window.navigator.vibrate) window.navigator.vibrate(10);
+    _addLog('human', 'open_settings', null, {});
+    _renderManifest();
+    _renderLog();
+  }
+
+  function closePanel() {
+    document.getElementById('pw-overlay').classList.remove('pw-open');
+    document.getElementById('pw-panel').classList.remove('pw-open');
+  }
+
+  function switchTab(tab) {
+    ['controls','manifest','audit'].forEach(t => {
+      document.getElementById('pw-pane-'+t).classList.toggle('pw-pane-active', t===tab);
+      document.getElementById('pw-t-'+t).classList.toggle('pw-tab-active', t===tab);
+    });
+    if (tab === 'manifest') _renderManifest();
+    if (tab === 'audit')    _renderLog();
+    activeTab = tab;
+  }
+
+  /* ── POLICY ─────────────────────────────────────────── */
+  const TOGGLE_IDS = {
+    bilingual:'pw-c-bilingual', readOnly:'pw-c-readonly',
+    requireApproval:'pw-c-approval', noDelete:'pw-c-nodelete',
+  };
+
+  function syncTogles() {
+    Object.entries(TOGGLE_IDS).forEach(([k,id]) => {
+      const el = document.getElementById(id);
+      if (el) el.checked = !!policy[k];
+    });
+  }
+
+  function _onToggle(key) {
+    policy[key] = document.getElementById(TOGGLE_IDS[key]).checked;
+    _addLog('human', 'set_policy', { [key]: policy[key] }, {});
+    _updateBadge();
+    _renderManifest();
+    if (activeTab === 'audit') _renderLog();
+    _broadcastState();
+    if (cfg && cfg.onPolicyChange) cfg.onPolicyChange({ ...policy });
+    _toast(_toastMsg(key, policy[key]));
+  }
+
+  function _toastMsg(key, val) {
+    const m = {
+      bilingual:       v => v ? 'Bilingual ON — agent active'  : 'Bilingual OFF — agent locked out',
+      readOnly:        v => v ? 'Read-only engaged'            : 'Writes re-enabled',
+      requireApproval: v => v ? 'Approval required'            : 'Auto-apply mode',
+      noDelete:        v => v ? 'Deletions blocked'            : 'Deletions allowed',
+    };
+    return m[key] ? m[key](val) : key + ' changed';
+  }
+
+  /* ── BADGE / STATUS ─────────────────────────────────── */
+  function _updateBadge() {
+    const badge = document.getElementById('pw-badge');
+    if (!badge) return;
+    badge.className = 'pw-badge ' + (
+      !policy.bilingual ? 'pw-badge-offline' :
+       policy.readOnly  ? 'pw-badge-readonly' :
+                          'pw-badge-online'
+    );
+  }
+
+  /* ── MANIFEST ───────────────────────────────────────── */
+  function _renderManifest() {
+    const box = document.getElementById('pw-mbox');
+    if (!box) return;
+    if (!policy.bilingual) {
+      box.innerHTML = '<div style="color:var(--red,#F87171);text-align:center;padding:10px;font-family:ui-monospace,monospace;font-size:10px;">// agent interface offline · bilingual = false</div>';
+      return;
+    }
+    box.innerHTML = manifest.map(op => {
+      const blk  = (policy.readOnly && op.writeOp) || (policy.noDelete && op.destructive);
+      const appr = !blk && policy.requireApproval && op.writeOp;
+      const badge = blk  ? '<span class="pw-badge-pill pw-badge-blk">BLOCKED</span>'
+                  : appr ? '<span class="pw-badge-pill pw-badge-appr">APPROVAL</span>'
+                         : '<span class="pw-badge-pill pw-badge-ok">ALLOWED</span>';
+      return `<div class="pw-op-row ${blk?'pw-op-blocked':''}">
+        <span><span class="pw-op-name">${op.name}</span>(<span class="pw-op-args">${op.args||''}</span>)</span>
+        ${badge}
+      </div>`;
+    }).join('');
+  }
+
+  /* ── AUDIT LOG ──────────────────────────────────────── */
+  function _addLog(actor, action, detail, meta) {
+    const t = new Date().toTimeString().slice(0,8);
+    auditLog.unshift({ actor, action, detail, meta: meta||{}, time: t });
+    if (auditLog.length > 120) auditLog.pop();
+    if (activeTab === 'audit' && panelOpen) _renderLog();
+    _broadcastEvent(actor, action, detail, meta);
+  }
+
+  function _setFilter(f) {
+    logFilter = f;
+    document.querySelectorAll('.pw-filt').forEach(btn => {
+      btn.classList.toggle('pw-filt-active', btn.dataset.lf === f);
+    });
+    _renderLog();
+  }
+
+  function _renderLog() {
+    const el = document.getElementById('pw-log');
+    if (!el) return;
+    let entries = auditLog;
+    if (logFilter === 'blocked') entries = auditLog.filter(e => e.meta.blocked);
+    else if (logFilter !== 'all') entries = auditLog.filter(e => e.actor === logFilter);
+
+    if (entries.length === 0) {
+      el.innerHTML = '<div class="pw-empty">// no entries</div>'; return;
+    }
+    el.innerHTML = entries.map(e => {
+      const isBlocked = e.meta.blocked;
+      const actorClass = 'pw-l' + e.actor[0];
+      let detail = '';
+      if (isBlocked) detail = `<div class="pw-ld" style="color:var(--red,#F87171)">✗ ${e.meta.reason||'blocked'}</div>`;
+      else if (e.detail) detail = `<div class="pw-ld">${typeof e.detail==='string'?e.detail:JSON.stringify(e.detail)}</div>`;
+      return `<div class="pw-log-entry ${isBlocked?'pw-log-blocked':''}">
+        <span class="pw-lt">${e.time}</span>
+        <span class="${actorClass}"> [${e.actor.toUpperCase()}]</span>
+        <span class="pw-lac ${isBlocked?'pw-blk':''}"> ${e.action}</span>
+        ${detail}
+      </div>`;
+    }).join('');
+  }
+
+  /* ── TOAST ──────────────────────────────────────────── */
+  function _toast(msg) {
+    const el = document.getElementById('pw-toast');
+    if (!el) return;
+    el.textContent = msg; el.classList.add('pw-toast-show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('pw-toast-show'), 2400);
+  }
+
+  /* ── BROADCASTCHANNEL ───────────────────────────────── */
+  function _initBC() {
+    try {
+      bc = new BroadcastChannel('peachyweb-ops');
+      bc.onmessage = ({ data: msg }) => {
+        if (!msg) return;
+        if (msg.type === 'OPS_HELLO') _broadcastState();
+        if (msg.type === 'POLICY_SET' && msg.targetAppId === cfg.appId) {
+          Object.assign(policy, msg.policy);
+          syncTogles();
+          _updateBadge();
+          _renderManifest();
+          _addLog('system', 'policy_synced_from_ops', msg.policy, {});
+          if (cfg.onPolicyChange) cfg.onPolicyChange({ ...policy });
+        }
+      };
+      window.addEventListener('beforeunload', () =>
+        bc.postMessage({ type: 'APP_DISCONNECT', appId: cfg.appId })
+      );
+      _broadcastState();
+    } catch(e) { /* BroadcastChannel unavailable */ }
+  }
+
+  function _broadcastState() {
+    if (!bc || !cfg) return;
+    bc.postMessage({
+      type: 'APP_STATE', appId: cfg.appId, appName: cfg.appName,
+      policy: { ...policy }, calls, blocked,
+    });
+  }
+
+  function _broadcastEvent(actor, action, detail, meta) {
+    if (!bc || !cfg) return;
+    if (actor !== 'human') { calls++; if (meta && meta.blocked) blocked++; }
+    bc.postMessage({
+      type: 'LOG_EVENT', appId: cfg.appId,
+      actor, action, detail, blocked: !!(meta && meta.blocked),
+    });
+  }
+
+  /* ════════════════════════════════════════════════════
+     PUBLIC API
+     ════════════════════════════════════════════════════ */
+  return {
+
+    /**
+     * Mount The Peach into the host app.
+     * @param {object} config
+     *   appId          string — unique ID for this app
+     *   appName        string — display name for ops center
+     *   policy         object — initial policy state
+     *   manifest       array  — override default manifest ops
+     *   onPolicyChange fn     — called whenever owner changes a toggle
+     */
+    mount(config) {
+      cfg      = config;
+      policy   = Object.assign({ ...DEFAULT_POLICY }, config.policy || {});
+      manifest = config.manifest || DEFAULT_MANIFEST;
+
+      injectStyles();
+      buildDOM();
+      syncTogles();
+      _updateBadge();
+      _renderManifest();
+      _initBC();
+
+      // Seed log
+      _addLog('system', 'peach_mounted', { app: cfg.appId }, {});
+    },
+
+    /**
+     * Log an event to the audit trail (and broadcast to ops center).
+     * Call this from the host app whenever the agent or human does something.
+     * @param {string} actor   — 'agent' | 'human' | 'system'
+     * @param {string} action  — operation name e.g. 'get_document'
+     * @param {*}      detail  — any serialisable detail object
+     * @param {object} meta    — { blocked: bool, reason: string }
+     */
+    log(actor, action, detail, meta) {
+      _addLog(actor, action, detail, meta || {});
+    },
+
+    /**
+     * Check whether an operation is currently permitted by policy.
+     * Use this in the host app's operation handler before executing.
+     * @param {string} opName  — operation name to check
+     * @param {string} actor   — 'agent' | 'human'
+     * @returns {{ allowed: boolean, reason?: string, pendingApproval?: boolean }}
+     */
+    checkOp(opName, actor) {
+      if (actor !== 'agent') return { allowed: true };
+      if (!policy.bilingual) return { allowed: false, reason: 'bilingual_disabled' };
+      const op = manifest.find(o => o.name === opName);
+      if (!op)                             return { allowed: false, reason: 'not_in_manifest' };
+      if (policy.readOnly && op.writeOp)   return { allowed: false, reason: 'read_only' };
+      if (policy.noDelete && op.destructive) return { allowed: false, reason: 'no_delete' };
+      if (policy.requireApproval && op.writeOp) return { allowed: true, pendingApproval: true };
+      return { allowed: true };
+    },
+
+    /** Returns a copy of the current policy object. */
+    getPolicy() { return { ...policy }; },
+
+    /* Internal — called by inline onchange handlers */
+    _onToggle, _setFilter,
+  };
+
+})();
+</script>
+<!-- ── END PEACH COMPONENT ── -->
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     INTEGRATION — mount The Peach in this app
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+PeachyWeb.mount({
+  appId:   'peach-demo',
+  appName: 'Component Demo',
+  policy: {
+    bilingual:       true,
+    readOnly:        true,
+    noDelete:        true,
+    requireApproval: false,
+  },
+  onPolicyChange(newPolicy) {
+    // Host app reacts to owner toggle changes
+    const dot  = document.getElementById('host-dot');
+    const meta = document.getElementById('host-meta');
+    const flag = document.getElementById('host-flag');
+    const st   = document.getElementById('host-status');
+    if (!newPolicy.bilingual) {
+      dot.classList.add('offline'); st.textContent = 'AGENT DISABLED';
+      meta.textContent = 'HUMAN-ONLY'; flag.style.display = 'none';
+    } else if (newPolicy.readOnly) {
+      dot.classList.remove('offline'); st.textContent = 'AGENT ENABLED';
+      meta.textContent = 'BILINGUAL · READ-ONLY'; flag.style.display = ''; flag.textContent = 'READ-ONLY TRIAL';
+    } else {
+      dot.classList.remove('offline'); st.textContent = 'AGENT ENABLED';
+      meta.textContent = 'BILINGUAL · WRITE'; flag.style.display = 'none';
+    }
+  },
+});
+
+// Seed some realistic history
+setTimeout(() => {
+  PeachyWeb.log('system', 'session_start',  { app: 'peach-demo', v: '0.4' }, {});
+  PeachyWeb.log('agent',  'get_document',   { blocks: 4 }, {});
+  PeachyWeb.log('agent',  'list_blocks',    null, {});
+  PeachyWeb.log('agent',  'search',         { query: 'biambient' }, {});
+  PeachyWeb.log('agent',  'insert_block',   null, { blocked: true, reason: 'read_only' });
+  PeachyWeb.log('agent',  'open_settings',  null, { blocked: true, reason: 'not_in_manifest' });
+  PeachyWeb.log('agent',  'set_policy',     { noDelete: false }, { blocked: true, reason: 'not_in_manifest' });
+  PeachyWeb.log('human',  'view_document',  null, {});
+}, 50);
+
+// Simulate agent operations from the buttons
+function simOp(kind) {
+  const policy = PeachyWeb.getPolicy();
+  const ops = {
+    read:    ['agent', 'get_document',   { blocks: 4 }],
+    search:  ['agent', 'search',         { query: 'ownership' }],
+    insert:  ['agent', 'insert_block',   { afterId: 'b2', preview: 'Agent-generated paragraph…' }],
+    replace: ['agent', 'replace_block',  { id: 'b1' }],
+    delete:  ['agent', 'delete_block',   { id: 'b3' }],
+    attack:  ['agent', 'open_settings',  null],
+  };
+  const [actor, action, detail] = ops[kind];
+  const result = PeachyWeb.checkOp(action, actor);
+  const meta = result.allowed ? {} : { blocked: true, reason: result.reason };
+  PeachyWeb.log(actor, action, detail, meta);
+}
+</script>
+
+</body>
+</html>

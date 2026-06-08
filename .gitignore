@@ -34,3 +34,10 @@ hive/4-permissions/deny.txt
 # python
 __pycache__/
 *.pyc
+
+# ── PRIVATE: the silent layers + lineage (personal — never publish) ──
+# The faith layer and the psychological/biofield layer are "never surfaced".
+god.md
+tuning.md
+world/lore/
+world/tuning-kb/

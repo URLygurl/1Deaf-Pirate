@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>PeachyWeb Ops Center</title>
+<style>
+:root {
+  --coral: #FF6B5B;
+  --peach: #FFB088;
+  --bg: #0A0A0A;
+  --bg-alt: #141414;
+  --bg-deep: #0D0D0D;
+  --text: #F5F1EA;
+  --text-dim: #6B6660;
+  --text-paper: #E8E4DC;
+  --border: #1F1F1F;
+  --border-bright: #2A2A2A;
+  --green: #4ADE80;
+  --green-faint: rgba(74, 222, 128, 0.10);
+  --amber: #FBBF24;
+  --red: #F87171;
+  --red-faint: rgba(248, 113, 113, 0.12);
+  --blue: #60A5FA;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, -apple-system, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+  padding-bottom: env(safe-area-inset-bottom);
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* ── HEADER ── */
+.ops-header {
+  padding: 11px 18px 11px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.logo { display: flex; align-items: center; gap: 8px; }
+.logo-mark {
+  width: 22px; height: 22px; border-radius: 6px;
+  background: var(--coral); display: grid; place-items: center;
+  font-weight: 700; color: #000; font-size: 11px;
+  font-family: ui-monospace, monospace;
+}
+.logo-text { font-family: ui-serif, Georgia, serif; font-size: 13px; }
+
+.ops-label {
+  font-family: ui-monospace, monospace; font-size: 10px;
+  letter-spacing: 0.14em; color: var(--text-dim); text-transform: uppercase;
+  border-left: 1px solid var(--border-bright); padding-left: 10px;
+}
+
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+.live-badge {
+  display: flex; align-items: center; gap: 5px;
+  font-family: ui-monospace, monospace; font-size: 9px; letter-spacing: 0.1em;
+  padding: 4px 8px; border-radius: 6px;
+  background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.22);
+  color: var(--green); transition: all 0.25s;
+}
+.live-badge.idle {
+  background: rgba(107,102,96,0.1); border-color: var(--border); color: var(--text-dim);
+}
+.live-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--green);
+  animation: blink 1.6s ease-in-out infinite;
+}
+.live-badge.idle .live-dot { background: var(--text-dim); animation: none; }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; } 50% { opacity: 0.25; }
+}
+
+.conn-count {
+  font-family: ui-monospace, monospace; font-size: 10px; color: var(--text-dim);
+}
+
+/* ── SCROLL AREA ── */
+main {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding-bottom: 40px;
+}
+
+/* ── SECTION ── */
+.section {
+  padding: 14px 18px 0;
+  border-bottom: 1px solid var(--border);
+}
+.section:last-child { border-bottom: none; }
+
+.section-head {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+}
+.section-label {
+  font-family: ui-monospace, monospace; font-size: 9px;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim);
+}
+.section-meta {
+  font-family: ui-monospace, monospace; font-size: 9px; color: var(--text-dim);
+}
+
+/* ── FLEET GRID ── */
+.fleet-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-bottom: 14px;
+}
+
+.app-card {
+  background: var(--bg-alt); border: 1px solid var(--border);
+  border-radius: 10px; padding: 11px; cursor: pointer;
+  transition: border-color 0.14s; position: relative; overflow: hidden;
+  -webkit-user-select: none; user-select: none;
+}
+.app-card:active { opacity: 0.85; }
+.app-card.selected { border-color: var(--coral); }
+.app-card.card-live { border-color: rgba(74,222,128,0.32); }
+.app-card.selected.card-live { border-color: var(--coral); }
+
+.card-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 5px; margin-bottom: 7px;
+}
+
+.card-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 3px;
+}
+.card-dot.s-online  { background: var(--green); animation: pulse 2s ease-in-out infinite; }
+.card-dot.s-ro      { background: var(--amber); }
+.card-dot.s-offline { background: var(--red); }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
+  50%       { box-shadow: 0 0 0 4px rgba(74,222,128,0); }
+}
+
+.card-name {
+  font-family: ui-serif, Georgia, serif; font-size: 12.5px;
+  font-weight: 400; line-height: 1.2; flex: 1;
+}
+
+.card-live-tag {
+  font-family: ui-monospace, monospace; font-size: 7.5px; letter-spacing: 0.08em;
+  color: var(--green); background: rgba(74,222,128,0.1);
+  padding: 2px 4px; border-radius: 3px; flex-shrink: 0;
+}
+
+.card-chips {
+  display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 7px;
+}
+
+.chip {
+  font-family: ui-monospace, monospace; font-size: 7.5px;
+  padding: 2px 5px; border-radius: 3px; letter-spacing: 0.04em; font-weight: 600;
+}
+.chip-on   { background: rgba(74,222,128,0.12); color: var(--green); }
+.chip-ro   { background: rgba(251,191,36,0.12); color: var(--amber); }
+.chip-off  { background: rgba(248,113,113,0.1); color: var(--red); }
+.chip-appr { background: rgba(96,165,250,0.12); color: var(--blue); }
+
+.card-stats {
+  font-family: ui-monospace, monospace; font-size: 9px; color: var(--text-dim); line-height: 1.4;
+}
+.stat-r { color: var(--red); }
+.stat-a { color: var(--amber); }
+
+/* ── DEEP DIVE ── */
+.deep-dive {
+  display: none; margin: 0 18px 14px;
+  background: var(--bg-alt); border: 1px solid var(--coral);
+  border-radius: 10px; overflow: hidden;
+}
+.deep-dive.open { display: block; }
+
+.dd-head {
+  padding: 11px 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.dd-title { font-family: ui-serif, Georgia, serif; font-size: 15px; font-weight: 400; }
+.dd-close {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--bg); border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 14px; cursor: pointer;
+  display: grid; place-items: center;
+}
+
+.dd-body {
+  padding: 12px 14px;
+  max-height: 340px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+
+.dd-label {
+  font-family: ui-monospace, monospace; font-size: 9px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim);
+  margin-bottom: 6px; margin-top: 14px;
+}
+.dd-label:first-child { margin-top: 0; }
+
+.op-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 0; font-family: ui-monospace, monospace; font-size: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04); gap: 8px;
+}
+.op-row:last-child { border-bottom: none; }
+.op-row.op-blocked { color: var(--red); text-decoration: line-through; opacity: 0.55; }
+.op-name { color: var(--blue); }
+.op-args { color: var(--amber); }
+.op-badge {
+  font-size: 8px; padding: 1px 5px; border-radius: 3px; flex-shrink: 0;
+}
+.badge-ok   { background: rgba(74,222,128,0.14); color: var(--green); }
+.badge-blk  { background: rgba(248,113,113,0.14); color: var(--red); }
+.badge-appr { background: rgba(251,191,36,0.14); color: var(--amber); }
+
+.dd-log {
+  font-family: ui-monospace, monospace; font-size: 10px; line-height: 1.5;
+}
+.dd-log-entry {
+  padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.05);
+}
+
+/* ── EVENT STREAM ── */
+.stream-filters {
+  display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px; margin-bottom: 10px; scrollbar-width: none;
+}
+.stream-filters::-webkit-scrollbar { display: none; }
+
+.sf {
+  background: var(--bg-alt); border: 1px solid var(--border); color: var(--text-dim);
+  font-family: ui-monospace, monospace; font-size: 9px; letter-spacing: 0.06em;
+  padding: 5px 9px; border-radius: 6px; cursor: pointer; white-space: nowrap;
+  flex-shrink: 0; transition: background 0.12s, color 0.12s;
+}
+.sf.sf-active { background: var(--border-bright); color: var(--text); }
+.sf.sf-blocked.sf-active {
+  background: rgba(248,113,113,0.14); color: var(--red); border-color: rgba(248,113,113,0.2);
+}
+
+.stream-entries {
+  font-family: ui-monospace, monospace; font-size: 10.5px;
+  max-height: 300px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding-bottom: 14px;
+}
+
+.se {
+  display: flex; gap: 7px; padding: 7px 0;
+  border-bottom: 1px dashed rgba(255,255,255,0.05); align-items: flex-start;
+}
+.se.se-new { animation: entry-in 0.22s ease; }
+
+@keyframes entry-in {
+  from { opacity: 0; transform: translateX(-3px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.se.se-blocked {
+  background: var(--red-faint); border-radius: 4px;
+  padding: 7px 8px; margin: 1px -4px; border: none;
+}
+
+.se-time  { color: var(--text-dim); font-size: 9px; flex-shrink: 0; min-width: 48px; padding-top: 1px; }
+.se-app   { color: var(--peach); font-size: 9px; flex-shrink: 0; min-width: 58px;
+             overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-top: 1px; }
+.se-body  { flex: 1; line-height: 1.4; }
+.actor-h  { color: var(--coral); font-weight: 600; }
+.actor-a  { color: var(--green); font-weight: 600; }
+.actor-s  { color: var(--amber); font-weight: 600; }
+.act      { color: var(--text); }
+.act.blk  { color: var(--red); }
+.se-detail { color: var(--text-dim); font-size: 9px; margin-top: 1px; }
+
+/* ── POLICY MATRIX ── */
+.matrix-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 14px; }
+
+.policy-table { width: 100%; border-collapse: collapse;
+  font-family: ui-monospace, monospace; font-size: 10px; min-width: 340px; }
+
+.policy-table th {
+  text-align: left; color: var(--text-dim); font-size: 8.5px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 6px 10px; border-bottom: 1px solid var(--border); font-weight: 400;
+}
+
+.policy-table td {
+  padding: 9px 10px; border-bottom: 1px dashed rgba(255,255,255,0.05);
+  vertical-align: middle;
+}
+
+.policy-table tr:last-child td { border-bottom: none; }
+
+.app-cell { line-height: 1.3; }
+.app-cell-name { color: var(--text); font-size: 10.5px; }
+.app-cell-sub  { color: var(--text-dim); font-size: 8.5px; margin-top: 1px; }
+
+/* compact iOS toggle */
+.mt {
+  position: relative; width: 34px; height: 20px; display: inline-block;
+}
+.mt input { opacity: 0; width: 0; height: 0; position: absolute; }
+.mt-track {
+  position: absolute; inset: 0; border-radius: 10px;
+  background: var(--border-bright); cursor: pointer; transition: background 0.18s;
+}
+.mt-track::after {
+  content: ''; position: absolute;
+  width: 14px; height: 14px; border-radius: 50%; background: #fff;
+  top: 3px; left: 3px; transition: transform 0.16s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.mt input:checked + .mt-track { background: var(--coral); }
+.mt input:checked + .mt-track::after { transform: translateX(14px); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 14px);
+  left: 50%; transform: translateX(-50%) translateY(-10px);
+  background: var(--bg-alt); border: 1px solid var(--border-bright);
+  color: var(--text); font-family: ui-monospace, monospace; font-size: 11px;
+  padding: 8px 14px; border-radius: 10px; white-space: nowrap;
+  z-index: 400; opacity: 0; pointer-events: none;
+  transition: opacity 0.18s, transform 0.18s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="ops-header">
+  <div class="logo">
+    <div class="logo-mark">Pw</div>
+    <span class="logo-text">PeachyWeb</span>
+  </div>
+  <div class="ops-label">Ops Center</div>
+  <div class="header-right">
+    <div class="live-badge idle" id="live-badge">
+      <div class="live-dot"></div>
+      <span id="live-text">IDLE</span>
+    </div>
+    <div class="conn-count" id="conn-count"></div>
+  </div>
+</div>
+
+<main>
+
+  <!-- FLEET -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-label">Fleet</div>
+      <div class="section-meta" id="fleet-meta">5 apps · 0 live</div>
+    </div>
+    <div class="fleet-grid" id="fleet-grid"></div>
+  </div>
+
+  <!-- DEEP DIVE (conditional) -->
+  <div class="deep-dive" id="deep-dive">
+    <div class="dd-head">
+      <div class="dd-title" id="dd-title"></div>
+      <button class="dd-close" onclick="closeDive()">×</button>
+    </div>
+    <div class="dd-body" id="dd-body"></div>
+  </div>
+
+  <!-- EVENT STREAM -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-label">Event stream</div>
+      <div class="section-meta" id="stream-meta"></div>
+    </div>
+    <div class="stream-filters" id="stream-filters"></div>
+    <div class="stream-entries" id="stream-entries"></div>
+  </div>
+
+  <!-- POLICY MATRIX -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-label">Policy matrix</div>
+      <div class="section-meta">broadcasts to live apps</div>
+    </div>
+    <div class="matrix-wrap">
+      <table class="policy-table">
+        <thead>
+          <tr>
+            <th style="min-width:110px;">App</th>
+            <th>Bilingual</th>
+            <th>Read-only</th>
+            <th>Approval</th>
+            <th>No delete</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   APP REGISTRY
+   ═══════════════════════════════════════════ */
+const APPS = {
+  'folio-peach': {
+    id: 'folio-peach', name: 'Folio Secure', file: 'folio-peach.html',
+    policy: { bilingual: true, readOnly: true, requireApproval: false, noDelete: true },
+    live: false, calls: 12, blocked: 3, pending: 0, lastSeen: Date.now() - 120000,
+  },
+  'bilingual-standard': {
+    id: 'bilingual-standard', name: 'Bilingual Standard', file: 'peachyweb-bilingual-standard.html',
+    policy: { bilingual: true, readOnly: true, requireApproval: false, noDelete: true },
+    live: false, calls: 8, blocked: 1, pending: 0, lastSeen: Date.now() - 660000,
+  },
+  'bilingual-editor': {
+    id: 'bilingual-editor', name: 'Bilingual Editor', file: 'bilingual-editor.html',
+    policy: { bilingual: true, readOnly: false, requireApproval: true, noDelete: true },
+    live: false, calls: 24, blocked: 2, pending: 3, lastSeen: Date.now() - 43000,
+  },
+  'llms-txt': {
+    id: 'llms-txt', name: 'LLMS.txt Gen', file: 'llms-txt-generator.html',
+    policy: { bilingual: false, readOnly: true, requireApproval: false, noDelete: true },
+    live: false, calls: 0, blocked: 0, pending: 0, lastSeen: Date.now() - 3600000,
+  },
+  'bilingual-app': {
+    id: 'bilingual-app', name: 'Bilingual App', file: 'bilingual-app.html',
+    policy: { bilingual: true, readOnly: true, requireApproval: false, noDelete: false },
+    live: false, calls: 5, blocked: 0, pending: 0, lastSeen: Date.now() - 1680000,
+  },
+};
+
+const MANIFEST_OPS = [
+  { name: 'get_document',  args: '',              writeOp: false, destructive: false },
+  { name: 'list_blocks',   args: '',              writeOp: false, destructive: false },
+  { name: 'get_block',     args: 'id',            writeOp: false, destructive: false },
+  { name: 'search',        args: 'query',         writeOp: false, destructive: false },
+  { name: 'insert_block',  args: 'afterId, text', writeOp: true,  destructive: false },
+  { name: 'replace_block', args: 'id, text',      writeOp: true,  destructive: false },
+  { name: 'set_title',     args: 'text',          writeOp: true,  destructive: false },
+  { name: 'delete_block',  args: 'id',            writeOp: true,  destructive: true  },
+  { name: 'delete_all',    args: '',              writeOp: true,  destructive: true  },
+];
+
+/* ═══════════════════════════════════════════
+   SEEDED EVENT LOG
+   ═══════════════════════════════════════════ */
+const T = Date.now();
+let events = [
+  { t: T-43000,   app:'bilingual-editor',   actor:'agent',  action:'get_document',   detail:'{ blocks: 18 }',           blocked:false },
+  { t: T-65000,   app:'bilingual-editor',   actor:'agent',  action:'insert_block',   detail:'{ afterId: "b12" }',       blocked:false },
+  { t: T-91000,   app:'folio-peach',        actor:'agent',  action:'search',         detail:'{ query: "biambient" }',   blocked:false },
+  { t: T-130000,  app:'bilingual-editor',   actor:'human',  action:'open_settings',  detail:null,                       blocked:false },
+  { t: T-155000,  app:'bilingual-standard', actor:'agent',  action:'list_blocks',    detail:'{ count: 6 }',             blocked:false },
+  { t: T-188000,  app:'folio-peach',        actor:'agent',  action:'open_settings',  detail:null,                       blocked:true  },
+  { t: T-210000,  app:'folio-peach',        actor:'agent',  action:'set_policy',     detail:'{ noDelete: false }',      blocked:true  },
+  { t: T-230000,  app:'bilingual-editor',   actor:'agent',  action:'replace_block',  detail:'{ id: "b7" }',             blocked:false },
+  { t: T-280000,  app:'bilingual-app',      actor:'agent',  action:'get_document',   detail:'{ blocks: 6 }',            blocked:false },
+  { t: T-310000,  app:'folio-peach',        actor:'human',  action:'view_document',  detail:null,                       blocked:false },
+  { t: T-380000,  app:'bilingual-standard', actor:'agent',  action:'insert_block',   detail:null,                       blocked:true  },
+  { t: T-420000,  app:'bilingual-editor',   actor:'agent',  action:'delete_block',   detail:'{ id: "b3" }',             blocked:false },
+  { t: T-510000,  app:'folio-peach',        actor:'agent',  action:'get_document',   detail:'{ blocks: 4 }',            blocked:false },
+  { t: T-660000,  app:'bilingual-standard', actor:'human',  action:'scroll',         detail:'{ pct: 72 }',              blocked:false },
+  { t: T-1020000, app:'folio-peach',        actor:'system', action:'session_start',  detail:'{ v: "0.4" }',             blocked:false },
+  { t: T-1060000, app:'bilingual-editor',   actor:'system', action:'session_start',  detail:'{ v: "0.4" }',             blocked:false },
+  { t: T-1100000, app:'bilingual-standard', actor:'system', action:'session_start',  detail:'{ v: "0.4" }',             blocked:false },
+  { t: T-1200000, app:'bilingual-app',      actor:'system', action:'session_start',  detail:'{ v: "0.4" }',             blocked:false },
+];
+
+/* ═══════════════════════════════════════════
+   BROADCASTCHANNEL — real sync
+   ═══════════════════════════════════════════ */
+const connectedApps = new Set();
+let bc = null;
+
+try {
+  bc = new BroadcastChannel('peachyweb-ops');
+
+  bc.onmessage = ({ data: msg }) => {
+    if (!msg) return;
+
+    if (msg.type === 'APP_STATE') {
+      let app = APPS[msg.appId];
+      if (!app) {
+        // Unknown app — register dynamically
+        APPS[msg.appId] = {
+          id: msg.appId, name: msg.appName || msg.appId, file: null,
+          policy: {}, live: true, calls: 0, blocked: 0, pending: 0,
+          lastSeen: Date.now(),
+        };
+        addStreamFilter(msg.appId, msg.appName || msg.appId);
+      }
+      app = APPS[msg.appId];
+      if (msg.policy) Object.assign(app.policy, msg.policy);
+      if (msg.calls   !== undefined) app.calls   = msg.calls;
+      if (msg.blocked !== undefined) app.blocked  = msg.blocked;
+      app.live = true;
+      app.lastSeen = Date.now();
+      connectedApps.add(msg.appId);
+      updateLiveBadge();
+      renderFleet();
+      renderMatrix();
+    }
+
+    if (msg.type === 'LOG_EVENT') {
+      const app = APPS[msg.appId];
+      if (app) {
+        app.calls++;
+        app.lastSeen = Date.now();
+        if (msg.blocked) app.blocked++;
+      }
+      events.unshift({
+        t: Date.now(), app: msg.appId, actor: msg.actor,
+        action: msg.action,
+        detail: msg.detail != null ? JSON.stringify(msg.detail) : null,
+        blocked: !!msg.blocked, live: true,
+      });
+      if (events.length > 200) events.pop();
+      renderStream();
+      renderFleet();
+      if (selectedApp === msg.appId) renderDive(msg.appId);
+    }
+
+    if (msg.type === 'APP_DISCONNECT') {
+      if (APPS[msg.appId]) {
+        APPS[msg.appId].live = false;
+        connectedApps.delete(msg.appId);
+      }
+      updateLiveBadge();
+      renderFleet();
+    }
+  };
+
+  // Ping all open app tabs to send their state
+  bc.postMessage({ type: 'OPS_HELLO' });
+
+} catch(e) {
+  console.warn('BroadcastChannel unavailable — demo mode only');
+}
+
+function broadcastPolicy(appId, policy) {
+  if (bc && APPS[appId]?.live) {
+    bc.postMessage({ type: 'POLICY_SET', targetAppId: appId, policy });
+    toast(`→ ${APPS[appId].name} · policy synced`);
+  } else {
+    toast('Demo mode — open app tab to sync');
+  }
+}
+
+/* ═══════════════════════════════════════════
+   LIVE BADGE
+   ═══════════════════════════════════════════ */
+function updateLiveBadge() {
+  const badge = document.getElementById('live-badge');
+  const txt   = document.getElementById('live-text');
+  const count = document.getElementById('conn-count');
+  const n     = connectedApps.size;
+  badge.classList.toggle('idle', n === 0);
+  txt.textContent = n > 0 ? 'LIVE' : 'IDLE';
+  count.textContent = n > 0 ? `${n} connected` : '';
+}
+
+/* ═══════════════════════════════════════════
+   STATUS
+   ═══════════════════════════════════════════ */
+function statusClass(app) {
+  if (!app.policy.bilingual) return 's-offline';
+  if (app.policy.readOnly)   return 's-ro';
+  return 's-online';
+}
+
+/* ═══════════════════════════════════════════
+   FLEET
+   ═══════════════════════════════════════════ */
+let selectedApp = null;
+
+function renderFleet() {
+  const apps = Object.values(APPS);
+  const liveN = apps.filter(a => a.live).length;
+  document.getElementById('fleet-meta').textContent =
+    `${apps.length} apps · ${liveN} live`;
+
+  document.getElementById('fleet-grid').innerHTML = apps.map(app => {
+    const sc = statusClass(app);
+    const chips = [
+      app.policy.bilingual       ? `<span class="chip chip-on">BILINGUAL</span>`   : `<span class="chip chip-off">HUMAN-ONLY</span>`,
+      app.policy.readOnly        ? `<span class="chip chip-ro">READ-ONLY</span>`   : `<span class="chip chip-on">WRITE</span>`,
+      app.policy.requireApproval ? `<span class="chip chip-appr">APPROVAL</span>`  : '',
+      !app.policy.noDelete && app.policy.bilingual ? `<span class="chip chip-off">DELETES OK</span>` : (app.policy.noDelete ? `<span class="chip chip-ro">NO-DELETE</span>` : ''),
+    ].filter(Boolean).join('');
+
+    const stats = [
+      app.calls   ? `${app.calls} calls`                                     : 'no calls',
+      app.blocked ? `<span class="stat-r">${app.blocked} blocked</span>`     : '',
+      app.pending ? `<span class="stat-a">${app.pending} pending</span>`     : '',
+      relTime(app.lastSeen),
+    ].filter(Boolean).join(' · ');
+
+    const liveTag  = app.live ? `<span class="card-live-tag">LIVE</span>` : '';
+    const selClass = selectedApp === app.id ? 'selected' : '';
+    const lvClass  = app.live ? 'card-live' : '';
+
+    return `<div class="app-card ${selClass} ${lvClass}" onclick="selectApp('${app.id}')">
+      <div class="card-top">
+        <div class="card-dot ${sc}"></div>
+        <div class="card-name">${app.name}</div>
+        ${liveTag}
+      </div>
+      <div class="card-chips">${chips}</div>
+      <div class="card-stats">${stats}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════
+   DEEP DIVE
+   ═══════════════════════════════════════════ */
+function selectApp(id) {
+  if (selectedApp === id) { closeDive(); return; }
+  selectedApp = id;
+  renderFleet();
+  renderDive(id);
+}
+
+function closeDive() {
+  selectedApp = null;
+  document.getElementById('deep-dive').classList.remove('open');
+  renderFleet();
+}
+
+function renderDive(id) {
+  const app = APPS[id];
+  const p   = app.policy;
+  document.getElementById('dd-title').textContent = app.name;
+
+  // Manifest
+  let html = '<div class="dd-label">Manifest</div>';
+  if (!p.bilingual) {
+    html += `<div style="color:var(--red);font-family:ui-monospace,monospace;font-size:10px;padding:6px 0;">
+      // agent interface offline · bilingual = false</div>`;
+  } else {
+    html += MANIFEST_OPS.map(op => {
+      const blk  = (p.readOnly && op.writeOp) || (p.noDelete && op.destructive);
+      const appr = !blk && p.requireApproval && op.writeOp;
+      const badge = blk  ? '<span class="op-badge badge-blk">BLOCKED</span>'
+                  : appr ? '<span class="op-badge badge-appr">APPROVAL</span>'
+                         : '<span class="op-badge badge-ok">ALLOWED</span>';
+      return `<div class="op-row ${blk ? 'op-blocked' : ''}">
+        <span><span class="op-name">${op.name}</span>(<span class="op-args">${op.args}</span>)</span>
+        ${badge}
+      </div>`;
+    }).join('');
+  }
+
+  // App event log
+  const appEvts = events.filter(e => e.app === id).slice(0, 20);
+  html += `<div class="dd-label" style="margin-top:14px;">Recent activity</div>`;
+  if (appEvts.length === 0) {
+    html += `<div style="color:var(--text-dim);font-family:ui-monospace,monospace;font-size:10px;padding:6px 0;">// no events</div>`;
+  } else {
+    html += `<div class="dd-log">` + appEvts.map(e => {
+      const actorColor = e.actor === 'human' ? 'var(--coral)' : e.actor === 'agent' ? 'var(--green)' : 'var(--amber)';
+      const actColor   = e.blocked ? 'var(--red)' : 'var(--text)';
+      const detail     = e.detail ? `<div style="color:var(--text-dim);font-size:9px;padding-left:8px;">${e.detail}</div>` : '';
+      return `<div class="dd-log-entry">
+        <span style="color:var(--text-dim);font-size:9px;">${relTime(e.t)}</span>
+        <span style="color:${actorColor};font-weight:600;"> [${e.actor.toUpperCase()}]</span>
+        <span style="color:${actColor};"> ${e.action}</span>
+        ${e.blocked ? '<span style="color:var(--red);font-size:9px;"> ✗</span>' : ''}
+        ${detail}
+      </div>`;
+    }).join('') + `</div>`;
+  }
+
+  document.getElementById('dd-body').innerHTML = html;
+  document.getElementById('deep-dive').classList.add('open');
+  requestAnimationFrame(() =>
+    document.getElementById('deep-dive').scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  );
+}
+
+/* ═══════════════════════════════════════════
+   EVENT STREAM
+   ═══════════════════════════════════════════ */
+let streamFilter = 'all';
+
+function buildStreamFilters() {
+  const el = document.getElementById('stream-filters');
+  el.innerHTML = `<button class="sf sf-active" data-f="all" onclick="setStreamFilter('all')">ALL APPS</button>`;
+  Object.values(APPS).forEach(app => {
+    el.innerHTML += `<button class="sf" data-f="${app.id}" onclick="setStreamFilter('${app.id}')">${app.name}</button>`;
+  });
+  el.innerHTML += `<button class="sf sf-blocked" data-f="blocked" onclick="setStreamFilter('blocked')">⛔ BLOCKED</button>`;
+}
+
+function addStreamFilter(appId, name) {
+  const el = document.getElementById('stream-filters');
+  const blocked = el.querySelector('[data-f="blocked"]');
+  const btn = document.createElement('button');
+  btn.className = 'sf';
+  btn.dataset.f = appId;
+  btn.textContent = name;
+  btn.onclick = () => setStreamFilter(appId);
+  el.insertBefore(btn, blocked);
+}
+
+function setStreamFilter(f) {
+  streamFilter = f;
+  document.querySelectorAll('.sf').forEach(btn => {
+    btn.classList.toggle('sf-active', btn.dataset.f === f);
+  });
+  renderStream();
+}
+
+function renderStream() {
+  let filtered = events;
+  if (streamFilter === 'blocked') filtered = events.filter(e => e.blocked);
+  else if (streamFilter !== 'all') filtered = events.filter(e => e.app === streamFilter);
+
+  document.getElementById('stream-meta').textContent = `${filtered.length} events`;
+
+  if (filtered.length === 0) {
+    document.getElementById('stream-entries').innerHTML =
+      `<div style="color:var(--text-dim);font-family:ui-monospace,monospace;font-size:10px;padding:12px 0;text-align:center;">// no events</div>`;
+    return;
+  }
+
+  document.getElementById('stream-entries').innerHTML = filtered.map((e, i) => {
+    const appName = APPS[e.app]?.name || e.app;
+    const detail  = e.detail ? `<div class="se-detail">${e.detail}</div>` : '';
+    const liveTag = e.live ? `<span style="color:var(--green);font-size:8px;margin-left:3px;">●</span>` : '';
+    const newClass = i === 0 && e.live ? 'se-new' : '';
+    return `<div class="se ${e.blocked ? 'se-blocked' : ''} ${newClass}">
+      <span class="se-time">${relTime(e.t)}</span>
+      <span class="se-app">${appName}</span>
+      <div class="se-body">
+        <span class="actor-${e.actor[0]}">[${e.actor.toUpperCase()}]</span>
+        <span class="act ${e.blocked ? 'blk' : ''}"> ${e.action}</span>
+        ${e.blocked ? '<span style="color:var(--red);font-size:9px;"> ✗</span>' : ''}
+        ${liveTag}
+        ${detail}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════
+   POLICY MATRIX
+   ═══════════════════════════════════════════ */
+function renderMatrix() {
+  document.getElementById('matrix-body').innerHTML = Object.values(APPS).map(app => {
+    const p  = app.policy;
+    const liveColor = app.live ? 'var(--green)' : 'var(--text-dim)';
+    const mk = (key, val) => `<label class="mt">
+      <input type="checkbox" ${val ? 'checked' : ''} onchange="matrixToggle('${app.id}','${key}',this.checked)">
+      <span class="mt-track"></span>
+    </label>`;
+    return `<tr>
+      <td class="app-cell">
+        <div class="app-cell-name">${app.name}</div>
+        <div class="app-cell-sub" style="color:${liveColor}">${app.live ? '● LIVE' : '○ demo'}</div>
+      </td>
+      <td>${mk('bilingual', p.bilingual)}</td>
+      <td>${mk('readOnly', p.readOnly)}</td>
+      <td>${mk('requireApproval', p.requireApproval)}</td>
+      <td>${mk('noDelete', p.noDelete)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function matrixToggle(appId, key, val) {
+  const app = APPS[appId];
+  if (!app) return;
+  app.policy[key] = val;
+  broadcastPolicy(appId, app.policy);
+  renderFleet();
+  renderMatrix();
+  if (selectedApp === appId) renderDive(appId);
+  renderStream();
+}
+
+/* ═══════════════════════════════════════════
+   UTILS
+   ═══════════════════════════════════════════ */
+function relTime(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 10)   return 'now';
+  if (s < 60)   return `${s}s`;
+  if (s < 3600) return `${Math.floor(s/60)}m`;
+  if (s < 86400) return `${Math.floor(s/3600)}h`;
+  return `${Math.floor(s/86400)}d`;
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════ */
+buildStreamFilters();
+renderFleet();
+renderMatrix();
+renderStream();
+updateLiveBadge();
+
+// Refresh relative times every 30s
+setInterval(() => {
+  renderStream();
+  if (selectedApp) renderDive(selectedApp);
+  renderFleet();
+}, 30000);
+</script>
+</body>
+</html>
