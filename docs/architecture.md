@@ -29,16 +29,20 @@ You → Hermes (route) → Specialist (open chat OR closed run) → HIVE (captur
 - **Topology** — the squad is **15 Hermes profiles** (persistent named agents)
   collaborating over **one Kanban board**; DIME = `orchestrator_profile`.
   `delegate_task` is for in-character grunt parallelism. See `docs/squad-topology.md`.
-- **Memory / brains** — *dual-strain, by purpose* (Hermes allows one external
-  provider live at a time, so "dual" = a custom dual-write provider):
-  - **Honcho** — primary squad brain (multi-agent: shared workspace + per-profile
-    AI peer = the HIVE). Live provider.
-  - **Hindsight** — second strain: knowledge-graph + `reflect` synthesis (relationship
-    reasoning), via a **dual-write memory provider** we build so both populate.
-  - **Obsidian (Claude ↔ Obsidian)** — third brain: the user's file/notes "second
-    brain" for file management (a shared vault, not an LLM memory provider).
+- **Memory / brains** — *GBrain is the spine* (revised after the HIVE review — see
+  `docs/hive-architecture.md`):
+  - **GBrain** — primary HIVE brain: MIT, self-hosted, wired via **MCP** (native to
+    Hermes), already runs on Hermes in production. Gives synthesis, a knowledge
+    graph (venues/artists/contracts), **gap analysis**, overnight consolidation, and
+    per-login permission scoping. Replaces the hand-rolled Redis/pub-sub L1 design.
+  - **Hermes Kanban** — the event bus + peer channels (L2/L5) + durable audit.
+  - **Honcho / Hindsight** — optional later additions (per-user modeling / extra
+    graph reflection), NOT the spine.
+  - **Obsidian (Claude ↔ Obsidian)** — the user's file/notes "second brain" for file
+    management (a shared vault, not an LLM memory provider).
   - **HIVE + git** — always-on, version-controlled redundancy (the `hive-loop` hooks).
   - Built-in `MEMORY.md`/`USER.md` stays on beneath all of it.
+  - ⚠️ GBrain is one person's project — vet it (`pre-launch-checklist.md`) before live.
 - **Routing/intent** — each profile's `description` is the routing key, derived from
   its skills (`hermes profile describe --auto`); peer-reviewed, de-conflicted by DIME.
   See `docs/intent-authoring.md`.

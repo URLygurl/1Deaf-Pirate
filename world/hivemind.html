@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>HIVE MIND — One Brain, 15 Personalities</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+  :root {
+    --brain:#b026ff; --brain-glow:#7000cc; --pulse:#ff2d78; --gold:#ffd600;
+    --green:#00ff88; --orange:#ff6a00; --cyan:#00ccff; --neil:#39d0ff;
+    --bg:#030308; --surface:#0a0a14; --border:rgba(176,38,255,0.3);
+    --text:#e8e0ff; --muted:#7a7090;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+  header{text-align:center;padding:2rem 1rem 1rem;}
+  header h1{font-family:'Black Ops One',cursive;font-size:clamp(2rem,6vw,4rem);letter-spacing:.05em;
+    background:linear-gradient(135deg,#fff 0%,var(--brain) 60%,var(--pulse) 100%);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;}
+  .sub{font-family:'Share Tech Mono',monospace;color:var(--muted);font-size:.85rem;margin-top:.4rem;letter-spacing:.15em;text-transform:uppercase;}
+  .tag-line{display:inline-block;margin-top:.8rem;background:rgba(176,38,255,.15);border:1px solid var(--border);
+    border-radius:4px;padding:.35rem 1rem;font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--brain);letter-spacing:.1em;}
+
+  .tabs{display:flex;gap:.5rem;justify-content:center;padding:1.5rem 1rem 0;flex-wrap:wrap;}
+  .tab-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Rajdhani',sans-serif;
+    font-weight:600;font-size:.85rem;letter-spacing:.08em;padding:.5rem 1.2rem;border-radius:4px;cursor:pointer;
+    transition:all .2s;text-transform:uppercase;}
+  .tab-btn.active,.tab-btn:hover{background:rgba(176,38,255,.2);border-color:var(--brain);color:#fff;}
+
+  .panel{display:none;padding:1.5rem 1rem 3rem;max-width:920px;margin:0 auto;}
+  .panel.active{display:block;}
+
+  /* ── MAP ── */
+  .map-wrap{position:relative;width:100%;}
+
+  .public-row{
+    display:flex;gap:.4rem;align-items:center;justify-content:center;flex-wrap:wrap;
+    padding:.5rem 1rem .4rem;
+    background:rgba(57,208,255,.03);
+    border:1px solid rgba(57,208,255,.2);border-bottom:none;
+    border-radius:10px 10px 0 0;
+  }
+  .pub-tag{background:rgba(57,208,255,.08);border:1px solid rgba(57,208,255,.2);border-radius:3px;
+    padding:.15rem .5rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(57,208,255,.7);letter-spacing:.06em;}
+  .pub-arrow{color:rgba(57,208,255,.35);font-size:.7rem;}
+
+  /* Neil box — clearly bidirectional */
+  .neil-box{
+    background:linear-gradient(90deg,rgba(57,208,255,.07) 0%,rgba(57,208,255,.13) 50%,rgba(57,208,255,.07) 100%);
+    border:1px solid rgba(57,208,255,.4); border-top:none; border-bottom:none;
+    padding:.7rem 1rem;
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    gap:.6rem;
+    align-items:center;
+  }
+  .neil-inbound{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:rgba(57,208,255,.65);line-height:1.6;}
+  .neil-inbound span{display:block;}
+  .neil-centre{display:flex;flex-direction:column;align-items:center;gap:.3rem;}
+  .neil-name-block{text-align:center;}
+  .neil-name{font-family:'Black Ops One',cursive;font-size:1.1rem;color:var(--neil);letter-spacing:.06em;display:block;}
+  .neil-subrole{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(57,208,255,.6);letter-spacing:.08em;}
+  .neil-dot{width:8px;height:8px;border-radius:50%;background:var(--neil);animation:blink 1.2s ease-in-out infinite;margin:0 auto .2rem;}
+  .neil-outbound{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:rgba(57,208,255,.65);line-height:1.6;text-align:right;}
+  .neil-outbound span{display:block;}
+
+  /* Bidirectional channel strip */
+  .bidir-strip{
+    display:flex;align-items:center;justify-content:center;gap:.5rem;
+    padding:.35rem 1rem;
+    background:rgba(57,208,255,.04);
+    border-left:1px solid rgba(57,208,255,.25);
+    border-right:1px solid rgba(57,208,255,.25);
+    position:relative;
+  }
+  .bidir-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(57,208,255,.4),transparent);}
+  .bidir-label{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(57,208,255,.55);
+    white-space:nowrap;letter-spacing:.07em;text-align:center;padding:0 .4rem;}
+  .bidir-arrows{font-size:.8rem;color:rgba(57,208,255,.6);letter-spacing:.1em;}
+
+  /* connector into hive */
+  .neil-connector{
+    height:20px;display:flex;align-items:center;justify-content:center;
+    background:rgba(176,38,255,.03);
+    border-left:1px solid rgba(57,208,255,.2);
+    border-right:1px solid rgba(57,208,255,.2);
+    position:relative;
+  }
+  .neil-connector::after{content:'';position:absolute;left:50%;top:0;transform:translateX(-50%);
+    width:1px;height:100%;background:linear-gradient(180deg,rgba(57,208,255,.4),rgba(176,38,255,.4));}
+  .neil-flow-label{font-family:'Share Tech Mono',monospace;font-size:.53rem;color:rgba(176,38,255,.5);
+    background:var(--bg);padding:0 .4rem;position:relative;z-index:1;letter-spacing:.07em;}
+
+  .arch-canvas{position:relative;width:100%;padding-top:68%;
+    background:radial-gradient(ellipse at 50% 50%,rgba(176,38,255,.08) 0%,transparent 70%);
+    border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;overflow:hidden;}
+  .arch-inner{position:absolute;inset:0;}
+  .arch-svg{position:absolute;inset:0;width:100%;height:100%;}
+
+  .brain-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:82px;height:82px;
+    border-radius:50%;background:radial-gradient(circle,#d060ff 0%,var(--brain) 40%,var(--brain-glow) 100%);
+    display:flex;align-items:center;justify-content:center;flex-direction:column;
+    box-shadow:0 0 40px rgba(176,38,255,.8),0 0 80px rgba(176,38,255,.4);
+    animation:core-pulse 2s ease-in-out infinite;z-index:10;cursor:pointer;}
+  .brain-core .blabel{font-family:'Share Tech Mono',monospace;font-size:.48rem;color:#fff;letter-spacing:.08em;text-align:center;line-height:1.3;}
+  .brain-core .bicon{font-size:1.5rem;line-height:1;}
+  @keyframes core-pulse{0%,100%{box-shadow:0 0 40px rgba(176,38,255,.8),0 0 80px rgba(176,38,255,.4);}
+    50%{box-shadow:0 0 60px rgba(176,38,255,1),0 0 120px rgba(176,38,255,.6);}}
+
+  .agent-node{position:absolute;transform:translate(-50%,-50%);cursor:pointer;z-index:5;}
+  .agent-bubble{background:var(--surface);border:1px solid rgba(176,38,255,.4);border-radius:7px;
+    padding:.28rem .52rem;text-align:center;transition:all .2s;min-width:62px;}
+  .agent-bubble:hover{border-color:var(--brain);background:rgba(176,38,255,.12);transform:scale(1.08);}
+  .agent-bubble.active-node{border-color:var(--gold);background:rgba(255,214,0,.1);box-shadow:0 0 14px rgba(255,214,0,.4);}
+  .a-name{font-family:'Black Ops One',cursive;font-size:.56rem;display:block;letter-spacing:.04em;}
+  .a-role{font-family:'Share Tech Mono',monospace;font-size:.4rem;color:var(--muted);display:block;margin-top:.06rem;}
+  .a-dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:2px;vertical-align:middle;animation:blink 1.5s ease-in-out infinite;}
+  .s-active{background:var(--green);} .s-busy{background:var(--gold);} .s-idle{background:var(--muted);}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  /* FEED */
+  .feed-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:1rem;}
+  .feed-header{background:rgba(176,38,255,.1);padding:.55rem 1rem;font-family:'Share Tech Mono',monospace;
+    font-size:.68rem;color:var(--brain);letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;gap:.5rem;}
+  .feed-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 1s ease-in-out infinite;}
+  .feed-list{max-height:148px;overflow-y:auto;padding:.4rem;}
+  .feed-item{display:flex;gap:.5rem;padding:.32rem .4rem;border-radius:4px;font-size:.74rem;line-height:1.4;
+    border-bottom:1px solid rgba(255,255,255,.04);animation:feed-in .4s ease-out;}
+  .feed-item.neil-in{background:rgba(57,208,255,.04);border-left:2px solid rgba(57,208,255,.35);}
+  .feed-item.neil-out{background:rgba(57,208,255,.06);border-left:2px solid rgba(57,208,255,.6);}
+  @keyframes feed-in{from{opacity:0;transform:translateX(-6px);}to{opacity:1;transform:translateX(0);}}
+  .feed-from{font-family:'Black Ops One',cursive;font-size:.58rem;color:var(--gold);white-space:nowrap;min-width:58px;}
+  .feed-from.neil-c{color:var(--neil);}
+  .feed-arrow{color:var(--brain);}
+  .feed-to{color:var(--pulse);font-weight:600;white-space:nowrap;}
+  .feed-to.neil-c{color:var(--neil);}
+  .feed-msg{color:var(--text);flex:1;}
+  .feed-ts{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--muted);white-space:nowrap;}
+
+  /* HOW */
+  .layers{display:flex;flex-direction:column;gap:.8rem;margin-top:.5rem;}
+  .layer-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem 1.2rem;
+    display:grid;grid-template-columns:48px 1fr;gap:.8rem;align-items:start;}
+  .layer-card.neil-card{border-color:rgba(57,208,255,.35);background:rgba(57,208,255,.04);}
+  .layer-num{font-family:'Black Ops One',cursive;font-size:2rem;color:var(--brain);line-height:1;opacity:.6;}
+  .layer-num.neil-num{color:var(--neil);}
+  .layer-title{font-family:'Black Ops One',cursive;font-size:1rem;color:var(--gold);letter-spacing:.05em;margin-bottom:.3rem;}
+  .layer-title.neil-title{color:var(--neil);}
+  .layer-desc{font-size:.88rem;line-height:1.6;color:#b0a8cc;}
+  .layer-tech{margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.3rem;}
+  .tech-tag{background:rgba(176,38,255,.15);border:1px solid rgba(176,38,255,.3);border-radius:3px;
+    padding:.15rem .5rem;font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--brain);letter-spacing:.05em;}
+  .tech-tag.neil-tag{background:rgba(57,208,255,.1);border-color:rgba(57,208,255,.3);color:var(--neil);}
+
+  /* two-col flow diagram for neil */
+  .neil-flow-diagram{display:grid;grid-template-columns:1fr 40px 1fr;gap:.3rem;align-items:start;margin-top:.8rem;}
+  .flow-col{display:flex;flex-direction:column;gap:.3rem;}
+  .flow-item{background:rgba(57,208,255,.07);border:1px solid rgba(57,208,255,.2);border-radius:5px;
+    padding:.35rem .6rem;font-family:'Share Tech Mono',monospace;font-size:.62rem;color:rgba(57,208,255,.8);line-height:1.4;}
+  .flow-item.crew-item{background:rgba(176,38,255,.07);border-color:rgba(176,38,255,.2);color:#c0b0e0;}
+  .flow-arrows{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;padding-top:.4rem;}
+  .flow-up{color:var(--neil);font-size:1.1rem;}
+  .flow-down{color:rgba(176,38,255,.7);font-size:1.1rem;}
+  .flow-col-title{font-family:'Black Ops One',cursive;font-size:.65rem;letter-spacing:.08em;margin-bottom:.2rem;padding:.15rem .4rem;border-radius:3px;text-align:center;}
+  .fct-neil{color:var(--neil);background:rgba(57,208,255,.08);border:1px solid rgba(57,208,255,.2);}
+  .fct-hive{color:#c0b0e0;background:rgba(176,38,255,.08);border:1px solid rgba(176,38,255,.2);}
+
+  /* AGENTS */
+  .section-label{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--muted);letter-spacing:.15em;
+    text-transform:uppercase;margin-bottom:.8rem;margin-top:.4rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);}
+  .group-label{font-family:'Black Ops One',cursive;font-size:.75rem;color:var(--muted);letter-spacing:.12em;
+    text-transform:uppercase;margin:1rem 0 .4rem;padding:.2rem .6rem;border-left:2px solid var(--brain);}
+  .group-label.neil-group{border-color:var(--neil);color:var(--neil);}
+  .agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:.6rem;}
+  .agent-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;transition:all .2s;}
+  .agent-card:hover{border-color:var(--brain);background:rgba(176,38,255,.08);}
+  .agent-card.dime-card{border-color:rgba(255,45,120,.4);background:rgba(255,45,120,.04);}
+  .agent-card.neil-card-full{border-color:rgba(57,208,255,.4);background:rgba(57,208,255,.04);}
+  .agent-card.neil-card-full:hover{border-color:var(--neil);background:rgba(57,208,255,.08);}
+  .ac-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.3rem;}
+  .ac-name{font-family:'Black Ops One',cursive;font-size:1rem;}
+  .ac-role{font-size:.7rem;color:var(--muted);font-style:italic;margin-bottom:.4rem;font-family:'Share Tech Mono',monospace;}
+  .ac-knows{font-size:.78rem;color:#b0a8cc;line-height:1.5;}
+  .ac-model{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--brain);background:rgba(176,38,255,.1);border-radius:3px;padding:.1rem .4rem;white-space:nowrap;}
+  .ac-dept{font-family:'Share Tech Mono',monospace;font-size:.58rem;border-radius:3px;padding:.12rem .4rem;margin-top:.4rem;display:inline-block;}
+  .dept-creative{background:rgba(255,214,0,.12);color:var(--gold);border:1px solid rgba(255,214,0,.3);}
+  .dept-studio{background:rgba(0,204,255,.1);color:var(--cyan);border:1px solid rgba(0,204,255,.2);}
+  .dept-live{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.2);}
+  .dept-business{background:rgba(176,38,255,.15);color:var(--brain);border:1px solid var(--border);}
+  .dept-campaign{background:rgba(255,106,0,.12);color:var(--orange);border:1px solid rgba(255,106,0,.2);}
+  .dept-trades{background:rgba(255,45,120,.1);color:var(--pulse);border:1px solid rgba(255,45,120,.2);}
+  .dept-foh{background:rgba(57,208,255,.1);color:var(--neil);border:1px solid rgba(57,208,255,.3);}
+
+  /* PROP */
+  .prop-demo{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.2rem;margin-top:.5rem;}
+  .prop-title{font-family:'Share Tech Mono',monospace;font-size:.66rem;color:var(--brain);letter-spacing:.1em;margin-bottom:.8rem;text-transform:uppercase;line-height:1.5;}
+  .prop-step{display:flex;gap:.7rem;align-items:flex-start;padding:.5rem .7rem;border-radius:6px;
+    background:rgba(255,255,255,.02);opacity:.22;transition:all .45s;margin-bottom:.28rem;}
+  .prop-step.lit{opacity:1;background:rgba(176,38,255,.07);border-left:3px solid var(--brain);}
+  .prop-step.neil-step.lit{background:rgba(57,208,255,.07);border-left:3px solid var(--neil);}
+  .prop-step.neil-out-step.lit{background:rgba(57,208,255,.1);border-left:3px solid var(--neil);box-shadow:inset 0 0 20px rgba(57,208,255,.05);}
+  .prop-step.dime-step.lit{background:rgba(255,45,120,.07);border-left:3px solid var(--pulse);}
+  .step-agent{font-family:'Black Ops One',cursive;font-size:.74rem;color:var(--gold);min-width:72px;flex-shrink:0;}
+  .step-agent.neil-ag{color:var(--neil);}
+  .step-agent.dime-ag{color:var(--pulse);}
+  .step-action{font-size:.78rem;color:var(--text);line-height:1.45;flex:1;}
+  .step-ms{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--green);white-space:nowrap;}
+  .step-dir{font-family:'Share Tech Mono',monospace;font-size:.58rem;border-radius:3px;padding:.1rem .35rem;
+    white-space:nowrap;flex-shrink:0;}
+  .dir-in{background:rgba(57,208,255,.1);color:var(--neil);border:1px solid rgba(57,208,255,.25);}
+  .dir-out{background:rgba(176,38,255,.1);color:var(--brain);border:1px solid rgba(176,38,255,.25);}
+  .dir-dime{background:rgba(255,45,120,.1);color:var(--pulse);border:1px solid rgba(255,45,120,.25);}
+
+  .prop-trigger-btn{margin-top:1rem;background:rgba(176,38,255,.15);border:1px solid var(--brain);color:var(--brain);
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.1em;padding:.6rem 1.5rem;
+    border-radius:4px;cursor:pointer;text-transform:uppercase;transition:all .2s;width:100%;}
+  .prop-trigger-btn:hover{background:rgba(176,38,255,.3);color:#fff;}
+  .scenario-select{display:flex;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap;}
+  .scene-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Rajdhani',sans-serif;
+    font-weight:600;font-size:.76rem;padding:.32rem .7rem;border-radius:4px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+  .scene-btn.active{background:rgba(176,38,255,.15);border-color:var(--brain);color:#fff;}
+
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>HIVE MIND</h1>
+  <p class="sub">One Distributed Brain · 15 Personalities</p>
+  <span class="tag-line">// what one knows — they ALL know — instantly //</span>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('map',this)">🧠 LIVE MAP</button>
+  <button class="tab-btn" onclick="showTab('how',this)">⚡ ARCHITECTURE</button>
+  <button class="tab-btn" onclick="showTab('agents',this)">🎸 THE CREW</button>
+  <button class="tab-btn" onclick="showTab('prop',this)">🔥 PROPAGATION</button>
+</div>
+
+<!-- ═══ MAP ═══ -->
+<div class="panel active" id="tab-map">
+  <div class="map-wrap">
+
+    <!-- Public inbound -->
+    <div class="public-row">
+      <span class="pub-tag">fans</span>
+      <span class="pub-arrow">↕</span>
+      <span class="pub-tag">punters</span>
+      <span class="pub-arrow">↕</span>
+      <span class="pub-tag">NakedApp users</span>
+      <span class="pub-arrow">↕</span>
+      <span class="pub-tag">Cory (admin)</span>
+      <span class="pub-arrow">↕</span>
+      <span class="pub-tag">venues</span>
+    </div>
+
+    <!-- Neil — two-way -->
+    <div class="neil-box">
+      <div class="neil-inbound">
+        <span style="color:var(--neil);font-weight:700;font-size:.65rem;">NEIL OBSERVES →</span>
+        <span>gig went south</span>
+        <span>app UX friction</span>
+        <span>Cory is frustrated</span>
+        <span>sentiment patterns</span>
+      </div>
+      <div class="neil-centre">
+        <div class="neil-dot"></div>
+        <div class="neil-name-block">
+          <span class="neil-name">NEIL</span>
+          <span class="neil-subrole">front of house · always on</span>
+        </div>
+      </div>
+      <div class="neil-outbound">
+        <span style="color:rgba(176,38,255,.8);font-weight:700;font-size:.65rem;">← HIVE BRIEFS NEIL</span>
+        <span>holding responses</span>
+        <span>show updates</span>
+        <span>don't confirm yet</span>
+        <span>issue resolved — close loop</span>
+      </div>
+    </div>
+
+    <!-- Bidirectional channel indicator -->
+    <div class="bidir-strip">
+      <div class="bidir-line"></div>
+      <div class="bidir-label">
+        <div class="bidir-arrows">⇅</div>
+        <div>reads + writes hive · DIME decides all responsive actions</div>
+      </div>
+      <div class="bidir-line"></div>
+    </div>
+
+    <div class="neil-connector">
+      <span class="neil-flow-label">shared hive memory · direct DIME channel · crew bilateral feeds</span>
+    </div>
+
+    <!-- Backstage hive -->
+    <div class="arch-canvas">
+      <div class="arch-inner" id="archInner">
+        <svg class="arch-svg" id="archSvg" viewBox="0 0 500 340" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="brain-core" id="brainCore" onclick="triggerBroadcast()">
+          <span class="bicon">🧠</span>
+          <span class="blabel">HIVE<br>BRAIN</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="feed-box">
+    <div class="feed-header"><div class="feed-dot"></div> LIVE PROPAGATION FEED</div>
+    <div class="feed-list" id="feedList"></div>
+  </div>
+</div>
+
+<!-- ═══ ARCHITECTURE ═══ -->
+<div class="panel" id="tab-how">
+  <p class="section-label">Architecture Stack</p>
+  <div class="layers">
+
+    <div class="layer-card neil-card">
+      <div class="layer-num neil-num">N</div>
+      <div>
+        <div class="layer-title neil-title">NEIL — Bidirectional Public Layer</div>
+        <div class="layer-desc">Neil is fully two-way. He faces the public and reports what he sees back to the hive. But the hive — DIME, NIKKI, HETFIELD, any of them — can brief Neil directly too. Holding responses, show updates, booking embargoes, issue resolutions. Neil is never caught off guard because he always knows what the crew knows. DIME decides all responsive actions — Neil executes them with the public.</div>
+
+        <div class="neil-flow-diagram">
+          <div class="flow-col">
+            <div class="flow-col-title fct-neil">NEIL → HIVE</div>
+            <div class="flow-item">gig went south at Bar 101</div>
+            <div class="flow-item">checkout friction — 3 users</div>
+            <div class="flow-item">Cory is frustrated</div>
+            <div class="flow-item">fan sentiment spike</div>
+            <div class="flow-item">venue asking about rates</div>
+          </div>
+          <div class="flow-arrows">
+            <span class="flow-up">↑</span>
+            <span style="font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--muted);writing-mode:vertical-rl;letter-spacing:.08em;">BIDIRECTIONAL</span>
+            <span class="flow-down">↓</span>
+          </div>
+          <div class="flow-col">
+            <div class="flow-col-title fct-hive">HIVE → NEIL</div>
+            <div class="flow-item crew-item">don't confirm that booking yet</div>
+            <div class="flow-item crew-item">here's the holding response on app issue</div>
+            <div class="flow-item crew-item">Cory's concern is resolved — close loop</div>
+            <div class="flow-item crew-item">tonight's show is confirmed — tell fans</div>
+            <div class="flow-item crew-item">rates negotiation live — deflect</div>
+          </div>
+        </div>
+
+        <div class="layer-tech" style="margin-top:.8rem">
+          <span class="tech-tag neil-tag">always-on</span>
+          <span class="tech-tag neil-tag">public-facing</span>
+          <span class="tech-tag neil-tag">full hive read/write</span>
+          <span class="tech-tag neil-tag">direct DIME channel</span>
+          <span class="tech-tag neil-tag">crew bilateral feeds</span>
+          <span class="tech-tag neil-tag">DIME decides actions</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer-card">
+      <div class="layer-num">1</div>
+      <div>
+        <div class="layer-title">Shared Memory Store</div>
+        <div class="layer-desc">One persistent key-value brain every agent reads and writes to. A single shared namespace. GIGGUIDE writes a venue insight → immediately queryable by all 14 others including Neil. No sync delay. No polling. What one knows, they all know.</div>
+        <div class="layer-tech"><span class="tech-tag">Redis / Upstash</span><span class="tech-tag">Supabase pgvector</span><span class="tech-tag">hermes::hive::</span><span class="tech-tag">TTL-aware</span></div>
+      </div>
+    </div>
+
+    <div class="layer-card">
+      <div class="layer-num">2</div>
+      <div>
+        <div class="layer-title">Agentic Event Bus</div>
+        <div class="layer-desc">Every memory write publishes a typed event. Every agent subscribes to categories relevant to their role. Neil subscribes to anything that affects the public-facing response — show changes, booking status, campaign embargoes, issue resolutions. Fully agentic.</div>
+        <div class="layer-tech"><span class="tech-tag">typed event schema</span><span class="tech-tag">pub/sub channels</span><span class="tech-tag">fan-out routing</span><span class="tech-tag">agentic triggers</span></div>
+      </div>
+    </div>
+
+    <div class="layer-card">
+      <div class="layer-num">3</div>
+      <div>
+        <div class="layer-title">DIME — The Orchestrator (Anima)</div>
+        <div class="layer-desc">The animating intelligence. All high-stakes decisions flow through DIME — including everything Neil surfaces from the public side. DIME reads Neil's observations and decides: ignore, act, or brief Neil back with instructions. Kill switch lives here.</div>
+        <div class="layer-tech"><span class="tech-tag">claude-opus-4</span><span class="tech-tag">full hive read</span><span class="tech-tag">dispatch authority</span><span class="tech-tag">kill switch</span></div>
+      </div>
+    </div>
+
+    <div class="layer-card">
+      <div class="layer-num">4</div>
+      <div>
+        <div class="layer-title">Persistent Agent Identities</div>
+        <div class="layer-desc">Each of the 15 runs with a fixed system prompt encoding personality, specialty, trust level, and tool permissions. State persists in the hive under their own namespace. They don't reset between sessions. They remember. They evolve.</div>
+        <div class="layer-tech"><span class="tech-tag">15 unique system prompts</span><span class="tech-tag">per-agent state keys</span><span class="tech-tag">trust tier gating</span><span class="tech-tag">Hermes CLI</span></div>
+      </div>
+    </div>
+
+    <div class="layer-card">
+      <div class="layer-num">5</div>
+      <div>
+        <div class="layer-title">Peer-to-Peer Bilateral Channels</div>
+        <div class="layer-desc">Beyond the broadcast bus, agents have direct channels. NIKKI can push Neil a campaign message to amplify. HETFIELD can brief Neil on a tour date before it goes public. GENE can flag "don't discuss pricing right now." These aren't API calls — they're crew briefing their front-of-house guy.</div>
+        <div class="layer-tech"><span class="tech-tag">bilateral trust pairs</span><span class="tech-tag">direct routing</span><span class="tech-tag">personality-aware</span><span class="tech-tag">audit logged</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ AGENTS ═══ -->
+<div class="panel" id="tab-agents">
+  <p class="section-label">HERMES · DIME + NEIL + 13 crew</p>
+  <div id="agentGrid"></div>
+</div>
+
+<!-- ═══ PROPAGATION ═══ -->
+<div class="panel" id="tab-prop">
+  <p class="section-label">Knowledge Cascade Simulations — Neil's bidirectional role</p>
+  <div class="scenario-select">
+    <button class="scene-btn active" onclick="setScene(0,this)">📍 Venue window</button>
+    <button class="scene-btn" onclick="setScene(1,this)">😤 Cory is upset</button>
+    <button class="scene-btn" onclick="setScene(2,this)">📱 App UX friction</button>
+    <button class="scene-btn" onclick="setScene(3,this)">📢 Hive briefs Neil</button>
+  </div>
+  <div class="prop-demo">
+    <div class="prop-title" id="propTitle"></div>
+    <div id="propSteps"></div>
+    <button class="prop-trigger-btn" onclick="runPropagation()">▶ RUN SCENARIO</button>
+  </div>
+</div>
+
+<script>
+const AGENTS = [
+  { id:'dime',     name:'DIME',     role:'Orchestrator',        dept:'creative', model:'opus-4',   status:'busy',
+    knows:'The anima. Full hive read/write. Sees all 15 feeds including Neil\'s public observations. Dispatch authority, kill switch, sub-crew summons. Decides all responsive actions — including what Neil says to the public.' },
+  { id:'neil',     name:'NEIL',     role:'Front of House',      dept:'foh',      model:'sonnet-4', status:'active',
+    knows:'Always on, fully two-way. Handles fans, punters, NakedApp users, Cory. Observes friction, sentiment, fallout — writes it back to the hive. Also receives intel and instructions from DIME and the crew — holding responses, show updates, booking embargoes. Never caught off guard.' },
+  { id:'lemmy',    name:'LEMMY',    role:'A&R / Genre Vault',   dept:'creative', model:'sonnet-4', status:'active',
+    knows:'Artist roster, label relationships, genre trend data, deal memos. Can brief Neil on artist-related messaging. Bilateral channel to NIKKI.' },
+  { id:'eddie',    name:'EDDIE',    role:'Producer / Engineer', dept:'studio',   model:'opus-4',   status:'active',
+    knows:'Studio session data, mix notes, master chain. Writes to hive after every session. Feeds GEDDY with acoustic reference data.' },
+  { id:'geddy',    name:'GEDDY',    role:'Acoustician',         dept:'studio',   model:'sonnet-4', status:'idle',
+    knows:'3D holographic acoustic frequency maps, room analysis, show visualisation. Shares outputs to DIME and SLASH.' },
+  { id:'slash',    name:'SLASH',    role:'Live Engineer',        dept:'live',     model:'sonnet-4', status:'active',
+    knows:'Venue tech specs, live mix preferences, stage plots. Standing sync with HALFORD. Can push show-status updates to Neil.' },
+  { id:'halford',  name:'HALFORD',  role:'Lighting Designer',   dept:'live',     model:'sonnet-4', status:'idle',
+    knows:'Lighting rigs, truss specs, venue power constraints. Reads GEDDY\'s acoustic maps. Bilateral with SLASH.' },
+  { id:'hetfield', name:'HETFIELD', role:'Tour Manager',         dept:'live',     model:'opus-4',   status:'active',
+    knows:'Routing logic, venue windows, cost models. Can brief Neil on tour dates before they go public. Standing sync with GIGGUIDE.' },
+  { id:'gene',     name:'GENE',     role:'Royalties + Biz',     dept:'business', model:'sonnet-4', status:'idle',
+    knows:'Every contract term, royalty split, door deal clause. Can flag to Neil: "don\'t discuss pricing right now." Anomalies to DIME.' },
+  { id:'nikki',    name:'NIKKI',    role:'Release Strategy',    dept:'campaign', model:'sonnet-4', status:'active',
+    knows:'Release calendar, campaign briefs, chart positioning. Can push campaign messages to Neil to amplify with the public. Bilateral to LEMMY.' },
+  { id:'gigguide', name:'GIGGUIDE', role:'NZ Streetzine',        dept:'campaign', model:'haiku-4',  status:'busy',
+    knows:'Real-time NZ venue scraping, booking patterns, event listings. Standing sync with HETFIELD.' },
+  { id:'angus',    name:'ANGUS',    role:'Builder + R-Value',   dept:'trades',   model:'sonnet-4', status:'idle',
+    knows:'Stage build specs, production R-values, technical riders. Feeds SLASH and HETFIELD.' },
+  { id:'randy',    name:'RANDY',    role:'Cabs + T/S Math',     dept:'trades',   model:'sonnet-4', status:'idle',
+    knows:'Speaker cabinet specs, Thiele-Small parameters. Feeds SLASH and EDDIE with acoustics data.' },
+  { id:'dio',      name:'DIO',      role:'Stage Electrician',   dept:'trades',   model:'haiku-4',  status:'idle',
+    knows:'Power specs, electrical safety. Writes hazard flags to hive readable by all. Escalates to DIME on risk.' },
+  { id:'ozzy',     name:'OZZY',     role:'Roadie / Fixer',      dept:'trades',   model:'haiku-4',  status:'busy',
+    knows:'Logistics, last-minute fixes, contact list. Gets pinged by every agent when things break. Always on.' },
+];
+
+const DEPT_CSS   = {creative:'dept-creative',studio:'dept-studio',live:'dept-live',business:'dept-business',campaign:'dept-campaign',trades:'dept-trades',foh:'dept-foh'};
+const DEPT_LABEL = {creative:'Creative',studio:'Studio',live:'Live',business:'Business',campaign:'Campaign',trades:'Trades',foh:'Front of House'};
+
+const FEED_EVENTS = [
+  { from:'GIGGUIDE', to:'ALL',    msg:'Kings Arms: 3 Friday windows in August discovered.', type:'hive' },
+  { from:'NEIL',     to:'HIVE',   msg:'Fan sentiment spike — Kings Arms announcement hitting hard.', type:'neil-in' },
+  { from:'DIME',     to:'NEIL',   msg:'Confirmed: announce Kings Arms dates. Use approved copy.', type:'neil-out' },
+  { from:'HETFIELD', to:'NEIL',   msg:'Tour routing confirmed — brief fans on Auckland dates.', type:'neil-out' },
+  { from:'NEIL',     to:'HIVE',   msg:'Cory flagging checkout friction on NakedApp — 3 reports.', type:'neil-in' },
+  { from:'GENE',     to:'NEIL',   msg:'Rates still in negotiation — deflect all pricing questions.', type:'neil-out' },
+  { from:'NEIL',     to:'HIVE',   msg:'Sound issue reported at Bar 101 — punters noticed.', type:'neil-in' },
+  { from:'NIKKI',    to:'NEIL',   msg:'New single dropping Friday — here\'s the fan messaging.', type:'neil-out' },
+  { from:'DIME',     to:'ALL',    msg:'DISPATCH: Approve provisional booking. HETFIELD execute.', type:'hive' },
+  { from:'NEIL',     to:'HIVE',   msg:'Venue rep asking about rider — routed to HETFIELD.', type:'neil-in' },
+  { from:'HETFIELD', to:'NEIL',   msg:'Don\'t confirm the Wellington date yet — still negotiating.', type:'neil-out' },
+];
+
+const MAP_POS = [
+  {id:'lemmy',x:18,y:20},{id:'eddie',x:38,y:8},{id:'geddy',x:62,y:8},
+  {id:'slash',x:83,y:20},{id:'halford',x:90,y:44},{id:'hetfield',x:83,y:70},
+  {id:'gene',x:62,y:90},{id:'nikki',x:38,y:90},{id:'gigguide',x:17,y:70},
+  {id:'angus',x:10,y:44},{id:'randy',x:13,y:62},{id:'dio',x:72,y:84},
+  {id:'ozzy',x:28,y:82},{id:'dime',x:50,y:14},
+];
+
+const AGENT_MAP = Object.fromEntries(AGENTS.map(a=>[a.id,a]));
+
+function nameColor(dept){
+  return {creative:'#ffd600',studio:'#00ccff',live:'#00ff88',business:'#b026ff',campaign:'#ff6a00',trades:'#ff2d78',foh:'#39d0ff'}[dept]||'#fff';
+}
+
+function renderMap(){
+  const inner=document.getElementById('archInner');
+  const svg=document.getElementById('archSvg');
+  svg.innerHTML=''; document.querySelectorAll('.agent-node').forEach(n=>n.remove());
+  const W=inner.offsetWidth||400, H=inner.offsetHeight||272;
+  MAP_POS.forEach(pos=>{
+    const ag=AGENT_MAP[pos.id]; if(!ag) return;
+    const ax=(pos.x/100)*W, ay=(pos.y/100)*H;
+    const isDime=pos.id==='dime';
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',(ax/W)*500); line.setAttribute('y1',(ay/H)*340);
+    line.setAttribute('x2',(W/2/W)*500); line.setAttribute('y2',(H/2/H)*340);
+    line.setAttribute('stroke',isDime?'#ff2d78':'rgba(176,38,255,0.2)');
+    line.setAttribute('stroke-width',isDime?'1.5':'0.7');
+    line.setAttribute('stroke-dasharray',isDime?'0':'3 5');
+    svg.appendChild(line);
+    const node=document.createElement('div');
+    node.className='agent-node'; node.style.left=ax+'px'; node.style.top=ay+'px';
+    const sc=ag.status==='active'?'s-active':ag.status==='busy'?'s-busy':'s-idle';
+    node.innerHTML=`<div class="agent-bubble" id="node-${ag.id}">
+      <span class="a-dot ${sc}"></span>
+      <span class="a-name" style="color:${nameColor(ag.dept)}">${ag.name}</span>
+      <span class="a-role">${ag.role}</span>
+    </div>`;
+    inner.appendChild(node);
+  });
+}
+
+function renderAgents(){
+  const grid=document.getElementById('agentGrid');
+  const dime=AGENTS.find(a=>a.id==='dime'), neil=AGENTS.find(a=>a.id==='neil');
+  let html=`<div class="group-label">The Anima</div>
+  <div class="agent-grid" style="margin-bottom:.5rem">
+  <div class="agent-card dime-card">
+    <div class="ac-header"><div><div class="ac-name" style="color:#ff2d78">${dime.name}</div></div><span class="ac-model">${dime.model}</span></div>
+    <div class="ac-role">${dime.role}</div><div class="ac-knows">${dime.knows}</div>
+  </div></div>
+  <div class="group-label neil-group">Front of House · Bidirectional</div>
+  <div class="agent-grid" style="margin-bottom:.5rem">
+  <div class="agent-card neil-card-full">
+    <div class="ac-header"><div><div class="ac-name" style="color:var(--neil)">${neil.name}</div></div><span class="ac-model">${neil.model}</span></div>
+    <div class="ac-role">${neil.role}</div><div class="ac-knows">${neil.knows}</div>
+    <span class="ac-dept dept-foh">Front of House</span>
+  </div></div>`;
+  ['creative','studio','live','business','campaign','trades'].forEach(dept=>{
+    const group=AGENTS.filter(a=>a.dept===dept);
+    if(!group.length) return;
+    html+=`<div class="group-label">${DEPT_LABEL[dept]}</div><div class="agent-grid">`;
+    group.forEach(ag=>{
+      html+=`<div class="agent-card">
+        <div class="ac-header"><div><div class="ac-name" style="color:${nameColor(ag.dept)}">${ag.name}</div></div><span class="ac-model">${ag.model}</span></div>
+        <div class="ac-role">${ag.role}</div><div class="ac-knows">${ag.knows}</div>
+        <span class="ac-dept ${DEPT_CSS[ag.dept]}">${DEPT_LABEL[ag.dept]}</span>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  grid.innerHTML=html;
+}
+
+const SCENARIOS=[
+  { title:'// SCENARIO 1: GIGGUIDE discovers Kings Arms window → Neil gets briefed →',
+    steps:[
+      {agent:'GIGGUIDE',cls:'',dir:'hive',action:'Scrapes NZ Streetzine — Kings Arms available 3 Fridays August. Writes to hive.',ms:'0ms'},
+      {agent:'HETFIELD',cls:'',dir:'hive',action:'Cross-references routing. Auckland leg fits. Updates provisional tour in hive.',ms:'~350ms'},
+      {agent:'NIKKI',cls:'',dir:'hive',action:'3 Fridays = release-show window. Drafts campaign brief. Pings LEMMY bilateral.',ms:'~800ms'},
+      {agent:'DIME',cls:'dime-step',dir:'dime',action:'Full cascade received. Approves provisional booking. Dispatches HETFIELD. Then briefs Neil.',ms:'~1.8s'},
+      {agent:'DIME',cls:'dime-step neil-out-step',dir:'neil-out',action:'→ NEIL: "Kings Arms dates approved for August. Announce confirmed shows using attached copy. Don\'t mention support acts yet."',ms:'~2.1s'},
+      {agent:'NEIL',cls:'neil-step',dir:'neil-in',action:'Receives brief. Now fully informed. Fans start asking — Neil responds accurately, on message, with nothing to guess.',ms:'~2.2s'},
+      {agent:'RESULT',cls:'',dir:'hive',action:'<span style="color:var(--green);font-weight:600">Venue → tour → campaign → decision → Neil briefed. Neil never had to ask. 2.2s.</span>',ms:'2.2s'},
+    ]
+  },
+  { title:'// SCENARIO 2: Cory (admin) is upset → Neil surfaces it → DIME acts → Neil closes loop →',
+    steps:[
+      {agent:'NEIL',cls:'neil-step',dir:'neil-in',action:'Cory contacts front-of-house — frustrated about a reporting gap. Neil handles the conversation, observes sentiment.',ms:'0s'},
+      {agent:'NEIL',cls:'neil-step',dir:'neil-in',action:'Writes to hive: hermes::hive::foh::admin_sentiment::cory — "frustrated, dashboard reporting gap, resolution needed"',ms:'~8s'},
+      {agent:'DIME',cls:'dime-step',dir:'dime',action:'Reads Neil\'s observation. Assesses severity. Decides this warrants a fix — dispatches relevant crew member with full hive context.',ms:'~400ms'},
+      {agent:'DIME',cls:'dime-step neil-out-step',dir:'neil-out',action:'→ NEIL: "Cory\'s issue is being worked on. ETA 2 hours. Here\'s the exact holding message to use."',ms:'~600ms'},
+      {agent:'NEIL',cls:'neil-step',dir:'neil-in',action:'Updates Cory with resolution message — verbatim from DIME\'s brief. Cory knows they\'ve been heard.',ms:'~1min'},
+      {agent:'DIME',cls:'dime-step neil-out-step',dir:'neil-out',action:'→ NEIL: "Issue resolved. Here\'s the close-out message for Cory."',ms:'~2hrs'},
+      {agent:'NEIL',cls:'neil-step',dir:'neil-in',action:'Closes the loop with Cory. Logs outcome to hive. DIME marks admin_sentiment::cory as resolved.',ms:'~2hrs'},
+      {agent:'RESULT',cls:'',dir:'hive',action:'<span style="color:var(--green);font-weight:600">Neil caught it. Hive knew instantly. DIME acted. Neil was briefed at every step. Nobody had to coordinate manually.</span>',ms:'—'},
+    ]
+  },
+  { title:'// SCENARIO 3: NakedApp UX friction → Neil reports → crew analyses → Neil gets the script →',
+    steps:[
+      {agent:'NEIL',cls:'neil-step',dir:'neil-in',action:'3 separate users report confusion at checkout. Neil detects it\'s a pattern, not isolated.',ms:'0s'},
+      {agent:'NEIL',cls:'neil-step',dir:'neil-in',action:'Writes to hive: hermes::hive::foh::ux_friction::checkout — "repeated, 3 users, conversion impact likely"',ms:'~15s'},
+      {agent:'NIKKI',cls:'',dir:'hive',action:'Reads UX friction event. Cross-references active campaign — drop aligns with launch timing. Writes analysis to hive.',ms:'~300ms'},
+      {agent:'DIME',cls:'dime-step',dir:'dime',action:'Full picture: Neil\'s observation + NIKKI\'s campaign analysis. Decides to escalate to dev team.',ms:'~900ms'},
+      {agent:'DIME',cls:'dime-step neil-out-step',dir:'neil-out',action:'→ NEIL: "Known issue — being fixed. Here\'s the holding script for affected users. Don\'t speculate on timeline."',ms:'~1.2s'},
+      {agent:'NIKKI',cls:'neil-out-step',dir:'neil-out',action:'→ NEIL: "Pause any checkout CTAs in public comms until fix confirmed."',ms:'~1.5s'},
+      {agent:'NEIL',cls:'neil-step',dir:'neil-in',action:'Now fully briefed. Handles all 3 users and any new ones with accurate, consistent messaging.',ms:'~2min'},
+      {agent:'RESULT',cls:'',dir:'hive',action:'<span style="color:var(--green);font-weight:600">Neil spotted it. Hive analysed it. DIME and NIKKI briefed Neil back. Users got a consistent answer. Nobody had to brief anyone manually.</span>',ms:'—'},
+    ]
+  },
+  { title:'// SCENARIO 4: Hive proactively briefs Neil before the public even asks →',
+    steps:[
+      {agent:'HETFIELD',cls:'',dir:'hive',action:'Wellington show rescheduled — venue conflict. Writes to hive. Event: show.rescheduled.wellington',ms:'0ms'},
+      {agent:'GENE',cls:'',dir:'hive',action:'Checks ticket holder refund obligations. Writes terms to hive. No refund required for reschedule under 30 days.',ms:'~200ms'},
+      {agent:'NIKKI',cls:'',dir:'hive',action:'Drafts fan comms strategy — reschedule announcement copy. Writes to hive.',ms:'~500ms'},
+      {agent:'DIME',cls:'dime-step',dir:'dime',action:'Reads full picture. Approves announcement. Briefs Neil before a single fan asks.',ms:'~800ms'},
+      {agent:'DIME',cls:'dime-step neil-out-step',dir:'neil-out',action:'→ NEIL: "Wellington rescheduled to Sept 14. No refunds required. Approved fan message attached. Be proactive — don\'t wait for questions."',ms:'~1s'},
+      {agent:'HETFIELD',cls:'neil-out-step',dir:'neil-out',action:'→ NEIL: "New venue is Powerstation. Same capacity. Doors same time."',ms:'~1.1s'},
+      {agent:'NEIL',cls:'neil-step',dir:'neil-in',action:'Fully briefed before the public knows. Posts approved update. Handles incoming questions with complete accurate info. Zero scrambling.',ms:'~1.2s'},
+      {agent:'RESULT',cls:'',dir:'hive',action:'<span style="color:var(--green);font-weight:600">Hive knew → DIME decided → Neil briefed proactively → public informed cleanly. Neil was never behind the information curve.</span>',ms:'~1.2s'},
+    ]
+  },
+];
+
+let currentScene=0;
+function setScene(idx,btn){
+  currentScene=idx;
+  document.querySelectorAll('.scene-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSceneSteps();
+}
+
+function renderSceneSteps(){
+  const sc=SCENARIOS[currentScene];
+  document.getElementById('propTitle').textContent=sc.title;
+  document.getElementById('propSteps').innerHTML=sc.steps.map((s,i)=>{
+    const dirLabel=s.dir==='neil-in'?'<span class="step-dir dir-in">NEIL→HIVE</span>':
+                   s.dir==='neil-out'?'<span class="step-dir dir-out">HIVE→NEIL</span>':
+                   s.dir==='dime'?'<span class="step-dir dir-dime">DIME</span>':'';
+    const neilAg=s.cls.includes('neil')?'neil-ag':'';
+    const dimeAg=s.cls.includes('dime')&&!s.cls.includes('neil')?'dime-ag':'';
+    return `<div class="prop-step ${s.cls}" id="ps${i}">
+      <span class="step-agent ${neilAg||dimeAg}">${s.agent}</span>
+      ${dirLabel}
+      <span class="step-action">${s.action}</span>
+      <span class="step-ms">${s.ms}</span>
+    </div>`;
+  }).join('');
+}
+
+let feedIdx=0;
+function addFeedItem(){
+  const ev=FEED_EVENTS[feedIdx%FEED_EVENTS.length];
+  const list=document.getElementById('feedList');
+  const now=new Date().toLocaleTimeString('en-NZ',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const item=document.createElement('div');
+  const cls=ev.type==='neil-in'?'feed-item neil-in':ev.type==='neil-out'?'feed-item neil-out':'feed-item';
+  const fromCls=ev.type.includes('neil')?'feed-from neil-c':'feed-from';
+  const toCls=ev.type==='neil-out'?'feed-to neil-c':'feed-to';
+  item.className=cls;
+  item.innerHTML=`<span class="${fromCls}">${ev.from}</span><span class="feed-arrow">→</span><span class="${toCls}">${ev.to}</span><span class="feed-msg">${ev.msg}</span><span class="feed-ts">${now}</span>`;
+  list.prepend(item);
+  if(list.children.length>8) list.lastChild.remove();
+  feedIdx++;
+  pulseNode(MAP_POS[Math.floor(Math.random()*MAP_POS.length)].id);
+}
+
+function pulseNode(id){
+  const el=document.getElementById('node-'+id); if(!el) return;
+  el.classList.add('active-node');
+  setTimeout(()=>el.classList.remove('active-node'),900);
+}
+
+function triggerBroadcast(){
+  addFeedItem();
+  [0,1,2,3,4].forEach((_,i)=>setTimeout(()=>pulseNode(MAP_POS[Math.floor(Math.random()*MAP_POS.length)].id),i*140));
+}
+
+let propRunning=false;
+function runPropagation(){
+  if(propRunning) return; propRunning=true;
+  document.querySelectorAll('.prop-step').forEach(el=>el.classList.remove('lit'));
+  const count=SCENARIOS[currentScene].steps.length;
+  for(let i=0;i<count;i++) setTimeout(()=>{ document.getElementById('ps'+i).classList.add('lit'); addFeedItem(); },i*520+150);
+  setTimeout(()=>propRunning=false,count*520+800);
+}
+
+function showTab(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+window.addEventListener('load',()=>{
+  renderMap(); renderAgents(); renderSceneSteps(); addFeedItem();
+  setInterval(addFeedItem,2800);
+  window.addEventListener('resize',renderMap);
+});
+</script>
+</body>
+</html>

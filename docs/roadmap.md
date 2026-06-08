@@ -26,8 +26,9 @@ soundcheck → small gig → big tour → buy your own venue.
 
 ## 🧠 Phase 2 — Give them memory (the brains)
 *So they wake up smarter instead of starting blank every day.*
-- **Me:** wire **Honcho** (main brain) + **Hindsight** (a second, different kind of
-  brain) — both **self-hosted on your box** (free, private).
+- **Me:** wire **GBrain** (the main brain — synthesis + knowledge graph + "wake up
+  smarter" consolidation) over **MCP**, **self-hosted on your box** (free, private).
+  Honcho/Hindsight optional later. *(See `docs/hive-architecture.md`.)*
 - **Me:** connect the **HIVE** (shared memory in git) so "what one learns, all learn."
 - **Why:** memory is the whole point — and git is the backup that saves you from
   another 10-hour wipeout.
