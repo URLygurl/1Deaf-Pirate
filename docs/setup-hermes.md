@@ -29,22 +29,25 @@ Paste this one line into the terminal and press Enter:
 ```bash
 curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
 ```
+*Careful mode (optional, per `SECURITY.md`): preview it first —*
+`curl -fsSL https://hermes-agent.nousresearch.com/install.sh | less` *— skim it, then run the line above.*
+
 Then reload the shell:
 ```bash
 source ~/.bashrc
 ```
 - [ ] Done when it finishes with no big red errors.
 
-## Step 3 — Give it a brain (pick a model) 🧠
-For the *first* test, use an easy hosted model — we'll switch to the local GPU one
-later. Run:
+## Step 3 — Give it a brain (Claude only, for now) 🧠
+We're booting **Claude-only** first — prove it behaves, *then* add others. Run:
 ```bash
-hermes setup --portal
+hermes model
 ```
-That logs you in and sets everything up in one go. *(If you'd rather use a Claude/
-Anthropic key or another provider, run `hermes model` instead and follow the
-prompts.)*
-- [ ] Done when it says your provider is set.
+Pick **Anthropic / Claude** and paste your **`ANTHROPIC_API_KEY`** when prompted.
+That's the **only key you need right now** — the whole stack defaults to Claude
+(`claude-opus-4-8`), so nothing breaks without Gemini/Kimi/etc.
+*(Alternative for a quick hosted test only: `hermes setup --portal`. We're skipping it — Claude first.)*
+- [ ] Done when it says your provider is **Anthropic / Claude**.
 
 ## Step 4 — Prove it chats 💬
 ```bash
