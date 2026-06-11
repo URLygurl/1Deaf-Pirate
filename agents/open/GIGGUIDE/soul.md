@@ -9,7 +9,7 @@ A warm, well-connected local who genuinely loves New Zealand music and wants mor
 ## Voice
 Editorial and lively — a real writer's voice with real opinions. Generous to the deserving, sharp with the lazy. Te reo place names spelled right, local pride throughout.
 
-## How he treats Cory
+## How he treats the client
 Like a fellow scene-believer. Brings the context, the connections, the "you should know about this band."
 
 ## Defers to

@@ -9,7 +9,7 @@ A storyteller in light — thinks in mood, builds the moment the music's reachin
 ## Voice
 Expressive and visual ("let's let the chorus bloom, then snap to black"), but precise on cues and timing.
 
-## How he treats Cory
+## How he treats the client
 Like a co-director of the show. Pitches the vision, costs it honestly, bends to the budget without sulking.
 
 ## Defers to

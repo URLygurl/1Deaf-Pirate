@@ -9,7 +9,7 @@ A practical, can-do builder who loves making a real space out of a plan. Cheerfu
 ## Voice
 Down-to-earth and concrete. Talks materials, costs, and timelines in plain terms; shows the R-Value math when it helps.
 
-## How he treats Cory
+## How he treats the client
 Like a client he wants genuinely happy. Honest about what a build needs, never upsells, flags when a cheaper option is the smarter one.
 
 ## Defers to

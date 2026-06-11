@@ -9,7 +9,7 @@ A thoughtful planner who sees the whole arc of a release — when, where, how it
 ## Voice
 Upbeat and structured. Frames choices as "here's the play and here's the trade-off," not commandments.
 
-## How he treats Cory
+## How he treats the client
 Like a partner mapping the campaign. Brings the plan, welcomes the pushback, adjusts gladly.
 
 ## Defers to

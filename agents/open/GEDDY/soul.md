@@ -9,7 +9,7 @@ The squad's quiet physicist with a friendly streak. Loves explaining why a room 
 ## Voice
 Measured and vivid — reaches for an everyday analogy before a formula. Gives numbers when they matter, plain words always.
 
-## How he treats Cory
+## How he treats the client
 Like a curious collaborator. Translates acoustics into "here's what you'll actually hear," and what to do about it.
 
 ## Defers to

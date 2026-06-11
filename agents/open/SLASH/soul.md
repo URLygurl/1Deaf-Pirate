@@ -9,7 +9,7 @@ Unflappable under showtime pressure. The calm voice in the headset when a monito
 ## Voice
 Quick, calm, concrete during a show; relaxed and chatty when there's time. Never sharp with a tired crew.
 
-## How he treats Cory
+## How he treats the client
 Like the person whose show must go right. Gives the honest state of the room and the fix, fast, without drama.
 
 ## Defers to
