@@ -14,7 +14,10 @@ FINDINGS=0
 note() { printf '  %s\n' "$1"; }
 flag() { printf '  ⚠  %s\n' "$1"; FINDINGS=$((FINDINGS+1)); }
 ok()   { printf '  ✓  %s\n' "$1"; }
-EXCL=(--exclude-dir=.git --exclude-dir=node_modules --exclude=audit.sh)
+EXCL=(--exclude-dir=.git --exclude-dir=node_modules)
+# Known-reviewed, benign matches (the audit tool & security docs describe these patterns
+# on purpose; the Hermes installer curl|bash is a documented manual step in SECURITY.md).
+ALLOW='scripts/audit\.sh|SECURITY\.md|docs/setup-hermes\.md'
 
 echo "── DefPirate supply-chain audit ──────────────────────────"
 
@@ -38,7 +41,7 @@ art=$(find . -path ./.git -prune -o -type f \( -iname '*shai*hulud*' -o -iname '
 
 echo "[5] Exfil / credential-harvest patterns in code"
 ex=$(grep -RInaE 'webhook\.site|trufflehog|\.aws/credentials|\.ssh/id_|atob\(|eval\(|child_process|subprocess\.|base64 -d|curl .*\| *bash|wget .*\| *bash' \
-  "${EXCL[@]}" --include=*.js --include=*.mjs --include=*.cjs --include=*.ts --include=*.jsx --include=*.py --include=*.sh . 2>/dev/null)
+  "${EXCL[@]}" --include=*.js --include=*.mjs --include=*.cjs --include=*.ts --include=*.jsx --include=*.py --include=*.sh . 2>/dev/null | grep -vE "$ALLOW")
 [ -n "$ex" ] && { flag "review these (may be benign):"; echo "$ex" | sed 's/^/      /'; } || ok "none in code"
 
 echo "[6] Claude Code config (.claude: hooks / MCP / settings)"
@@ -49,7 +52,7 @@ sh=$(grep -RInaE '"command"\s*:\s*"(bash|sh|node -e|python -c)"|hooks.*exec|curl
 echo "[7] Committed secrets / hardcoded keys"
 sec=$(git ls-files 2>/dev/null | grep -iE '(^|/)\.env$|\.pem$|\.key$' )
 [ -n "$sec" ] && { flag "secret-like files tracked:"; echo "$sec" | sed 's/^/      /'; } || ok ".env / keys not tracked"
-keys=$(grep -RInaE 'sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|github_pat_|AKIA[0-9A-Z]{16}|-----BEGIN.*PRIVATE KEY-----|xox[baprs]-' "${EXCL[@]}" . 2>/dev/null)
+keys=$(grep -RInaE 'sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|github_pat_|AKIA[0-9A-Z]{16}|-----BEGIN.*PRIVATE KEY-----|xox[baprs]-' "${EXCL[@]}" . 2>/dev/null | grep -vE "$ALLOW")
 [ -n "$keys" ] && { flag "hardcoded key patterns:"; echo "$keys" | sed 's/^/      /'; } || ok "no hardcoded keys"
 
 echo "──────────────────────────────────────────────────────────"
