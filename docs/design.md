@@ -1,4 +1,9 @@
-# design.md — DefPirate / Naked Staff visual system
+# design.md — DeafPirates / Naked Staff visual system
+
+> **STATUS: functional draft — full design + branding pass DEFERRED to the end.**
+> Cory's call (2026-06): visuals / logo / icons / chat-board re-skin are the *last* things, done
+> once everything works. This file + `tokens.css` are "good enough to keep surfaces consistent"
+> meanwhile — don't polish them now. Come back when the build is running.
 
 **The single source of truth for how every surface looks.** Dashboards, the chat board,
 the studio floor, the orchestration hub, the animator, and anything the squad builds next
