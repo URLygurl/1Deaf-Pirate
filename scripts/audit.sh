@@ -14,7 +14,7 @@ FINDINGS=0
 note() { printf '  %s\n' "$1"; }
 flag() { printf '  ⚠  %s\n' "$1"; FINDINGS=$((FINDINGS+1)); }
 ok()   { printf '  ✓  %s\n' "$1"; }
-EXCL=(--exclude-dir=.git --exclude-dir=node_modules)
+EXCL=(--exclude-dir=.git --exclude-dir=node_modules --exclude=audit.sh)
 
 echo "── DefPirate supply-chain audit ──────────────────────────"
 
