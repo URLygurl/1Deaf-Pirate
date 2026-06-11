@@ -20,7 +20,7 @@ MCPs that cover *most* of the squad's productive lanes — **and the music side.
 ### Business / content
 - **GENE** — royalties/business → finance/marketing → *finance powerhouse:* `3-statement-model`, `dcf-model`, `lbo-model`, `merger-model`, `comps-analysis`, `excel-author`, `pptx-author`, `stocks`; + `shopify`/`shop-app`; + our `seo-fundamentals`.
 - **NIKKI** — release strategy → copy/content/social → `humanize-text` (strip AI-isms), `meme-generation`, `baoyu-article-illustrator`, `hyperframes` (video/social overlays), `youtube-content`, `xurl` (X/Twitter), `manim`, `p5js`; + our content skills.
-- **NEIL** — concierge → email/comms/support → `email`(himalaya IMAP/SMTP), `agentmail` (dedicated inbox), `google-workspace` (Gmail), `telephony` (Twilio phone!); + our `email-management`.
+- **NEIL** — concierge / **the exposed front desk (bidirectional public layer)** → **deliberately holds NO outbound-send tools. No email, no phone.** He's the one agent facing the outside world, so he gets nothing to send/call with — if he's ever manipulated at the front, there's no `agentmail`/`telephony`/Gmail for an attacker to fire. **NEIL drafts and triages; the actual send/call is held at the action-lock** (or routed to a gated *internal* sender later — Vanessa's call). The comms toolkit (`email`/himalaya, `agentmail`, `google-workspace` Gmail, `telephony`/Twilio) exists in Hermes but lives **behind the line**, never on the exposed profile.
 - **GIGGUIDE** — scene curator → calendar/scheduling → `google-workspace` (Calendar), `maps` (routes/timezones), `airtable`, `notion`.
 
 ### Strategy / research / creative
