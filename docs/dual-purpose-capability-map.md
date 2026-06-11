@@ -84,6 +84,12 @@ to be pointed at the existing repo(s). That's a tomorrow item — see below.
 - **Bring in the existing repos.** Point the squad at the repo(s) Cory already made (starting with
   the very first one) so the full-stack team can pick up real building. Needs GitHub access + the
   repo list.
+- **Bring in the existing repos.** Known repos to wire in for the build crew:
+  - `URLygurl/music-events-platform-prod` — **NakedApp** (live product) → main build target
+  - `URLygurl/naked-app-muso-skills` — idea + skills source to copy from → reference/input
+  - *(to create)* `deafpirate-dashboards` — dashboards + chat board (no repo yet; squad scaffolds it)
+  Needs: add these to the web session's repo scope (UI), + a least-privilege `GITHUB_TOKEN`
+  in `.env` (Contents R/W, PRs R/W, Metadata R). Agents branch + PR; Cory merges. See `SECURITY.md`.
 - **Approve the lane mapping** above (rename/reassign any lane before we build on it).
 - **Build out the ⏳ skills** per agent (one reviewed batch per agent, like the music skills).
 - **`tools.yaml` wiring** — which real tools/connectors each agent gets (GitHub, web, email/CRM,

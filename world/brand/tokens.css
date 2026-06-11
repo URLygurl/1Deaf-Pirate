@@ -1,0 +1,55 @@
+/* ============================================================================
+   DefPirate / Naked Staff — CANONICAL DESIGN TOKENS
+   One source of truth. Every surface (dashboards, chat board, floor, hub,
+   future builds) imports or copies THIS block so nothing drifts again.
+   Full rationale + usage: docs/design.md
+   ============================================================================ */
+:root{
+  /* ── SURFACES (dark, near-black navy) ───────────────────────────── */
+  --bg:#070b12;          /* app background */
+  --panel:#0d141f;       /* card / panel base */
+  --panel-2:#111b2a;     /* raised panel / gradient end */
+  --edge:#1d2c40;        /* hairline borders */
+  --edge-2:#273b56;      /* brighter borders / dividers */
+
+  /* ── INK ────────────────────────────────────────────────────────── */
+  --ink:#dce8f5;         /* primary text */
+  --mute:#6f8198;        /* secondary text */
+  --dim:#46586e;         /* tertiary / placeholders */
+
+  /* ── SIGNATURE + ROLE COLOURS ───────────────────────────────────── */
+  --live:#7EFF00;        /* DefPirate Green — LIVE / active / success / "on now". THE signature. */
+  --info:#33c8ff;        /* cyan — information / interactive / focus / links */
+  --warn:#ffb22e;        /* amber — standby / caution / maintenance */
+  --alert:#ff4d52;       /* red — incident / error / overload */
+  --accent-warm:#d94a1f; /* burnt orange — sparing secondary accent (hub) */
+
+  /* glows (alpha variants for box-shadows) */
+  --live-glow:rgba(126,255,0,.30);
+  --info-glow:rgba(51,200,255,.35);
+
+  /* ── TYPE ───────────────────────────────────────────────────────── */
+  --font-display:"Oswald", system-ui, sans-serif;        /* headings, names, brand */
+  --font-ui:"Barlow Condensed", system-ui, sans-serif;   /* body, labels, UI */
+  --font-mono:"JetBrains Mono", ui-monospace, monospace; /* data, timestamps, tags */
+
+  /* ── RADIUS / MOTION ─────────────────────────────────────────────── */
+  --r-sm:6px; --r-md:10px; --r-lg:16px;
+  --bob:3s;              /* idle avatar bob duration */
+
+  /* ── BACK-COMPAT ALIASES — existing surfaces keep working, and
+        automatically upgrade to the brand green. Migrate to the names
+        above over time, then delete these. ───────────────────────────── */
+  --cyan:var(--info); --cyan-d:#1a93c4;
+  --green:var(--live);        /* was #3fe08a → now the brand signature #7EFF00 */
+  --amber:var(--warn); --red:var(--alert);
+  --edge2:var(--edge-2); --panel2:var(--panel-2);
+  --accent:var(--accent-warm);
+}
+
+/* Fonts (load once per surface):
+   @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+*/
+@media (prefers-reduced-motion: reduce){
+  .char img, #fChar img, [data-anim]{ animation:none !important; }
+}
