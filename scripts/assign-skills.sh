@@ -62,17 +62,21 @@ assign() {
   local name="$1" ids="${SKILLS[$1]:-}"
   [ -n "$ids" ] || { printf '── %-9s (no optional skills mapped)\n' "$name"; return 0; }
 
-  printf '── %-9s installing: %s\n' "$name" "$ids"
+  printf '── %s\n' "$name"
   local id ok=0 fail=0
   for id in $ids; do
+    # Announce the skill BEFORE installing, with no newline — so the line you
+    # see is exactly the skill currently working. A ✓/✗ lands when it finishes.
+    # Heavy ones (blackbox, openhands, docker-management, audiocraft …) can sit
+    # for a minute here — that's normal, not stuck.
+    printf '     • %-34s' "$id"
     if hermes -p "$name" skills install "$id" >/dev/null 2>&1; then
-      ok=$((ok+1))
+      printf ' ✓\n'; ok=$((ok+1))
     else
-      printf '     ! %s did not install (renamed/dropped?) — skipping\n' "$id"
-      fail=$((fail+1))
+      printf ' ✗ skipped (renamed/dropped?)\n'; fail=$((fail+1))
     fi
   done
-  printf '     ✓ %d installed%s\n' "$ok" "$([ "$fail" -gt 0 ] && printf ', %d skipped' "$fail")"
+  printf '     %d installed%s\n' "$ok" "$([ "$fail" -gt 0 ] && printf ', %d skipped' "$fail")"
 }
 
 # Single-specialist mode:  assign-skills.sh eddie
