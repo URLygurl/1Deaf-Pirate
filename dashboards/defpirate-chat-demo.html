@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>DEFPIRATE — Chat Demo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#07080e;
+  --surface:#0d0e1a;
+  --edge:#1a1b2e;
+  --edge2:#252640;
+  --ink:#e4e0ff;
+  --dim:#4a4860;
+  --peach:#ff7b54;
+  --peach2:#ff4d8f;
+  --gold:#ffd166;
+  --green:#06ffa5;
+  --cyan:#00d4ff;
+  --red:#ff3355;
+}
+
+html,body{height:100%;overflow:hidden;}
+body{
+  font-family:'JetBrains Mono',monospace;
+  background:var(--bg);color:var(--ink);
+  display:flex;flex-direction:column;
+}
+
+/* GRAIN */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity:.5;
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  flex:none;display:flex;align-items:center;gap:12px;
+  padding:10px 18px;
+  background:rgba(7,8,14,.95);
+  border-bottom:1px solid var(--edge2);
+  backdrop-filter:blur(20px);
+  z-index:100;
+}
+.logo{
+  font-family:'Fraunces',serif;font-weight:900;font-size:18px;
+  letter-spacing:-.03em;
+  background:linear-gradient(135deg,var(--peach),var(--peach2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.logo-sub{font-size:8px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;margin-left:2px;}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;margin-left:auto;}
+.status-txt{font-size:8px;letter-spacing:.15em;color:var(--dim);text-transform:uppercase;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ── MAIN BODY ── */
+.body{flex:1;display:flex;min-height:0;overflow:hidden;}
+
+/* ── DASHBOARD / LOG AREA ── */
+.dashboard{
+  flex:1;display:flex;flex-direction:column;
+  overflow:hidden;position:relative;
+}
+
+/* Ambient background */
+.ambient{
+  flex:1;position:relative;overflow:hidden;
+  background:radial-gradient(ellipse 80% 60% at 50% 40%, rgba(255,77,143,.04), transparent 70%),
+             radial-gradient(ellipse 60% 40% at 20% 80%, rgba(0,212,255,.03), transparent 60%),
+             var(--bg);
+}
+.ambient-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,123,84,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,123,84,.04) 1px, transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+.ambient-label{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;
+}
+.ambient-label .al1{
+  font-family:'Fraunces',serif;font-size:clamp(28px,5vw,52px);font-weight:900;
+  letter-spacing:-.03em;opacity:.06;
+  background:linear-gradient(135deg,var(--peach),var(--peach2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.ambient-label .al2{font-size:8px;letter-spacing:.3em;color:var(--dim);opacity:.3;text-transform:uppercase;margin-top:4px;}
+
+/* LOG FEED */
+.log-feed{
+  flex:none;height:120px;overflow-y:auto;
+  border-top:1px solid var(--edge);
+  padding:8px 16px;display:flex;flex-direction:column;gap:4px;
+}
+.log-feed::-webkit-scrollbar{width:2px;}
+.log-feed::-webkit-scrollbar-thumb{background:var(--edge2);}
+.log-entry{
+  font-size:8px;letter-spacing:.08em;line-height:1.6;
+  display:flex;gap:8px;align-items:baseline;
+}
+.log-time{color:var(--dim);flex:none;font-size:7px;}
+.log-agent{font-weight:700;flex:none;font-size:7px;letter-spacing:.15em;}
+.log-msg{color:var(--dim);}
+.log-entry.sys .log-agent{color:var(--cyan);}
+.log-entry.dime .log-agent{color:var(--peach);}
+.log-entry.lemmy .log-agent{color:#e8a44a;}
+.log-entry.eddie .log-agent{color:#7ecfff;}
+.log-entry.slash .log-agent{color:#b8ff6e;}
+.log-entry.geddy .log-agent{color:#c9a0ff;}
+.log-entry.halford .log-agent{color:#ffdc6e;}
+.log-entry.hetfield .log-agent{color:#ff8c6e;}
+.log-entry.gene .log-agent{color:#6effe0;}
+.log-entry.nikki .log-agent{color:#ff6eb4;}
+
+/* ── AGENT STAGE — bottom left above chat ── */
+.agent-stage{
+  position:relative;flex:none;
+  height:180px;
+  display:flex;align-items:flex-end;
+  padding:0 16px 0 12px;
+  gap:0;
+  pointer-events:none;
+  overflow:visible;
+}
+
+/* ── AGENT CHARACTER ── */
+.agent{
+  position:relative;flex:none;
+  width:110px;
+  display:flex;flex-direction:column;align-items:center;
+  pointer-events:auto;
+  /* enter from bottom */
+  transform:translateY(120%) scale(.8);
+  opacity:0;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .3s ease;
+}
+.agent.visible{
+  transform:translateY(0) scale(1);
+  opacity:1;
+}
+.agent.talking .agent-sprite{animation:talkBob .38s ease-in-out infinite;}
+.agent.idle .agent-sprite{animation:idleBob 2.4s ease-in-out infinite;}
+.agent.entering .agent-sprite{animation:none;}
+
+/* Stagger widths when multiple */
+.agent:nth-child(2){width:100px;}
+.agent:nth-child(3){width:95px;}
+.agent:nth-child(n+4){width:88px;}
+
+@keyframes talkBob{
+  0%,100%{transform:translateY(0) scaleY(1);}
+  50%{transform:translateY(-3px) scaleY(.98);}
+}
+@keyframes idleBob{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-3px);}
+}
+@keyframes walkOn{
+  0%{transform:translateX(-60px) translateY(20px);opacity:0;}
+  60%{transform:translateX(4px) translateY(-2px);opacity:1;}
+  80%{transform:translateX(-2px) translateY(0);}
+  100%{transform:translateX(0) translateY(0);opacity:1;}
+}
+@keyframes facetimeIn{
+  0%{transform:scale(.4) translateY(40px);opacity:0;filter:blur(8px);}
+  60%{transform:scale(1.06) translateY(-4px);opacity:1;filter:blur(0);}
+  100%{transform:scale(1) translateY(0);opacity:1;filter:blur(0);}
+}
+
+.agent-sprite-wrap{position:relative;width:100%;display:flex;justify-content:center;}
+.agent-sprite{
+  height:130px;width:auto;object-fit:contain;
+  filter:drop-shadow(0 8px 24px rgba(0,0,0,.6));
+  display:block;
+  cursor:pointer;
+}
+/* Facetime frame */
+.agent.facetime .agent-sprite-wrap::before{
+  content:'';position:absolute;inset:-6px -4px;
+  border:2px solid var(--peach);border-radius:10px;
+  box-shadow:0 0 20px rgba(255,123,84,.3), inset 0 0 20px rgba(255,123,84,.05);
+  pointer-events:none;
+  animation:ftPulse 2s ease-in-out infinite;
+}
+@keyframes ftPulse{0%,100%{opacity:.6;}50%{opacity:1;}}
+
+/* Active glow */
+.agent.talking .agent-sprite{
+  filter:drop-shadow(0 8px 24px rgba(0,0,0,.6)) drop-shadow(0 0 16px rgba(255,123,84,.5));
+}
+
+/* SPEECH BUBBLE */
+.bubble{
+  position:absolute;bottom:calc(100% + 6px);left:50%;
+  transform:translateX(-50%) translateY(6px);
+  background:var(--surface);border:1px solid var(--edge2);
+  border-radius:10px 10px 10px 2px;
+  padding:7px 10px;
+  font-family:'Fraunces',serif;font-style:italic;font-size:11px;
+  color:var(--ink);line-height:1.4;
+  max-width:180px;white-space:normal;text-align:left;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  opacity:0;pointer-events:none;
+  transition:opacity .2s, transform .2s;
+  z-index:50;white-space:nowrap;
+}
+.bubble.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.bubble::after{
+  content:'';position:absolute;top:100%;left:14px;
+  border:5px solid transparent;border-top-color:var(--edge2);
+  transform:translateY(-1px);
+}
+
+/* AGENT LABEL */
+.agent-label{
+  font-size:7px;letter-spacing:.18em;color:var(--dim);
+  text-transform:uppercase;margin-top:4px;font-weight:700;
+  transition:color .3s;
+}
+.agent.talking .agent-label{color:var(--peach);}
+
+/* AGENT ROLE BADGE */
+.agent-role{
+  font-size:6px;letter-spacing:.1em;color:var(--dim);
+  text-transform:uppercase;opacity:.6;margin-top:1px;
+}
+
+/* ── CHAT AREA ── */
+.chat-area{
+  flex:none;
+  border-top:1px solid var(--edge2);
+  background:rgba(7,8,14,.97);
+  padding:10px 14px 12px;
+  display:flex;flex-direction:column;gap:8px;
+}
+
+/* Chat history */
+.chat-history{
+  display:flex;flex-direction:column;gap:6px;
+  max-height:140px;overflow-y:auto;
+  padding-right:4px;
+}
+.chat-history::-webkit-scrollbar{width:2px;}
+.chat-history::-webkit-scrollbar-thumb{background:var(--edge2);}
+.chat-msg{
+  display:flex;gap:8px;align-items:flex-start;
+}
+.chat-msg.user{flex-direction:row-reverse;}
+.chat-bubble{
+  max-width:70%;padding:8px 12px;border-radius:12px;
+  font-size:11px;line-height:1.5;
+}
+.chat-msg.user .chat-bubble{
+  background:linear-gradient(135deg,var(--peach),var(--peach2));
+  color:#fff;border-radius:12px 12px 2px 12px;
+}
+.chat-msg.agent .chat-bubble{
+  background:var(--surface);border:1px solid var(--edge2);
+  color:var(--ink);border-radius:12px 12px 12px 2px;
+  font-family:'Fraunces',serif;font-style:italic;
+}
+.chat-msg .sender{
+  font-size:7px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--dim);margin-top:4px;font-style:normal;
+  font-family:'JetBrains Mono';
+}
+.chat-msg.user .sender{text-align:right;}
+.typing-indicator{
+  display:none;gap:4px;align-items:center;padding:8px 12px;
+  background:var(--surface);border:1px solid var(--edge2);
+  border-radius:12px 12px 12px 2px;width:fit-content;
+}
+.typing-indicator.show{display:flex;}
+.typing-dot{
+  width:5px;height:5px;border-radius:50%;background:var(--peach);
+  animation:typingDot 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2){animation-delay:.2s;}
+.typing-dot:nth-child(3){animation-delay:.4s;}
+@keyframes typingDot{0%,80%,100%{transform:scale(.6);opacity:.4;}40%{transform:scale(1);opacity:1;}}
+
+/* CHAT INPUT ROW */
+.chat-input-row{
+  display:flex;gap:8px;align-items:flex-end;
+}
+.chat-input{
+  flex:1;background:var(--surface);
+  border:1px solid var(--edge2);border-radius:12px;
+  padding:10px 14px;
+  color:var(--ink);font-family:'Fraunces',serif;font-style:italic;
+  font-size:13px;line-height:1.4;
+  outline:none;resize:none;
+  transition:.15s;min-height:42px;max-height:100px;
+}
+.chat-input:focus{border-color:var(--peach);box-shadow:0 0 0 3px rgba(255,123,84,.1);}
+.chat-input::placeholder{color:var(--dim);font-style:italic;}
+.send-btn{
+  flex:none;width:42px;height:42px;border-radius:12px;
+  background:linear-gradient(135deg,var(--peach),var(--peach2));
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:.15s;
+}
+.send-btn:active{transform:scale(.93);}
+
+/* ── RIGHT PANEL — optional log/info ── */
+.right-panel{
+  width:260px;flex:none;
+  border-left:1px solid var(--edge);
+  display:flex;flex-direction:column;
+  background:var(--surface);
+  overflow:hidden;
+}
+.rp-head{
+  padding:12px 14px;border-bottom:1px solid var(--edge);flex:none;
+}
+.rp-title{font-size:8px;letter-spacing:.22em;color:var(--peach);text-transform:uppercase;font-weight:700;}
+.rp-sub{font-size:8px;color:var(--dim);margin-top:2px;}
+.rp-body{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+.rp-body::-webkit-scrollbar{width:2px;}
+.rp-body::-webkit-scrollbar-thumb{background:var(--edge2);}
+
+/* Active agents list */
+.active-agent-row{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 8px;border-radius:6px;
+  background:var(--edge);border:1px solid var(--edge2);
+  transition:.3s;
+}
+.active-agent-row.talking{border-color:var(--peach);background:rgba(255,123,84,.06);}
+.aa-dot{width:6px;height:6px;border-radius:50%;background:var(--dim);flex:none;transition:.3s;}
+.active-agent-row.talking .aa-dot{background:var(--peach);box-shadow:0 0 6px var(--peach);}
+.aa-name{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}
+.aa-state{font-size:7px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-left:auto;}
+.active-agent-row.talking .aa-state{color:var(--peach);}
+
+/* DIME indicator */
+.dime-card{
+  background:rgba(255,123,84,.06);
+  border:1px solid rgba(255,123,84,.25);
+  border-radius:8px;padding:10px 10px;
+  margin-bottom:4px;
+}
+.dime-label{font-size:7px;letter-spacing:.22em;color:var(--peach);text-transform:uppercase;font-weight:700;margin-bottom:4px;}
+.dime-status{font-size:9px;color:var(--ink);font-family:'Fraunces',serif;font-style:italic;line-height:1.4;}
+
+@media(max-width:640px){
+  .right-panel{display:none;}
+  .agent{width:90px;}
+  .agent-sprite{height:110px;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">DEFPIRATE</div>
+  <div class="logo-sub">· Music OS</div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+    <div class="status-dot"></div>
+    <div class="status-txt">DIME ONLINE</div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="body">
+
+  <!-- MAIN: dashboard + agents + chat -->
+  <div class="dashboard">
+
+    <!-- AMBIENT DASHBOARD -->
+    <div class="ambient">
+      <div class="ambient-grid"></div>
+      <div class="ambient-label">
+        <div class="al1">DEAF PIRATE</div>
+        <div class="al2">Hermes Music Orchestration Platform</div>
+      </div>
+    </div>
+
+    <!-- LOG FEED -->
+    <div class="log-feed" id="logFeed">
+      <div class="log-entry sys">
+        <span class="log-time">00:00</span>
+        <span class="log-agent">SYS</span>
+        <span class="log-msg">Platform online. DIME standing by.</span>
+      </div>
+    </div>
+
+    <!-- AGENT STAGE -->
+    <div class="agent-stage" id="agentStage"></div>
+
+    <!-- CHAT -->
+    <div class="chat-area">
+      <div class="chat-history" id="chatHistory">
+        <div class="typing-indicator" id="typingIndicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="chatInput" placeholder="Ask anything — DIME decides who answers…" rows="1"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" onclick="sendMessage()">↑</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="rp-head">
+      <div class="rp-title">Active Crew</div>
+      <div class="rp-sub">DIME's current dispatch</div>
+    </div>
+    <div class="rp-body" id="rpBody">
+      <div class="dime-card">
+        <div class="dime-label">◉ DIME — Orchestrator</div>
+        <div class="dime-status" id="dimeStatus">Standing by. Waiting for your first message.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// AGENT ROSTER
+// ═══════════════════════════════════════════════
+const AGENTS = {
+  LEMMY:    { role:'A&R / Genre', color:'#e8a44a', emoji:'🤘', line:'Whiskey-cured opinion incoming.' },
+  EDDIE:    { role:'Producer',    color:'#7ecfff', emoji:'🎚', line:'Let me hear the mix.' },
+  SLASH:    { role:'Live Eng',    color:'#b8ff6e', emoji:'🎛', line:'Line check first. Always.' },
+  GEDDY:    { role:'Acoustician', color:'#c9a0ff', emoji:'🏛', line:'Room dimensions first.' },
+  HALFORD:  { role:'Lighting',    color:'#ffdc6e', emoji:'💡', line:'Every cue is a costume change.' },
+  HETFIELD: { role:'Tour Mgr',    color:'#ff8c6e', emoji:'🎤', line:'Binder says yes.' },
+  GENE:     { role:'Royalties',   color:'#6effe0', emoji:'💰', line:'Show me the contract.' },
+  NIKKI:    { role:'Release',     color:'#ff6eb4', emoji:'📢', line:'Backward from release date.' },
+};
+
+// Scenario responses — who DIME sends and what they say
+const SCENARIOS = [
+  {
+    triggers: ['mix','sound','studio','record','master','eq','compress'],
+    agents: ['EDDIE'],
+    mode: 'walkon',
+    dime: 'Studio question. Sending EDDIE.',
+    responses: {
+      EDDIE: ["Right. Let's talk frequencies. What's the problem — mud in the low-mids, or is it the top end?", "Compression ratio depends on the source. What are you running through?", "Send me the stems. I'll tell you exactly what's wrong."],
+    }
+  },
+  {
+    triggers: ['gig','show','soundcheck','stage','live','monitor','feedback','venue'],
+    agents: ['SLASH', 'HETFIELD'],
+    mode: 'facetime',
+    dime: 'Live show question. SLASH on audio, HETFIELD on ops.',
+    responses: {
+      SLASH: ["Line check before soundcheck. Every time. Non-negotiable.", "Feedback means something in the monitors is ringing. Raise the gain slowly, find it, cut narrow."],
+      HETFIELD: ["What venue? I need the advance sheet.", "Stage plot's already done. What do you need changed?"],
+    }
+  },
+  {
+    triggers: ['genre','band','reference','sound like','style','metal','heavy'],
+    agents: ['LEMMY'],
+    mode: 'walkon',
+    dime: 'Genre question. LEMMY owns this.',
+    responses: {
+      LEMMY: ["Right. What are you actually trying to sound like — because there's what people say and there's what they mean.", "Motörhead. Black Sabbath. That's the foundation. Everything else is just variations.", "Give me three bands you love and I'll tell you exactly where you sit."],
+    }
+  },
+  {
+    triggers: ['release','ep','single','drop','album','rollout','distribution','spotify'],
+    agents: ['NIKKI', 'GENE'],
+    mode: 'walkon',
+    dime: 'Release strategy. NIKKI on rollout, GENE on money.',
+    responses: {
+      NIKKI: ["Backward from your release date. What's the target?", "Pre-save goes up six weeks out. Non-negotiable."],
+      GENE: ["Who owns the masters? That's the first question.", "APRA AMCOS first. Always."],
+    }
+  },
+  {
+    triggers: ['room','acoustic','treatment','panel','bass trap','rt60','modes'],
+    agents: ['GEDDY', 'EDDIE'],
+    mode: 'facetime',
+    dime: 'Acoustic problem. GEDDY on theory, EDDIE on the practical.',
+    responses: {
+      GEDDY: ["Room dimensions first. Length, width, height — then I can tell you exactly where your modes are.", "That boomy bass is a standing wave. Corner traps, minimum four inches deep."],
+      EDDIE: ["Acoustic treatment and mixing are connected. Tell me what you're hearing."],
+    }
+  },
+  {
+    triggers: ['light','lighting','show','dmx','fixture','colour','color','cue'],
+    agents: ['HALFORD'],
+    mode: 'walkon',
+    dime: 'Lighting question. HALFORD.',
+    responses: {
+      HALFORD: ["Every cue is a costume change. What's the mood of the set?", "DMX channels first. How many fixtures are we talking?", "Colour temperature tells the story before the music does."],
+    }
+  },
+];
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let activeAgents = [];   // [{id, name, el, mode, state}]
+let msgCount = 0;
+
+// ═══════════════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════════════
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = '';
+  msgCount++;
+
+  // Add user message
+  addChatMsg('user', 'You', text);
+
+  // Find scenario
+  const scenario = findScenario(text);
+
+  // Log DIME routing
+  addLog('dime', 'DIME', scenario.dime);
+  updateDimeStatus(scenario.dime);
+
+  // Show typing
+  const typing = document.getElementById('typingIndicator');
+  typing.classList.add('show');
+  scrollChat();
+
+  // Dispatch agents after delay
+  setTimeout(() => {
+    typing.classList.remove('show');
+    dispatchAgents(scenario);
+  }, 800 + Math.random() * 600);
+}
+
+function findScenario(text) {
+  const lower = text.toLowerCase();
+  for (const s of SCENARIOS) {
+    if (s.triggers.some(t => lower.includes(t))) return s;
+  }
+  // Default — DIME answers directly
+  return {
+    agents: [],
+    mode: 'walkon',
+    dime: 'Reading your query. I\'ll handle this one.',
+    responses: {},
+    dimeResponse: ["Got it. What else do you need?", "On it. Give me a moment.", "I'm across it. What's the next question?"],
+  };
+}
+
+function dispatchAgents(scenario) {
+  // Clear existing agents that aren't in new scenario
+  const incoming = scenario.agents;
+
+  // Dismiss agents not needed
+  activeAgents.forEach(a => {
+    if (!incoming.includes(a.name)) dismissAgent(a);
+  });
+
+  // Spawn new agents
+  incoming.forEach((name, i) => {
+    const existing = activeAgents.find(a => a.name === name);
+    if (!existing) {
+      setTimeout(() => spawnAgent(name, scenario.mode), i * 280);
+    }
+  });
+
+  // After agents appear, make them talk
+  const delay = incoming.length ? 600 + incoming.length * 200 : 0;
+
+  if (incoming.length === 0 && scenario.dimeResponse) {
+    // DIME responds directly in chat
+    setTimeout(() => {
+      const resp = scenario.dimeResponse[Math.floor(Math.random() * scenario.dimeResponse.length)];
+      addChatMsg('agent', 'DIME', resp);
+      addLog('dime', 'DIME', resp);
+    }, 400);
+    return;
+  }
+
+  setTimeout(() => {
+    incoming.forEach((name, i) => {
+      setTimeout(() => {
+        const agent = activeAgents.find(a => a.name === name);
+        const resps = scenario.responses[name];
+        if (!agent || !resps) return;
+        const resp = resps[Math.floor(Math.random() * resps.length)];
+        makeAgentTalk(agent, resp);
+      }, i * 600);
+    });
+  }, delay);
+}
+
+// ═══════════════════════════════════════════════
+// AGENT SPAWN / DISMISS
+// ═══════════════════════════════════════════════
+function spawnAgent(name, mode) {
+  const info = AGENTS[name];
+  const stage = document.getElementById('agentStage');
+
+  const el = document.createElement('div');
+  el.className = `agent entering ${mode}`;
+  el.id = `agent-${name}`;
+  el.innerHTML = `
+    <div class="agent-sprite-wrap">
+      <div class="bubble" id="bub-${name}"></div>
+      <div class="agent-sprite" id="sprite-${name}">${getAgentSVG(name, info)}</div>
+    </div>
+    <div class="agent-label" style="color:${info.color}">${name}</div>
+    <div class="agent-role">${info.role}</div>
+  `;
+
+  // Click to hear them
+  el.addEventListener('click', () => {
+    const agent = activeAgents.find(a => a.name === name);
+    if (agent) {
+      const resps = Object.values(AGENTS)[0];
+      showBubble(name, info.line);
+    }
+  });
+
+  stage.appendChild(el);
+
+  const agentObj = { id: name, name, el, mode, state: 'entering' };
+  activeAgents.push(agentObj);
+  updateRightPanel();
+
+  // Trigger entrance
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      el.classList.remove('entering');
+      el.classList.add('visible', 'idle');
+      agentObj.state = 'idle';
+      updateRightPanel();
+    });
+  });
+
+  addLog(name.toLowerCase(), name, `${info.emoji} Online.`);
+}
+
+function dismissAgent(agentObj) {
+  agentObj.el.style.transition = 'transform .4s ease, opacity .3s ease';
+  agentObj.el.style.transform = 'translateY(120%) scale(.8)';
+  agentObj.el.style.opacity = '0';
+  setTimeout(() => {
+    agentObj.el.remove();
+    activeAgents = activeAgents.filter(a => a.name !== agentObj.name);
+    updateRightPanel();
+    addLog(agentObj.name.toLowerCase(), agentObj.name, 'Signing off.');
+  }, 450);
+}
+
+function makeAgentTalk(agentObj, text) {
+  // All others go idle
+  activeAgents.forEach(a => {
+    a.el.classList.remove('talking');
+    a.el.classList.add('idle');
+    a.state = 'idle';
+  });
+
+  agentObj.el.classList.remove('idle');
+  agentObj.el.classList.add('talking');
+  agentObj.state = 'talking';
+  updateRightPanel();
+
+  showBubble(agentObj.name, text);
+  addChatMsg('agent', agentObj.name, text);
+  addLog(agentObj.name.toLowerCase(), agentObj.name, text);
+
+  // After speaking, go idle (not dismissed)
+  setTimeout(() => {
+    agentObj.el.classList.remove('talking');
+    agentObj.el.classList.add('idle');
+    agentObj.state = 'idle';
+    updateRightPanel();
+  }, Math.max(3000, text.length * 55));
+}
+
+function showBubble(name, text) {
+  const bub = document.getElementById(`bub-${name}`);
+  if (!bub) return;
+  bub.textContent = `"${text}"`;
+  bub.classList.add('show');
+  clearTimeout(bub._t);
+  bub._t = setTimeout(() => bub.classList.remove('show'), Math.max(3000, text.length * 55));
+}
+
+// ═══════════════════════════════════════════════
+// AGENT SVG AVATARS (stylised placeholder chibis)
+// ═══════════════════════════════════════════════
+function getAgentSVG(name, info) {
+  // Each agent gets a distinct silhouette SVG — rough chibi style
+  const configs = {
+    LEMMY:    { body:'#2a1a08', hair:'#4a3020', accent:'#e8a44a', hat:false,  item:'bass'    },
+    EDDIE:    { body:'#0a1a2a', hair:'#c8d8ff', accent:'#7ecfff', hat:false,  item:'fader'   },
+    SLASH:    { body:'#1a0a08', hair:'#1a1a1a', accent:'#b8ff6e', hat:true,   item:'guitar'  },
+    GEDDY:    { body:'#0a0a1a', hair:'#8888cc', accent:'#c9a0ff', hat:false,  item:'pen'     },
+    HALFORD:  { body:'#1a1a00', hair:'#ffdc6e', accent:'#ffdc6e', hat:false,  item:'light'   },
+    HETFIELD: { body:'#1a0808', hair:'#888888', accent:'#ff8c6e', hat:false,  item:'binder'  },
+    GENE:     { body:'#001a12', hair:'#000000', accent:'#6effe0', hat:false,  item:'money'   },
+    NIKKI:    { body:'#1a001a', hair:'#cc44aa', accent:'#ff6eb4', hat:false,  item:'phone'   },
+  };
+  const c = configs[name] || { body:'#1a1a2a', hair:'#888', accent:'#ff7b54', hat:false, item:'none' };
+
+  return `<svg width="90" height="130" viewBox="0 0 90 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shadow -->
+  <ellipse cx="45" cy="126" rx="24" ry="4" fill="rgba(0,0,0,.4)"/>
+  <!-- Body -->
+  <rect x="28" y="62" width="34" height="48" rx="8" fill="${c.body}"/>
+  <!-- Jacket detail -->
+  <rect x="28" y="62" width="14" height="48" rx="4" fill="${c.accent}" opacity=".18"/>
+  <!-- Legs -->
+  <rect x="30" y="100" width="12" height="28" rx="5" fill="${adjustColor(c.body,-20)}"/>
+  <rect x="48" y="100" width="12" height="28" rx="5" fill="${adjustColor(c.body,-20)}"/>
+  <!-- Boots -->
+  <rect x="28" y="122" width="16" height="6" rx="3" fill="#111"/>
+  <rect x="46" y="122" width="16" height="6" rx="3" fill="#111"/>
+  <!-- Neck -->
+  <rect x="40" y="54" width="10" height="12" rx="4" fill="#c8a882"/>
+  <!-- Head -->
+  <ellipse cx="45" cy="42" rx="20" ry="22" fill="#c8a882"/>
+  <!-- Hair -->
+  <ellipse cx="45" cy="26" rx="20" ry="12" fill="${c.hair}"/>
+  ${c.hat ? `<rect x="28" y="22" width="34" height="6" rx="3" fill="#111"/>
+  <rect x="34" y="10" width="22" height="14" rx="4" fill="#111"/>` : ''}
+  <!-- Eyes -->
+  <circle cx="38" cy="42" r="3" fill="#fff"/>
+  <circle cx="52" cy="42" r="3" fill="#fff"/>
+  <circle cx="39" cy="42" r="1.5" fill="#222"/>
+  <circle cx="53" cy="42" r="1.5" fill="#222"/>
+  <!-- Mouth -->
+  <path d="M40 50 Q45 54 50 50" stroke="#8a6a4a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <!-- Accent detail -->
+  <circle cx="45" cy="72" r="4" fill="${c.accent}" opacity=".6"/>
+  <!-- Item -->
+  ${getItemSVG(c.item, c.accent)}
+</svg>`;
+}
+
+function getItemSVG(item, accent) {
+  switch(item) {
+    case 'bass':   return `<rect x="62" y="55" width="6" height="40" rx="3" fill="${accent}" opacity=".8"/><ellipse cx="65" cy="58" rx="5" ry="5" fill="${accent}" opacity=".6"/>`;
+    case 'guitar': return `<rect x="62" y="60" width="5" height="36" rx="2.5" fill="${accent}" opacity=".8"/><ellipse cx="64" cy="64" rx="4" ry="6" fill="${accent}" opacity=".6"/>`;
+    case 'fader':  return `<rect x="62" y="65" width="18" height="24" rx="3" fill="#222" opacity=".9"/><rect x="65" y="68" width="3" height="16" rx="1" fill="${accent}" opacity=".7"/>`;
+    case 'light':  return `<circle cx="68" cy="68" r="7" fill="${accent}" opacity=".4"/><circle cx="68" cy="68" r="3" fill="${accent}"/>`;
+    case 'binder': return `<rect x="62" y="62" width="18" height="24" rx="2" fill="#cc4422" opacity=".8"/><rect x="64" y="68" width="12" height="1.5" fill="#fff" opacity=".5"/>`;
+    case 'money':  return `<rect x="62" y="68" width="18" height="12" rx="2" fill="#4a8" opacity=".8"/><text x="71" y="78" font-size="8" fill="#fff" text-anchor="middle" opacity=".9">$</text>`;
+    case 'phone':  return `<rect x="62" y="62" width="12" height="20" rx="3" fill="#333"/><rect x="63" y="64" width="10" height="14" rx="2" fill="${accent}" opacity=".3"/>`;
+    case 'pen':    return `<rect x="66" y="58" width="3" height="28" rx="1.5" fill="${accent}" opacity=".8"/>`;
+    default: return '';
+  }
+}
+
+function adjustColor(hex, amount) {
+  try {
+    const num = parseInt(hex.slice(1), 16);
+    const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+    const g = Math.max(0, Math.min(255, ((num >> 8) & 0xff) + amount));
+    const b = Math.max(0, Math.min(255, (num & 0xff) + amount));
+    return `#${((r<<16)|(g<<8)|b).toString(16).padStart(6,'0')}`;
+  } catch { return hex; }
+}
+
+// ═══════════════════════════════════════════════
+// CHAT MESSAGES
+// ═══════════════════════════════════════════════
+function addChatMsg(type, sender, text) {
+  const history = document.getElementById('chatHistory');
+  const typing = document.getElementById('typingIndicator');
+  const div = document.createElement('div');
+  div.className = `chat-msg ${type}`;
+  div.innerHTML = `
+    <div>
+      <div class="chat-bubble">${text}</div>
+      <div class="sender">${sender}</div>
+    </div>
+  `;
+  history.insertBefore(div, typing);
+  scrollChat();
+}
+
+function scrollChat() {
+  const history = document.getElementById('chatHistory');
+  history.scrollTop = history.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════
+// LOG
+// ═══════════════════════════════════════════════
+function addLog(cls, agent, msg) {
+  const feed = document.getElementById('logFeed');
+  const now = new Date();
+  const time = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+  const entry = document.createElement('div');
+  entry.className = `log-entry ${cls}`;
+  entry.innerHTML = `
+    <span class="log-time">${time}</span>
+    <span class="log-agent">${agent}</span>
+    <span class="log-msg">${msg.length > 60 ? msg.slice(0,60)+'…' : msg}</span>
+  `;
+  feed.appendChild(entry);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════
+// RIGHT PANEL
+// ═══════════════════════════════════════════════
+function updateRightPanel() {
+  const body = document.getElementById('rpBody');
+  // Keep DIME card
+  const dimeCard = body.querySelector('.dime-card');
+  body.innerHTML = '';
+  if (dimeCard) body.appendChild(dimeCard);
+
+  activeAgents.forEach(a => {
+    const info = AGENTS[a.name];
+    const row = document.createElement('div');
+    row.className = `active-agent-row ${a.state}`;
+    row.innerHTML = `
+      <div class="aa-dot"></div>
+      <span class="aa-name" style="color:${info.color}">${info.emoji} ${a.name}</span>
+      <span class="aa-state">${a.state}</span>
+    `;
+    body.appendChild(row);
+  });
+}
+
+function updateDimeStatus(text) {
+  const el = document.getElementById('dimeStatus');
+  if (el) el.textContent = text;
+}
+
+// ═══════════════════════════════════════════════
+// DEMO STARTER — show what it feels like
+// ═══════════════════════════════════════════════
+function runDemo() {
+  setTimeout(() => {
+    addLog('sys','SYS','Type anything in the chat below — try "my mix sounds muddy" or "planning a gig"');
+  }, 1000);
+}
+
+runDemo();
+</script>
+</body>
+</html>

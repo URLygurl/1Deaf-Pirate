@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FLOOR SCAFFOLD — Naked Staff</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap');
+  :root{
+    --bg:#070b12; --panel:#0d141f; --panel2:#111b2a;
+    --edge:#1d2c40; --edge2:#273b56;
+    --ink:#dce8f5; --mute:#6f8198; --dim:#46586e;
+    --cyan:#33c8ff; --amber:#ffb22e; --red:#ff4d52; --green:#3fe08a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);height:100%}
+  body{font-family:"Barlow Condensed",system-ui,sans-serif;color:var(--ink);
+    display:flex;flex-direction:column;overflow:hidden;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background:radial-gradient(1200px 600px at 50% -10%, rgba(51,200,255,.07), transparent 60%),
+      linear-gradient(180deg,#070b12,#05080d 60%,#04060a);
+    -webkit-user-select:none;user-select:none}
+  .mono{font-family:"JetBrains Mono",monospace}
+
+  .topbar{display:flex;align-items:center;gap:8px;padding:9px 12px;
+    background:linear-gradient(180deg,#10202f,#0a131d);border-bottom:1px solid var(--edge2)}
+  .brand{flex:1;font-family:"Oswald";font-weight:700;letter-spacing:.3em;
+    font-size:clamp(13px,3vw,20px);text-transform:uppercase;color:#eaf4ff;
+    text-shadow:0 0 18px rgba(51,200,255,.45)}
+  .brand small{display:block;letter-spacing:.26em;font-size:8px;color:var(--mute);font-weight:500}
+  .tbtn{font-family:"JetBrains Mono";font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--mute);background:#0c1623;border:1px solid var(--edge);
+    padding:8px 10px;border-radius:6px;cursor:pointer}
+  .tbtn:active{transform:translateY(1px)}
+  .tbtn.hot{color:#fff;border-color:var(--green);background:rgba(63,224,138,.12);
+    box-shadow:0 0 12px rgba(63,224,138,.3)}
+
+  /* ===== board ===== */
+  #wrap{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 0 6px}
+  #scaler{position:relative;margin:0 auto}
+  #board{position:absolute;top:0;left:0;width:1128px;
+    display:grid;grid-template-columns:repeat(5,216px);gap:14px 12px;transform-origin:top left}
+
+  .cell{background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--edge);border-radius:10px;overflow:hidden;cursor:pointer;position:relative}
+  .cell:active{transform:scale(.98)}
+  .cell.featured{transform:scale(1.1);z-index:6;border-color:var(--tc,#ff4d52);
+    box-shadow:0 0 0 1px var(--tc,#ff4d52),0 0 26px rgba(255,77,82,.35)}
+  .cell.featured:active{transform:scale(1.07)}
+  .cell.editing{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan),0 0 18px rgba(51,200,255,.35)}
+  .slotno{position:absolute;top:6px;right:6px;z-index:4;font-family:"JetBrains Mono";
+    font-size:8px;color:var(--dim);background:rgba(7,11,18,.7);border:1px solid var(--edge);
+    border-radius:4px;padding:1px 5px;letter-spacing:.1em}
+
+  .scene{position:relative;height:140px;overflow:hidden;background:#0a131e}
+  .scene img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    filter:saturate(1.04) brightness(.94)}
+  .scene::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(7,11,18,.08),transparent 35%,rgba(7,11,18,.55) 92%)}
+  /* wireframe placeholders */
+  .wf-scene{position:absolute;inset:6px;border:1.5px dashed #2a4060;border-radius:7px;
+    display:flex;align-items:center;justify-content:center;
+    background:
+      linear-gradient(rgba(51,200,255,.05) 1px,transparent 1px) 0 0/100% 18px,
+      linear-gradient(90deg,rgba(51,200,255,.05) 1px,transparent 1px) 0 0/18px 100%}
+  .wf-scene span{font-family:"JetBrains Mono";font-size:8.5px;letter-spacing:.2em;color:#33506f}
+  .wf-char{position:absolute;bottom:10px;left:22px;width:54px;height:96px;z-index:2;
+    border:1.5px dashed #2a4060;border-radius:26px 26px 8px 8px;
+    display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
+  .wf-char::before{content:"";position:absolute;top:8px;width:24px;height:24px;
+    border:1.5px dashed #2a4060;border-radius:50%}
+  .wf-char span{font-family:"JetBrains Mono";font-size:6.5px;letter-spacing:.16em;color:#33506f}
+
+  .char{position:absolute;bottom:4px;z-index:2;transform-origin:bottom center}
+  .char img{display:block;width:auto;filter:drop-shadow(0 6px 6px rgba(0,0,0,.6));
+    transform-origin:bottom center;animation:bob 3s ease-in-out infinite}
+  .char::after{content:"";position:absolute;left:50%;bottom:-1px;width:74%;height:9px;
+    transform:translateX(-50%);border-radius:50%;
+    background:radial-gradient(ellipse,rgba(0,0,0,.55),transparent 70%)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
+  .tierchip{position:absolute;top:6px;left:6px;z-index:3;font-family:"JetBrains Mono";
+    font-size:7.5px;letter-spacing:.14em;font-weight:700;padding:2px 5px;border-radius:4px;
+    text-transform:uppercase;background:rgba(7,11,18,.72);color:var(--tc,#6f8198);
+    border:1px solid var(--tc,#33506f)}
+
+  .info{padding:7px 9px 8px;position:relative;min-height:54px}
+  .nm{font-family:"Oswald";font-weight:600;font-size:13.5px;letter-spacing:.06em;color:#e7f2fc;line-height:1}
+  .nm.ph{color:#33506f;font-weight:500}
+  .rl{font-size:10px;color:var(--mute);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;line-height:1.05}
+  .rl.ph{color:#27405c}
+  .bar{height:4px;border-radius:3px;background:#10202f;margin-top:7px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:3px}
+
+  /* ===== editor sheet ===== */
+  #sheet{position:fixed;left:0;right:0;bottom:0;z-index:60;transform:translateY(105%);
+    transition:transform .25s cubic-bezier(.3,.9,.3,1);
+    background:linear-gradient(180deg,#0e1826,#0a121d);border-top:1px solid var(--edge2);
+    border-radius:16px 16px 0 0;max-height:78vh;display:flex;flex-direction:column;
+    box-shadow:0 -20px 60px rgba(0,0,0,.7)}
+  #sheet.on{transform:none}
+  .sheethead{display:flex;align-items:center;gap:10px;padding:12px 16px 8px}
+  .sheethead .t{font-family:"Oswald";font-weight:600;font-size:14px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--cyan)}
+  .sheethead .x{margin-left:auto;font-family:"JetBrains Mono";font-size:11px;color:var(--mute);
+    border:1px solid var(--edge);border-radius:6px;padding:5px 10px;cursor:pointer}
+  #sheetBody{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 16px 22px}
+  .frow{display:flex;gap:8px;margin-top:9px}
+  .f{flex:1}
+  .f label{display:block;font-family:"JetBrains Mono";font-size:8px;letter-spacing:.18em;
+    color:var(--dim);text-transform:uppercase;margin-bottom:4px}
+  .f input[type=text],.f input[type=number],.f select,.f textarea{
+    width:100%;background:#0a131e;border:1px solid var(--edge);border-radius:6px;
+    color:var(--ink);font-family:"Barlow Condensed";font-size:14px;padding:8px 9px;outline:none}
+  .f input:focus,.f select:focus,.f textarea:focus{border-color:var(--cyan)}
+  .f input[type=color]{width:100%;height:36px;background:#0a131e;border:1px solid var(--edge);
+    border-radius:6px;padding:3px;cursor:pointer}
+  .f input[type=range]{width:100%;accent-color:var(--cyan)}
+  .f textarea{min-height:54px;resize:vertical;font-size:13px;line-height:1.4}
+  .upbtn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;
+    font-family:"JetBrains Mono";font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:#9fc0dd;background:#0c1623;border:1.5px dashed var(--edge2);border-radius:7px;
+    padding:13px 8px;cursor:pointer}
+  .upbtn.loaded{border-style:solid;border-color:var(--green);color:var(--green)}
+  .clr{font-family:"JetBrains Mono";font-size:8.5px;color:var(--red);text-transform:uppercase;
+    letter-spacing:.1em;background:none;border:none;margin-top:4px;cursor:pointer;padding:2px}
+  .chk{display:flex;align-items:center;gap:8px;font-family:"JetBrains Mono";font-size:9.5px;
+    letter-spacing:.1em;color:var(--mute);text-transform:uppercase;margin-top:12px}
+  .chk input{width:17px;height:17px;accent-color:var(--red)}
+  details{margin-top:12px;border:1px solid var(--edge);border-radius:8px;padding:9px 11px;background:#0a131e}
+  details summary{font-family:"JetBrains Mono";font-size:9px;letter-spacing:.16em;color:var(--mute);
+    text-transform:uppercase;cursor:pointer;outline:none}
+  input[type=file]{display:none}
+
+  #toast{position:fixed;top:14px;left:50%;transform:translate(-50%,-80px);z-index:80;
+    font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.08em;color:#06101a;
+    background:var(--green);border-radius:8px;padding:9px 16px;transition:transform .3s;
+    box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  #toast.on{transform:translate(-50%,0)}
+  @media (prefers-reduced-motion: reduce){.char img{animation:none !important}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">FLOOR SCAFFOLD<small>15 SLOTS · TAP A SLOT TO LOAD IT</small></div>
+  <button class="tbtn" id="orientBtn">3 × 5</button>
+  <button class="tbtn" id="prefillBtn">Prefill</button>
+  <button class="tbtn" id="saveBtn">Save</button>
+  <button class="tbtn" id="loadBtn">Load</button>
+  <button class="tbtn hot" id="exportBtn">Export</button>
+</div>
+
+<div id="wrap"><div id="scaler"><div id="board"></div></div></div>
+
+<div id="sheet">
+  <div class="sheethead"><span class="t" id="sheetTitle">SLOT 1</span><span class="x" id="sheetClose">DONE</span></div>
+  <div id="sheetBody">
+    <div class="frow">
+      <div class="f"><label>Backdrop</label>
+        <button class="upbtn" id="upScene">▦ &nbsp;LOAD BACKDROP</button>
+        <button class="clr" id="clrScene" style="display:none">✕ remove backdrop</button>
+      </div>
+      <div class="f"><label>Avatar (cutout PNG)</label>
+        <button class="upbtn" id="upChar">웃 &nbsp;LOAD AVATAR</button>
+        <button class="clr" id="clrChar" style="display:none">✕ remove avatar</button>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="f" style="flex:1.4"><label>Name</label><input type="text" id="fName" placeholder="AGENT NAME"></div>
+      <div class="f" style="flex:1.6"><label>Role</label><input type="text" id="fRole" placeholder="e.g. Producer / Engineer"></div>
+    </div>
+    <div class="frow">
+      <div class="f"><label>Tier</label><input type="text" id="fTier" placeholder="STUDIO"></div>
+      <div class="f"><label>Accent</label><input type="color" id="fColor" value="#33c8ff"></div>
+      <div class="f"><label>Status</label>
+        <select id="fStatus">
+          <option value="deployed">Deployed</option>
+          <option value="standby">Standby</option>
+          <option value="maint">Maint</option>
+        </select></div>
+      <div class="f"><label>Load %</label><input type="number" id="fWl" min="0" max="100" value="50"></div>
+    </div>
+    <div class="frow">
+      <div class="f"><label>Avatar size <span id="vH" class="mono" style="color:var(--cyan)"></span></label>
+        <input type="range" id="fCharH" min="50" max="135" value="100"></div>
+      <div class="f"><label>Avatar position <span id="vX" class="mono" style="color:var(--cyan)"></span></label>
+        <input type="range" id="fCharX" min="0" max="75" value="8"></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="fFeat"> Featured slot (orchestrator emphasis)</label>
+    <details>
+      <summary>Persona · Voice lines · Capabilities</summary>
+      <div class="f" style="margin-top:9px"><label>Persona (focus-view quote)</label>
+        <textarea id="fPersona" placeholder="One or two sentences of character."></textarea></div>
+      <div class="f" style="margin-top:9px"><label>Voice lines — one per line (Ping button)</label>
+        <textarea id="fLines" placeholder="It's in the binder.&#10;Leg 6 of 10. On schedule."></textarea></div>
+      <div class="f" style="margin-top:9px"><label>Capabilities — comma separated</label>
+        <input type="text" id="fCaps" placeholder="Route models, Advance schematics"></div>
+      <div class="frow">
+        <div class="f"><label>Fatigue %</label><input type="number" id="fFat" min="0" max="100" value="30"></div>
+        <div class="f"><label>Move to slot</label>
+          <select id="fSlot"></select></div>
+      </div>
+    </details>
+  </div>
+</div>
+
+<input type="file" id="fileScene" accept="image/*">
+<input type="file" id="fileChar" accept="image/*">
+<input type="file" id="fileProj" accept=".json,application/json">
+<div id="toast">Saved</div>
+
+<script>
+/* ================================================================
+   STATE — 15 slots. Everything lives here; export bakes it.
+   ================================================================ */
+function blankSlot(){
+  return {name:'',role:'',tier:'',color:'#33c8ff',status:'standby',wl:50,fat:30,
+          persona:'',lines:[],caps:[],scene:null,char:null,charH:100,charX:8,featured:false};
+}
+let SLOTS = Array.from({length:15}, blankSlot);
+SLOTS[7].featured = true;
+
+/* slot 8 (index 7) is the exact centre in BOTH layouts */
+const LAYOUTS = {
+  landscape:{cols:5, w:1128, h:3*198 + 2*14 + 14},
+  portrait: {cols:3, w:672,  h:5*198 + 4*14 + 14},
+};
+let ORIENT = 'landscape';
+function applyOrient(){
+  const L = LAYOUTS[ORIENT];
+  board.style.width = L.w+'px';
+  board.style.gridTemplateColumns = 'repeat('+L.cols+',216px)';
+  document.getElementById('orientBtn').textContent = ORIENT==='landscape' ? '3 \u00D7 5' : '5 \u00D7 3';
+  fit();
+}
+
+const PRESET = [
+ ['LEMMY','Head of A&R','CREATIVE','#c9a24b'],['EDDIE','Producer / Engineer','STUDIO','#7fc8ff'],
+ ['GEDDY','Acoustician','STUDIO','#33c8ff'],['SLASH','Live Audio Engineer','LIVE','#ffb22e'],
+ ['HALFORD','Lighting Designer','LIVE','#b06bff'],['HETFIELD','Tour Manager','LIVE','#9aae12'],
+ ['GENE','Business / Royalties','BUSINESS','#3fe08a'],['DIME','Orchestrator','ANIMA','#ff4d52'],
+ ['NIKKI','Release Strategist','CAMPAIGN','#ff7ac0'],['GIGGUIDE','NZ Streetzine','CAMPAIGN','#ff9d3a'],
+ ['ANGUS','Studio Builder','TRADES','#56d2ff'],['RANDY','Cabinet Maker','TRADES','#caa46a'],
+ ['DIO','Stage Electrician','TRADES','#ff4d52'],['OZZY','Roadie / Fixer','TRADES','#b06bff'],
+ ['NEIL','FOH Concierge','FOH','#e8d9b0'],
+];
+
+/* ================================================================
+   IMAGE INTAKE — auto-optimise on load.
+   Backdrops → ≤720px wide JPEG. Avatars → ≤520px tall PNG (alpha kept).
+   ================================================================ */
+function readImage(file, kind, cb){
+  const fr = new FileReader();
+  fr.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const cv = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (kind==='scene' && w>720){ h = Math.round(h*720/w); w = 720; }
+      if (kind==='char' && h>520){ w = Math.round(w*520/h); h = 520; }
+      cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      cb(kind==='scene' ? cv.toDataURL('image/jpeg',.72) : cv.toDataURL('image/png'));
+    };
+    img.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+
+/* ================================================================
+   BOARD RENDER
+   ================================================================ */
+const board = document.getElementById('board');
+const STC = {deployed:['var(--green)','Deployed'],standby:['var(--dim)','Standby'],maint:['var(--amber)','Maint']};
+let editing = -1;
+
+function renderBoard(){
+  board.innerHTML = '';
+  SLOTS.forEach((s,i)=>{
+    const el = document.createElement('div');
+    el.className = 'cell' + (s.featured?' featured':'') + (i===editing?' editing':'');
+    el.style.setProperty('--tc', s.color);
+    const st = STC[s.status];
+    el.innerHTML =
+      '<div class="scene">' +
+        (s.scene ? '<img class="bg" src="'+s.scene+'">' : '<div class="wf-scene"><span>+ BACKDROP</span></div>') +
+        (s.tier ? '<span class="tierchip">'+esc(s.tier)+'</span>' : '') +
+        (s.char
+          ? '<div class="char" style="left:'+s.charX+'%"><img src="'+s.char+'" style="height:'+(s.charH*1.04)+'px"></div>'
+          : '<div class="wf-char"><span>+ AVATAR</span></div>') +
+        '<span class="slotno">'+(i+1)+'</span>' +
+      '</div>' +
+      '<div class="info">' +
+        '<div class="nm'+(s.name?'':' ph')+'">'+(esc(s.name)||'UNASSIGNED')+'</div>' +
+        '<div class="rl'+(s.role?'':' ph')+'">'+(esc(s.role)||'tap to edit')+'</div>' +
+        '<div class="stq" style="position:absolute;top:8px;right:9px;display:flex;align-items:center;gap:4px">' +
+          '<span style="width:7px;height:7px;border-radius:50%;background:'+st[0]+';box-shadow:0 0 7px '+st[0]+'"></span>' +
+          '<span class="mono" style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:'+st[0]+'">'+st[1]+'</span></div>' +
+        '<div class="bar"><i style="width:'+s.wl+'%;background:linear-gradient(90deg,'+s.color+','+s.color+'aa)"></i></div>' +
+      '</div>';
+    el.addEventListener('click', ()=> openEditor(i));
+    board.appendChild(el);
+  });
+  fit();
+}
+function esc(t){ return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+function fit(){
+  const L = LAYOUTS[ORIENT];
+  const w = document.getElementById('wrap').clientWidth - 12;
+  const sc = Math.min(1.08, w/L.w);
+  board.style.transform = 'scale('+sc+')';
+  const s = document.getElementById('scaler');
+  s.style.width = L.w*sc+'px'; s.style.height = L.h*sc+'px';
+}
+addEventListener('resize', fit);
+
+/* ================================================================
+   EDITOR SHEET
+   ================================================================ */
+const sheet = document.getElementById('sheet');
+const $ = id => document.getElementById(id);
+const slotSel = $('fSlot');
+for (let i=0;i<15;i++){ const o=document.createElement('option'); o.value=i; o.textContent='Slot '+(i+1); slotSel.appendChild(o); }
+
+function openEditor(i){
+  editing = i; const s = SLOTS[i];
+  $('sheetTitle').textContent = 'SLOT '+(i+1)+(s.name?' — '+s.name:'');
+  $('fName').value=s.name; $('fRole').value=s.role; $('fTier').value=s.tier;
+  $('fColor').value=s.color; $('fStatus').value=s.status; $('fWl').value=s.wl; $('fFat').value=s.fat;
+  $('fPersona').value=s.persona; $('fLines').value=s.lines.join('\n'); $('fCaps').value=s.caps.join(', ');
+  $('fCharH').value=s.charH; $('fCharX').value=s.charX; $('fFeat').checked=s.featured;
+  $('vH').textContent=s.charH+'%'; $('vX').textContent=s.charX+'%';
+  slotSel.value=i;
+  setUp($('upScene'),$('clrScene'),s.scene,'BACKDROP');
+  setUp($('upChar'),$('clrChar'),s.char,'AVATAR');
+  sheet.classList.add('on'); renderBoard();
+}
+function setUp(btn,clr,val,label){
+  btn.classList.toggle('loaded',!!val);
+  btn.innerHTML = val ? '✓ &nbsp;'+label+' LOADED — TAP TO REPLACE' : (label==='BACKDROP'?'▦':'웃')+' &nbsp;LOAD '+label;
+  clr.style.display = val ? 'block':'none';
+}
+$('sheetClose').addEventListener('click', ()=>{ sheet.classList.remove('on'); editing=-1; renderBoard(); });
+
+function bind(id, key, num){
+  $(id).addEventListener('input', ()=>{
+    if (editing<0) return;
+    SLOTS[editing][key] = num ? +$(id).value : $(id).value;
+    if (id==='fCharH') $('vH').textContent=$(id).value+'%';
+    if (id==='fCharX') $('vX').textContent=$(id).value+'%';
+    renderBoard();
+  });
+}
+bind('fName','name'); bind('fRole','role'); bind('fTier','tier'); bind('fColor','color');
+bind('fStatus','status'); bind('fWl','wl',1); bind('fFat','fat',1);
+bind('fPersona','persona'); bind('fCharH','charH',1); bind('fCharX','charX',1);
+$('fLines').addEventListener('input', ()=>{ if(editing>=0){ SLOTS[editing].lines=$('fLines').value.split('\n').map(l=>l.trim()).filter(Boolean); }});
+$('fCaps').addEventListener('input', ()=>{ if(editing>=0){ SLOTS[editing].caps=$('fCaps').value.split(',').map(c=>c.trim()).filter(Boolean); renderBoard(); }});
+$('fFeat').addEventListener('change', ()=>{ if(editing>=0){ SLOTS[editing].featured=$('fFeat').checked; renderBoard(); }});
+slotSel.addEventListener('change', ()=>{
+  if (editing<0) return;
+  const to = +slotSel.value;
+  [SLOTS[editing], SLOTS[to]] = [SLOTS[to], SLOTS[editing]];
+  openEditor(to);
+});
+
+$('upScene').addEventListener('click', ()=> $('fileScene').click());
+$('upChar').addEventListener('click', ()=> $('fileChar').click());
+$('fileScene').addEventListener('change', e=>{
+  if (!e.target.files[0] || editing<0) return;
+  readImage(e.target.files[0],'scene',d=>{ SLOTS[editing].scene=d; setUp($('upScene'),$('clrScene'),d,'BACKDROP'); renderBoard(); });
+  e.target.value='';
+});
+$('fileChar').addEventListener('change', e=>{
+  if (!e.target.files[0] || editing<0) return;
+  readImage(e.target.files[0],'char',d=>{ SLOTS[editing].char=d; setUp($('upChar'),$('clrChar'),d,'AVATAR'); renderBoard(); });
+  e.target.value='';
+});
+$('clrScene').addEventListener('click', ()=>{ SLOTS[editing].scene=null; setUp($('upScene'),$('clrScene'),null,'BACKDROP'); renderBoard(); });
+$('clrChar').addEventListener('click', ()=>{ SLOTS[editing].char=null; setUp($('upChar'),$('clrChar'),null,'AVATAR'); renderBoard(); });
+
+/* ================================================================
+   PREFILL / SAVE / LOAD
+   ================================================================ */
+$('orientBtn').addEventListener('click', ()=>{
+  ORIENT = ORIENT==='landscape' ? 'portrait' : 'landscape';
+  applyOrient();
+  toast(ORIENT==='portrait' ? 'Portrait — 3 across, 5 down' : 'Landscape — 5 across, 3 down');
+});
+$('prefillBtn').addEventListener('click', ()=>{
+  PRESET.forEach((p,i)=>{
+    const s = SLOTS[i];
+    if (!s.name){ s.name=p[0]; s.role=p[1]; s.tier=p[2]; s.color=p[3]; }
+  });
+  SLOTS[7].featured = true;
+  renderBoard(); toast('Roster names prefilled — images stay yours to load');
+});
+function download(name, text, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text],{type}));
+  a.download = name; a.click();
+  setTimeout(()=> URL.revokeObjectURL(a.href), 4000);
+}
+$('saveBtn').addEventListener('click', ()=>{
+  download('floor-project.json', JSON.stringify({v:1, orient:ORIENT, slots:SLOTS}), 'application/json');
+  toast('Project saved — floor-project.json');
+});
+$('loadBtn').addEventListener('click', ()=> $('fileProj').click());
+$('fileProj').addEventListener('change', e=>{
+  const f = e.target.files[0]; if (!f) return;
+  const fr = new FileReader();
+  fr.onload = ()=>{
+    try{
+      const d = JSON.parse(fr.result);
+      SLOTS = d.slots.map(s=> Object.assign(blankSlot(), s));
+      while (SLOTS.length<15) SLOTS.push(blankSlot());
+      ORIENT = d.orient || 'landscape';
+      applyOrient();
+      renderBoard(); toast('Project loaded');
+    }catch(err){ toast('Could not read that project file'); }
+  };
+  fr.readAsText(f); e.target.value='';
+});
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(window._tt); window._tt = setTimeout(()=> t.classList.remove('on'), 2400);
+}
+
+/* ================================================================
+   EXPORT — bakes SLOTS into a finished, self-contained dashboard.
+   Runtime is concat-only JS: no backticks, no script-close literals
+   (the close tag is always assembled as two halves, incl. this file).
+   ================================================================ */
+$('exportBtn').addEventListener('click', ()=>{
+  const L = LAYOUTS[ORIENT];
+  const cfg = JSON.stringify(SLOTS);
+  const css =
+'@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap");' +
+':root{--bg:#070b12;--panel:#0d141f;--panel2:#111b2a;--edge:#1d2c40;--edge2:#273b56;--ink:#dce8f5;--mute:#6f8198;--dim:#46586e;--cyan:#33c8ff;--amber:#ffb22e;--red:#ff4d52;--green:#3fe08a}' +
+'*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}html,body{background:var(--bg);height:100%}' +
+'body{font-family:"Barlow Condensed",system-ui,sans-serif;color:var(--ink);display:flex;flex-direction:column;overflow:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);background:radial-gradient(1200px 600px at 50% -10%,rgba(51,200,255,.07),transparent 60%),linear-gradient(180deg,#070b12,#05080d 60%,#04060a);-webkit-user-select:none;user-select:none}' +
+'.mono{font-family:"JetBrains Mono",monospace}' +
+'.topbar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:linear-gradient(180deg,#10202f,#0a131d);border-bottom:1px solid var(--edge2)}' +
+'.brand{flex:1;text-align:center;font-family:"Oswald";font-weight:700;letter-spacing:.4em;font-size:clamp(15px,3.4vw,26px);text-transform:uppercase;color:#eaf4ff;text-shadow:0 0 22px rgba(51,200,255,.45);padding-left:.4em}' +
+'.brand small{display:block;letter-spacing:.3em;font-size:8.5px;color:var(--mute);font-weight:500;margin-top:2px}' +
+'.clock{font-family:"JetBrains Mono";font-size:11px;color:var(--cyan);min-width:64px;text-align:right}' +
+'#wrap{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 0 6px}#scaler{position:relative;margin:0 auto}' +
+'#board{position:absolute;top:0;left:0;width:' + L.w + 'px;display:grid;grid-template-columns:repeat(' + L.cols + ',216px);gap:14px 12px;transform-origin:top left}' +
+'.cell{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--edge);border-radius:10px;overflow:hidden;cursor:pointer;position:relative;transition:border-color .2s,box-shadow .2s}' +
+'.cell:active{transform:scale(.98)}' +
+'.cell.featured{transform:scale(1.12);z-index:6;border-color:var(--tc);box-shadow:0 0 0 1px var(--tc),0 0 30px rgba(255,77,82,.4),0 14px 40px rgba(0,0,0,.6)}.cell.featured:active{transform:scale(1.09)}' +
+'.cell.flash{border-color:var(--tc);box-shadow:0 0 0 1px var(--tc),0 0 18px var(--tc)}' +
+'.scene{position:relative;height:140px;overflow:hidden;background:#0a131e}.scene img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.04) brightness(.94)}' +
+'.scene::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,11,18,.08),transparent 35%,rgba(7,11,18,.55) 92%)}' +
+'.tierchip{position:absolute;top:6px;left:6px;z-index:3;font-family:"JetBrains Mono";font-size:7.5px;letter-spacing:.14em;font-weight:700;padding:2px 5px;border-radius:4px;text-transform:uppercase;background:rgba(7,11,18,.72);color:var(--tc);border:1px solid var(--tc)}' +
+'.char{position:absolute;bottom:4px;z-index:2;transform-origin:bottom center}.char img{display:block;width:auto;filter:drop-shadow(0 6px 6px rgba(0,0,0,.6));transform-origin:bottom center;animation:bob 3s ease-in-out infinite;animation-delay:var(--d,0s)}' +
+'.char::after{content:"";position:absolute;left:50%;bottom:-1px;width:74%;height:9px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.55),transparent 70%)}' +
+'.char.groove img{animation:groove .55s ease-in-out infinite}.char.wave img{animation:rockon .7s ease-in-out infinite}' +
+'@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}' +
+'@keyframes groove{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}' +
+'@keyframes rockon{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(5deg) translateY(-5px)}}' +
+'.info{padding:7px 9px 8px;position:relative;min-height:54px}.nm{font-family:"Oswald";font-weight:600;font-size:13.5px;letter-spacing:.06em;color:#e7f2fc;line-height:1}' +
+'.rl{font-size:10px;color:var(--mute);letter-spacing:.05em;text-transform:uppercase;margin-top:2px}' +
+'.bar{height:4px;border-radius:3px;background:#10202f;margin-top:7px;overflow:hidden}.bar i{display:block;height:100%;border-radius:3px}' +
+'#ticker{border-top:1px solid var(--edge2);background:#0a131d;padding:7px 14px;display:flex;gap:10px;align-items:center;min-height:32px}' +
+'#ticker .tag{font-family:"JetBrains Mono";font-size:8.5px;letter-spacing:.2em;color:var(--cyan);flex:none}' +
+'#tk{font-family:"JetBrains Mono";font-size:10.5px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .18s}' +
+'#focus{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;background:rgba(4,6,10,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}#focus.on{display:flex}' +
+'#fScene{position:relative;width:min(92vw,460px);height:min(58vw,290px);border:1px solid var(--edge2);border-radius:12px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.7)}' +
+'#fScene img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}' +
+'#fScene::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,11,18,.05),transparent 30%,rgba(7,11,18,.5) 95%)}' +
+'#fChar{position:absolute;bottom:2px;z-index:2}#fChar img{width:auto;filter:drop-shadow(0 10px 10px rgba(0,0,0,.65));transform-origin:bottom center;animation:bob 3s ease-in-out infinite}' +
+'#fChar.wave img{animation:rockon .7s ease-in-out infinite}' +
+'.fbubble{position:absolute;z-index:5;left:28%;bottom:80%;max-width:240px;width:max-content;background:var(--panel);border:1px solid var(--fc,#33c8ff);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--ink);opacity:0;transform:translateY(8px) scale(.9);transition:.2s}.fbubble.on{opacity:1;transform:none}' +
+'#fPanel{width:min(92vw,460px)}#fPanel .head{display:flex;align-items:baseline;gap:10px}' +
+'#fPanel .nm2{font-family:"Oswald";font-weight:700;font-size:22px;letter-spacing:.1em;color:var(--fc)}' +
+'#fPanel .rl2{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.12em}' +
+'#fPanel .tier{margin-left:auto;font-family:"JetBrains Mono";font-size:9px;letter-spacing:.14em;color:var(--fc);border:1px solid var(--fc);border-radius:4px;padding:2px 6px}' +
+'.persona{font-size:13px;color:#b9cadc;font-style:italic;margin-top:8px;line-height:1.45}' +
+'.gauges{display:flex;gap:10px;margin-top:10px}.g{flex:1;background:#0a131e;border:1px solid var(--edge);border-radius:8px;padding:7px 9px}' +
+'.g .l{font-family:"JetBrains Mono";font-size:8px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase}.g .v{font-family:"Oswald";font-weight:700;font-size:19px;margin-top:1px}' +
+'.g .track{height:5px;border-radius:3px;background:#10202f;margin-top:5px;overflow:hidden}.g .track i{display:block;height:100%}' +
+'.caps{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}.cap{font-family:"JetBrains Mono";font-size:8.5px;color:#b9cadc;background:#0a131e;border:1px solid var(--edge);border-left:3px solid var(--fc);border-radius:4px;padding:4px 7px}' +
+'.fbtns{display:flex;gap:8px;margin-top:12px}.btn{flex:1;font-family:"JetBrains Mono";font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);background:#0c1623;border:1px solid var(--edge);padding:11px;border-radius:7px;cursor:pointer;text-align:center}' +
+'.btn.hot{color:#fff;border-color:var(--fc);box-shadow:0 0 14px var(--fc)}' +
+'@media (prefers-reduced-motion:reduce){.char img,#fChar img{animation:none!important}}';
+
+  const js =
+'var CFG=' + cfg + ';\n' +
+'var STC={deployed:["var(--green)","Deployed"],standby:["var(--dim)","Standby"],maint:["var(--amber)","Maint"]};\n' +
+'var board=document.getElementById("board"),cells=[],cur=null;\n' +
+'function esc(t){return (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;");}\n' +
+'CFG.forEach(function(s,i){\n' +
+'  var el=document.createElement("div");el.className="cell"+(s.featured?" featured":"");el.style.setProperty("--tc",s.color);\n' +
+'  var st=STC[s.status]||STC.standby;\n' +
+'  el.innerHTML="<div class=scene>"+(s.scene?"<img class=bg src=\'"+s.scene+"\'>":"")\n' +
+'    +(s.tier?"<span class=tierchip>"+esc(s.tier)+"</span>":"")\n' +
+'    +(s.char?"<div class=char style=\'left:"+s.charX+"%;--d:"+(Math.random()*2)+"s\'><img src=\'"+s.char+"\' style=\'height:"+(s.charH*1.04)+"px\'></div>":"")\n' +
+'    +"</div><div class=info><div class=nm>"+(esc(s.name)||"&mdash;")+"</div><div class=rl>"+esc(s.role)+"</div>"\n' +
+'    +"<div style=\'position:absolute;top:8px;right:9px;display:flex;align-items:center;gap:4px\'><span style=\'width:7px;height:7px;border-radius:50%;background:"+st[0]+";box-shadow:0 0 7px "+st[0]+"\'></span><span class=mono style=\'font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:"+st[0]+"\'>"+st[1]+"</span></div>"\n' +
+'    +"<div class=bar><i style=\'width:"+s.wl+"%;background:linear-gradient(90deg,"+s.color+","+s.color+"aa)\'></i></div></div>";\n' +
+'  el.addEventListener("click",function(){openFocus(i);});board.appendChild(el);cells.push(el);\n' +
+'});\n' +
+'function fit(){var w=document.getElementById("wrap").clientWidth-12,dw=' + L.w + ',dh=' + L.h + ';var sc=Math.min(1.08,w/dw);\n' +
+'  board.style.transform="scale("+sc+")";var s=document.getElementById("scaler");s.style.width=dw*sc+"px";s.style.height=dh*sc+"px";}\n' +
+'fit();addEventListener("resize",fit);\n' +
+'var FEED=CFG.filter(function(s){return s.name;}).map(function(s){return s.name+" \\u2014 "+(s.role||"on the floor")+".";});\n' +
+'if(!FEED.length)FEED=["Floor is quiet."];var fi=0,tk=document.getElementById("tk");\n' +
+'function ticker(m){tk.style.opacity=0;setTimeout(function(){tk.textContent=m;tk.style.opacity=1;},180);}\n' +
+'ticker(FEED[0]);setInterval(function(){fi=(fi+1)%FEED.length;ticker(FEED[fi]);},5200);\n' +
+'setInterval(function(){var i=Math.floor(Math.random()*CFG.length);var c=cells[i].querySelector(".char");\n' +
+'  cells[i].classList.add("flash");if(c){c.classList.add("groove");setTimeout(function(){c.classList.remove("groove");},1600);}\n' +
+'  setTimeout(function(){cells[i].classList.remove("flash");},1700);},3400);\n' +
+'var focus=document.getElementById("focus"),fChar=document.getElementById("fChar"),fB=document.getElementById("fBubble");\n' +
+'function gc(v,a,b){return v>a?"var(--red)":v>b?"var(--amber)":"var(--green)";}\n' +
+'function openFocus(i){cur=CFG[i];var st=STC[cur.status]||STC.standby;\n' +
+'  var old=document.querySelector("#fScene img.bg");if(old)old.remove();\n' +
+'  if(cur.scene){var bg=document.createElement("img");bg.className="bg";bg.src=cur.scene;document.getElementById("fScene").prepend(bg);}\n' +
+'  fChar.innerHTML=cur.char?"<img src=\'"+cur.char+"\' style=\'height:"+Math.round(cur.charH*2)+"px\'>":"";\n' +
+'  fChar.style.left=Math.min(cur.charX,55)+"%";fChar.classList.remove("wave");\n' +
+'  document.getElementById("fPanel").style.setProperty("--fc",cur.color);\n' +
+'  document.getElementById("fScene").style.setProperty("--fc",cur.color);fB.style.borderColor=cur.color;\n' +
+'  document.getElementById("fName").textContent=cur.name||"\\u2014";\n' +
+'  document.getElementById("fRole").textContent=cur.role||"";\n' +
+'  document.getElementById("fTier").textContent=cur.tier||"AGENT";\n' +
+'  document.getElementById("fPersona").textContent=cur.persona?"\\u201C"+cur.persona+"\\u201D":"";\n' +
+'  var wl=cur.wl||0,ft=cur.fat||0;\n' +
+'  document.getElementById("gWl").textContent=wl+"%";document.getElementById("gWl").style.color=gc(wl,80,55);\n' +
+'  document.getElementById("gWlB").style.cssText="width:"+wl+"%;background:"+gc(wl,80,55);\n' +
+'  document.getElementById("gFat").textContent=ft+"%";document.getElementById("gFat").style.color=gc(ft,75,45);\n' +
+'  document.getElementById("gFatB").style.cssText="width:"+ft+"%;background:"+gc(ft,75,45);\n' +
+'  document.getElementById("gSt").textContent=st[1].toUpperCase();document.getElementById("gSt").style.color=st[0];\n' +
+'  document.getElementById("fCaps").innerHTML=(cur.caps||[]).map(function(c){return "<span class=cap style=\'border-left-color:"+cur.color+"\'>"+esc(c)+"</span>";}).join("");\n' +
+'  fB.classList.remove("on");focus.classList.add("on");}\n' +
+'document.getElementById("closeBtn").addEventListener("click",function(){focus.classList.remove("on");});\n' +
+'focus.addEventListener("click",function(e){if(e.target===focus)focus.classList.remove("on");});\n' +
+'document.getElementById("pingBtn").addEventListener("click",function(){if(!cur)return;\n' +
+'  var L=(cur.lines&&cur.lines.length)?cur.lines:["Online."];\n' +
+'  fChar.classList.add("wave");fB.textContent=L[Math.floor(Math.random()*L.length)];fB.classList.add("on");\n' +
+'  clearTimeout(window._p);window._p=setTimeout(function(){fChar.classList.remove("wave");fB.classList.remove("on");},2400);});\n' +
+'function tick(){document.getElementById("clock").textContent=new Date().toLocaleTimeString("en-NZ",{hour12:false});}\n' +
+'setInterval(tick,1000);tick();';
+
+  const named = SLOTS.filter(s=>s.name).length;
+  const html =
+'<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">' +
+'<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">' +
+'<title>NAKED STAFF \u2014 Studio Floor</title><style>' + css + '</style></head><body>' +
+'<div class="topbar"><span class="mono" style="font-size:10px;letter-spacing:.28em;color:var(--cyan)">FLOOR</span>' +
+'<div class="brand">NAKED STAFF<small>STUDIO FLOOR \u00B7 ' + named + ' AGENTS \u00B7 LIVE</small></div>' +
+'<span class="clock mono" id="clock"></span></div>' +
+'<div id="wrap"><div id="scaler"><div id="board"></div></div></div>' +
+'<div id="ticker"><span class="tag">FEED \u25B8</span><span id="tk"></span></div>' +
+'<div id="focus"><div id="fScene"><div class="fbubble" id="fBubble"></div><div id="fChar"></div></div>' +
+'<div id="fPanel"><div class="head"><span class="nm2" id="fName"></span><span class="rl2" id="fRole"></span><span class="tier" id="fTier"></span></div>' +
+'<div class="persona" id="fPersona"></div>' +
+'<div class="gauges"><div class="g"><div class="l">Workload</div><div class="v" id="gWl"></div><div class="track"><i id="gWlB"></i></div></div>' +
+'<div class="g"><div class="l">Fatigue</div><div class="v" id="gFat"></div><div class="track"><i id="gFatB"></i></div></div>' +
+'<div class="g"><div class="l">Status</div><div class="v" id="gSt" style="font-size:14px;line-height:1.5"></div></div></div>' +
+'<div class="caps" id="fCaps"></div>' +
+'<div class="fbtns"><button class="btn hot" id="pingBtn">Ping</button><button class="btn" id="closeBtn">Floor</button></div>' +
+'</div></div>' +
+'<script>' + js + '</scr' + 'ipt></body></html>';
+
+  download('naked-staff-studio-floor.html', html, 'text/html');
+  toast('Dashboard exported — ' + named + ' agents baked in');
+});
+
+/* init */
+renderBoard();
+</script>
+</body>
+</html>

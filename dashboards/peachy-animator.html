@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PEACHY ANIMATOR</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#08080d;
+  --surface:#0f0f18;
+  --edge:#1c1c2e;
+  --edge2:#2a2a42;
+  --ink:#e8e4ff;
+  --dim:#5a5670;
+  --peach:#ff7b54;
+  --peach2:#ff4d8f;
+  --cyan:#00d4ff;
+  --gold:#ffd166;
+  --green:#06ffa5;
+  --purple:#9b5de5;
+  --red:#ff3366;
+}
+
+body{
+  font-family:'JetBrains Mono',monospace;
+  background:var(--bg);color:var(--ink);
+  min-height:100svh;overflow-x:hidden;
+}
+
+/* GRAIN */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:1000;opacity:.4;
+}
+
+/* TOPBAR */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 18px;
+  background:rgba(8,8,13,.92);
+  border-bottom:1px solid var(--edge2);
+  backdrop-filter:blur(20px);
+  gap:12px;
+}
+.logo{
+  font-family:'Fraunces',serif;
+  font-size:20px;font-weight:900;
+  letter-spacing:-.03em;
+  background:linear-gradient(135deg,var(--peach),var(--peach2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  white-space:nowrap;
+}
+.logo span{
+  font-style:italic;font-weight:300;
+  -webkit-text-fill-color:var(--dim);
+  font-size:11px;letter-spacing:.2em;
+  display:block;margin-top:-4px;
+}
+.engine-badge{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface);border:1px solid var(--edge2);
+  border-radius:8px;padding:6px 12px;cursor:pointer;
+  transition:.15s;
+}
+.engine-badge:hover{border-color:var(--peach);}
+.engine-dot{width:7px;height:7px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.engine-name{font-size:9px;letter-spacing:.18em;color:var(--ink);text-transform:uppercase;}
+.engine-sub{font-size:8px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;}
+
+.topbar-actions{display:flex;gap:6px;}
+.btn{
+  font-family:'JetBrains Mono';font-size:9px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;
+  padding:7px 14px;border-radius:6px;cursor:pointer;
+  transition:.15s;border:none;white-space:nowrap;
+}
+.btn-ghost{background:none;border:1px solid var(--edge2);color:var(--dim);}
+.btn-ghost:hover{border-color:var(--peach);color:var(--peach);}
+.btn-peach{background:linear-gradient(135deg,var(--peach),var(--peach2));color:#fff;font-weight:700;}
+.btn-peach:hover{opacity:.85;}
+.btn-gold{background:var(--gold);color:#000;font-weight:700;}
+.btn-gold:hover{background:#ffe47a;}
+
+/* MAIN LAYOUT */
+.main{display:grid;grid-template-columns:220px 1fr 240px;min-height:calc(100svh - 54px);}
+
+/* ── LEFT PANEL — CHARACTER ── */
+.panel{
+  background:var(--surface);
+  border-right:1px solid var(--edge);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+}
+.panel-right{border-right:none;border-left:1px solid var(--edge);}
+.panel-head{
+  padding:14px 14px 10px;
+  border-bottom:1px solid var(--edge);
+  flex:none;
+}
+.panel-title{
+  font-size:8px;letter-spacing:.25em;color:var(--peach);
+  text-transform:uppercase;font-weight:700;margin-bottom:2px;
+}
+.panel-sub{font-size:9px;color:var(--dim);line-height:1.5;}
+
+/* UPLOAD ZONE */
+.upload-zone{
+  margin:12px;border-radius:8px;
+  border:2px dashed var(--edge2);
+  padding:20px 12px;text-align:center;
+  cursor:pointer;transition:.2s;position:relative;
+  overflow:hidden;
+}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--peach);background:rgba(255,123,84,.05);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon{font-size:24px;margin-bottom:6px;display:block;}
+.upload-label{font-size:8px;letter-spacing:.15em;color:var(--dim);text-transform:uppercase;}
+.upload-hint{font-size:7px;color:var(--dim);opacity:.5;margin-top:3px;}
+
+/* CHARACTER PREVIEW */
+.char-preview{
+  margin:0 12px 12px;border-radius:8px;
+  background:repeating-conic-gradient(#141420 0% 25%, #0f0f1a 0% 50%) 0 0 / 12px 12px;
+  border:1px solid var(--edge2);
+  min-height:140px;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.char-preview img{max-height:160px;max-width:100%;object-fit:contain;}
+.char-preview .empty-ph{font-size:8px;color:var(--dim);letter-spacing:.15em;text-transform:uppercase;}
+.char-name-input{
+  margin:0 12px 8px;
+  background:var(--edge);border:1px solid var(--edge2);border-radius:6px;
+  padding:8px 10px;color:var(--ink);font-family:'JetBrains Mono';
+  font-size:10px;letter-spacing:.1em;width:calc(100% - 24px);outline:none;
+  text-transform:uppercase;
+}
+.char-name-input:focus{border-color:var(--peach);}
+.char-name-input::placeholder{color:var(--dim);}
+
+/* STYLE REF */
+.style-ref-zone{
+  margin:0 12px 12px;border-radius:8px;
+  border:1px dashed var(--edge2);
+  padding:10px;cursor:pointer;transition:.2s;
+  position:relative;overflow:hidden;
+  display:flex;gap:10px;align-items:center;
+}
+.style-ref-zone:hover{border-color:var(--purple);}
+.style-ref-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.style-thumb{
+  width:48px;height:48px;border-radius:6px;
+  background:var(--edge);flex:none;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.style-thumb img{width:100%;height:100%;object-fit:cover;}
+.style-ref-text .t1{font-size:8px;letter-spacing:.15em;color:var(--purple);text-transform:uppercase;font-weight:700;}
+.style-ref-text .t2{font-size:8px;color:var(--dim);margin-top:2px;line-height:1.4;}
+
+/* STYLE PALETTE EXTRACTED */
+.style-palette{
+  margin:0 12px 12px;display:flex;gap:4px;
+}
+.swatch{height:20px;border-radius:4px;flex:1;transition:.3s;}
+
+/* ── CENTRE — STAGE ── */
+.stage-area{
+  display:flex;flex-direction:column;
+  background:var(--bg);
+}
+.stage-wrap{
+  flex:1;position:relative;overflow:hidden;
+  min-height:400px;
+}
+#stage{
+  position:absolute;inset:0;
+  background:repeating-conic-gradient(#0d0d18 0% 25%, #080810 0% 50%) 0 0 / 20px 20px;
+}
+#stage-bg{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;display:none;
+}
+
+/* STAGE CHARACTERS */
+.sc{
+  position:absolute;cursor:grab;user-select:none;touch-action:none;
+  transform-origin:bottom center;
+}
+.sc:active{cursor:grabbing;}
+.sc img{display:block;pointer-events:none;height:var(--h,160px);width:auto;}
+.sc .sc-lbl{
+  position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+  font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gold);text-shadow:0 0 12px rgba(255,209,102,.6);
+  white-space:nowrap;pointer-events:none;opacity:0;transition:.2s;
+}
+.sc.sel .sc-lbl{opacity:1;}
+.sc.sel img{filter:drop-shadow(0 0 16px var(--peach)) drop-shadow(0 0 4px rgba(255,123,84,.5));}
+
+/* ANIMATION CLASSES */
+.anim-idle .sc-inner{animation:idleBob 2s ease-in-out infinite;}
+.anim-talk .sc-inner{animation:talkBob 0.4s ease-in-out infinite;}
+.anim-jump .sc-inner{animation:jumpUp 0.6s ease-in-out infinite;}
+.anim-shake .sc-inner{animation:headShake 0.5s ease-in-out infinite;}
+.anim-spin .sc-inner{animation:spinAround 1s linear infinite;}
+.anim-bounce .sc-inner{animation:bounceIn 0.8s ease-in-out infinite;}
+.anim-wave .sc-inner{animation:waveArm 1s ease-in-out infinite;}
+.anim-stomp .sc-inner{animation:stomp 0.5s ease-in-out infinite;}
+.anim-float .sc-inner{animation:float 3s ease-in-out infinite;}
+.anim-wiggle .sc-inner{animation:wiggle 0.3s ease-in-out infinite;}
+
+@keyframes idleBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+@keyframes talkBob{0%,100%{transform:scaleY(1) translateY(0);}50%{transform:scaleY(0.97) translateY(2px);}}
+@keyframes jumpUp{0%,100%{transform:translateY(0) scaleX(1);}30%{transform:translateY(-28px) scaleX(0.95);}60%{transform:translateY(-28px) scaleX(0.95);}80%{transform:translateY(4px) scaleX(1.05);}}
+@keyframes headShake{0%,100%{transform:rotate(0deg);}25%{transform:rotate(-8deg);}75%{transform:rotate(8deg);}}
+@keyframes spinAround{from{transform:rotateY(0deg);}to{transform:rotateY(360deg);}}
+@keyframes bounceIn{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-16px) scale(1.04);}}
+@keyframes waveArm{0%,100%{transform:rotate(0deg);}25%{transform:rotate(-6deg) translateX(-4px);}75%{transform:rotate(6deg) translateX(4px);}}
+@keyframes stomp{0%,100%{transform:translateY(0) scaleY(1);}40%{transform:translateY(-12px) scaleY(1.05);}60%{transform:translateY(4px) scaleY(0.9);}80%{transform:translateY(0) scaleY(1.02);}}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg);}33%{transform:translateY(-10px) rotate(2deg);}66%{transform:translateY(-6px) rotate(-2deg);}}
+@keyframes wiggle{0%,100%{transform:rotate(0deg) scale(1);}20%{transform:rotate(-10deg) scale(1.05);}40%{transform:rotate(10deg) scale(1.05);}60%{transform:rotate(-6deg) scale(1.02);}80%{transform:rotate(6deg) scale(1.02);}}
+
+/* STAGE TOOLBAR */
+.stage-toolbar{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px;flex-wrap:wrap;
+  background:rgba(8,8,13,.9);border-top:1px solid var(--edge);
+  backdrop-filter:blur(12px);flex:none;
+}
+.tlbl{font-size:7px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;}
+.sz-slider{
+  -webkit-appearance:none;width:80px;height:3px;border-radius:2px;
+  background:var(--edge2);outline:none;cursor:pointer;
+}
+.sz-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--peach);cursor:pointer;
+  box-shadow:0 0 8px rgba(255,123,84,.5);
+}
+.tbtn{
+  font-family:'JetBrains Mono';font-size:8px;letter-spacing:.1em;
+  text-transform:uppercase;padding:5px 10px;border-radius:5px;
+  cursor:pointer;background:var(--edge);border:1px solid var(--edge2);
+  color:var(--ink);transition:.13s;white-space:nowrap;
+}
+.tbtn:hover{border-color:var(--cyan);color:var(--cyan);}
+.tbtn.danger:hover{border-color:var(--red);color:var(--red);}
+.stage-status{font-size:8px;letter-spacing:.1em;color:var(--dim);margin-left:auto;}
+
+/* ── RIGHT PANEL — INSTRUCTIONS ── */
+.instr-section{padding:10px 12px;border-bottom:1px solid var(--edge);}
+.instr-title{font-size:7px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;margin-bottom:8px;}
+
+/* ANIMATION PICKER */
+.anim-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.anim-btn{
+  padding:8px 6px;border-radius:6px;
+  background:var(--edge);border:1px solid var(--edge2);
+  color:var(--dim);font-family:'JetBrains Mono';
+  font-size:8px;letter-spacing:.1em;text-transform:uppercase;
+  cursor:pointer;transition:.15s;text-align:center;line-height:1.3;
+}
+.anim-btn:hover{border-color:var(--peach);color:var(--peach);background:rgba(255,123,84,.08);}
+.anim-btn.active{border-color:var(--peach);color:var(--peach);background:rgba(255,123,84,.12);
+  box-shadow:0 0 12px rgba(255,123,84,.2);}
+.anim-btn .anim-icon{font-size:16px;display:block;margin-bottom:3px;}
+
+/* ACTION SETS */
+.action-set-btn{
+  width:100%;padding:9px 10px;border-radius:6px;
+  background:var(--edge);border:1px solid var(--edge2);
+  color:var(--dim);font-family:'JetBrains Mono';
+  font-size:8px;letter-spacing:.12em;text-transform:uppercase;
+  cursor:pointer;transition:.15s;text-align:left;
+  display:flex;align-items:center;gap:8px;margin-bottom:4px;
+}
+.action-set-btn:hover{border-color:var(--gold);color:var(--gold);}
+.action-set-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(255,209,102,.06);}
+.action-set-icon{font-size:16px;flex:none;}
+.action-set-text .t1{color:inherit;font-weight:700;}
+.action-set-text .t2{font-size:7px;color:var(--dim);margin-top:1px;letter-spacing:.08em;}
+
+/* ENGINE ADAPTER PANEL */
+.adapter-list{display:flex;flex-direction:column;gap:4px;}
+.adapter-btn{
+  width:100%;padding:9px 10px;border-radius:6px;
+  background:var(--edge);border:1px solid var(--edge2);
+  cursor:pointer;transition:.15s;text-align:left;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;
+}
+.adapter-btn:hover{border-color:var(--cyan);}
+.adapter-btn.active{border-color:var(--green);background:rgba(6,255,165,.04);}
+.adapter-info .a1{font-size:9px;color:var(--ink);letter-spacing:.1em;text-transform:uppercase;font-weight:700;}
+.adapter-info .a2{font-size:8px;color:var(--dim);margin-top:1px;letter-spacing:.06em;}
+.adapter-status{font-size:7px;padding:3px 7px;border-radius:10px;white-space:nowrap;letter-spacing:.1em;text-transform:uppercase;font-weight:700;}
+.adapter-status.ready{background:rgba(6,255,165,.12);color:var(--green);}
+.adapter-status.plug{background:rgba(155,93,229,.12);color:var(--purple);}
+.adapter-status.coming{background:rgba(90,86,112,.12);color:var(--dim);}
+
+/* MANIFEST VIEWER */
+.manifest-box{
+  margin:10px 12px;border-radius:8px;
+  background:var(--bg);border:1px solid var(--edge2);
+  padding:10px;font-size:8px;color:var(--green);
+  line-height:1.7;max-height:160px;overflow-y:auto;
+  white-space:pre;
+}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--edge2);border-radius:2px;}
+
+/* CAST RAIL (below stage) */
+.cast-rail{
+  display:flex;gap:8px;padding:10px 14px;
+  overflow-x:auto;background:var(--surface);
+  border-top:1px solid var(--edge);flex:none;
+}
+.cast-chip{
+  flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;transition:.15s;
+  background:var(--edge);border:1px solid var(--edge2);
+  border-radius:8px;padding:8px 10px;min-width:68px;
+}
+.cast-chip:hover{border-color:var(--peach);}
+.cast-chip.active{border-color:var(--green);box-shadow:0 0 10px rgba(6,255,165,.2);}
+.cast-chip img{height:44px;width:auto;object-fit:contain;}
+.cast-chip .cc-name{font-size:7px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;text-align:center;}
+.cast-chip .cc-anim{font-size:6px;color:var(--peach);text-transform:uppercase;letter-spacing:.08em;margin-top:1px;}
+.cast-add{
+  flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;cursor:pointer;border:1px dashed var(--edge2);border-radius:8px;
+  padding:8px 10px;min-width:68px;min-height:76px;transition:.15s;color:var(--dim);font-size:9px;
+}
+.cast-add:hover{border-color:var(--peach);color:var(--peach);}
+
+/* EXPORT OVERLAY */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.9);
+  z-index:500;display:none;align-items:center;justify-content:center;
+  padding:20px;backdrop-filter:blur(12px);
+}
+.overlay.open{display:flex;}
+.overlay-box{
+  background:var(--surface);border:1px solid var(--edge2);border-radius:16px;
+  padding:24px;max-width:min(480px,95vw);width:100%;
+}
+.overlay-title{
+  font-family:'Fraunces',serif;font-size:22px;font-weight:700;
+  background:linear-gradient(135deg,var(--peach),var(--peach2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:6px;
+}
+.overlay-sub{font-size:9px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px;}
+.manifest-output{
+  background:var(--bg);border:1px solid var(--edge2);border-radius:8px;
+  padding:14px;font-size:8px;color:var(--green);line-height:1.8;
+  white-space:pre;overflow:auto;max-height:240px;margin-bottom:16px;
+}
+.overlay-actions{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* BUBBLES */
+.sc-bubble{
+  position:absolute;bottom:calc(100% + 6px);left:50%;
+  transform:translate(-50%,6px) scale(.9);opacity:0;transition:.18s;
+  background:var(--surface);border:1px solid var(--gold);border-radius:8px;
+  padding:6px 10px;font-size:9px;color:var(--ink);width:max-content;max-width:180px;
+  pointer-events:none;z-index:50;white-space:normal;line-height:1.4;text-transform:none;letter-spacing:0;
+}
+.sc-bubble.show{opacity:1;transform:translate(-50%,0) scale(1);}
+
+/* SEQUENCE TWEEN */
+.sc.tween{transition-property:left,top;transition-timing-function:ease-in-out;}
+.sc{perspective:600px;}
+
+@media (prefers-reduced-motion: reduce){
+  .sc-inner,.engine-dot{animation:none !important;}
+  .sc.tween{transition:none !important;}
+}
+
+/* MOBILE — left panel becomes a horizontal strip, everything reachable */
+@media(max-width:700px){
+  .main{display:flex;flex-direction:column;min-height:calc(100svh - 54px);}
+  .panel{flex-direction:row;align-items:center;overflow-x:auto;overflow-y:hidden;
+    border-right:none;border-bottom:1px solid var(--edge);flex:none;}
+  .panel .panel-head{display:none;}
+  .upload-zone{margin:8px;padding:12px 10px;min-width:120px;flex:none;}
+  .char-preview{min-height:84px;min-width:90px;margin:8px 0;flex:none;}
+  .char-preview img{max-height:84px;}
+  .char-name-input{width:130px;margin:8px;flex:none;}
+  .style-ref-zone{margin:8px;width:160px;flex:none;}
+  .style-palette{display:none !important;}
+  .panel > div{flex:none;}
+  .stage-area{flex:1;}
+  .stage-wrap{min-height:300px;}
+  .panel-right{flex-direction:column;border-left:none;border-top:1px solid var(--edge);max-height:40svh;}
+  .topbar-actions{flex-wrap:wrap;justify-content:flex-end;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    PEACHY ANIMATOR
+    <span>Visual World Engine · v.1.1</span>
+  </div>
+  <div class="engine-badge" onclick="openEngineSelect()">
+    <div class="engine-dot" id="engineDot"></div>
+    <div>
+      <div class="engine-name" id="engineName">CSS Engine</div>
+      <div class="engine-sub" id="engineSub">Built-in · Zero deps</div>
+    </div>
+    <span style="color:var(--dim);font-size:10px;">⇅</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" onclick="saveScene()">💾 Save</button>
+    <button class="btn btn-ghost" onclick="document.getElementById('sceneFile').click()">📂 Load</button>
+    <button class="btn btn-gold" onclick="exportPlayer()">⬇ Scene</button>
+    <button class="btn btn-ghost" onclick="clearStage()">Clear</button>
+    <button class="btn btn-ghost" onclick="openManifest()">📋 Manifest</button>
+    <button class="btn btn-peach" onclick="addToStage()">+ Add to Stage</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT: CHARACTER BUILDER -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Character</div>
+      <div class="panel-sub">Upload sprite + style ref</div>
+    </div>
+
+    <!-- Sprite upload -->
+    <div class="upload-zone" id="spriteZone" ondragover="event.preventDefault()" ondrop="handleSpriteDrop(event)">
+      <input type="file" accept="image/*" onchange="handleSpriteFile(this)">
+      <span class="upload-icon">🎭</span>
+      <div class="upload-label">Drop sprite PNG</div>
+      <div class="upload-hint">Transparent background preferred</div>
+    </div>
+
+    <div class="char-preview" id="charPreview">
+      <span class="empty-ph">No sprite</span>
+    </div>
+
+    <input class="char-name-input" id="charNameInput" placeholder="Character name..." maxlength="20">
+
+    <!-- Style reference -->
+    <div style="padding:0 12px 6px;">
+      <div class="instr-title">Style Reference</div>
+    </div>
+    <div class="style-ref-zone" id="styleZone">
+      <input type="file" accept="image/*" onchange="handleStyleFile(this)">
+      <div class="style-thumb" id="styleThumb">
+        <span style="font-size:18px;">🎨</span>
+      </div>
+      <div class="style-ref-text">
+        <div class="t1">Upload Style Ref</div>
+        <div class="t2">Visual DNA extracted<br>& applied to generation</div>
+      </div>
+    </div>
+
+    <div class="style-palette" id="stylePalette" style="display:none;">
+      <div class="swatch" id="sw1"></div>
+      <div class="swatch" id="sw2"></div>
+      <div class="swatch" id="sw3"></div>
+      <div class="swatch" id="sw4"></div>
+      <div class="swatch" id="sw5"></div>
+    </div>
+
+    <!-- Character meta -->
+    <div style="padding:8px 12px 4px;">
+      <div class="instr-title">World Tag</div>
+      <select id="worldTag" style="width:100%;background:var(--edge);border:1px solid var(--edge2);border-radius:6px;padding:7px 10px;color:var(--ink);font-family:'JetBrains Mono';font-size:9px;letter-spacing:.1em;text-transform:uppercase;outline:none;cursor:pointer;margin-bottom:8px;">
+        <option value="deadsound">🤘 Deadsound</option>
+        <option value="jem">💫 Jem & The Holograms</option>
+        <option value="custom">✦ Custom World</option>
+      </select>
+    </div>
+
+    <div style="padding:0 12px 12px;">
+      <button class="btn btn-peach" style="width:100%;padding:10px;" onclick="addToStage()">
+        ▶ Add to Stage
+      </button>
+    </div>
+  </div>
+
+  <!-- CENTRE: STAGE -->
+  <div class="stage-area">
+    <div class="stage-wrap">
+      <div id="stage">
+        <img id="stage-bg" src="" alt="">
+        <div id="stageHint" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;pointer-events:none;">
+          <div style="font-size:36px;opacity:.15;">🎬</div>
+          <div style="font-size:8px;letter-spacing:.2em;color:var(--dim);opacity:.4;text-transform:uppercase;">Add characters · Pick a backdrop</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAST RAIL -->
+    <div class="cast-rail" id="castRail">
+      <div class="cast-add" onclick="addToStage()">
+        <span style="font-size:20px;">＋</span>
+        <span style="font-size:7px;letter-spacing:.1em;text-transform:uppercase;">Add</span>
+      </div>
+    </div>
+
+    <!-- STAGE TOOLBAR -->
+    <div class="stage-toolbar">
+      <span class="tlbl">Size</span>
+      <input type="range" class="sz-slider" id="szSlider" min="60" max="600" value="160" oninput="resizeSel(this.value)">
+      <button class="tbtn" onclick="flipSel()">↔</button>
+      <button class="tbtn" onclick="fwd()">↑ Fwd</button>
+      <button class="tbtn" onclick="bck()">↓ Back</button>
+      <button class="tbtn" onclick="stopAnim()">⏹</button>
+      <button class="tbtn" onclick="document.getElementById('bgInput').click()">🖼 Backdrop</button>
+      <button class="tbtn danger" onclick="removeSel()">✕</button>
+      <div class="stage-status" id="stageStatus">0 on stage</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: INSTRUCTIONS + ENGINE -->
+  <div class="panel panel-right">
+    <div class="panel-head">
+      <div class="panel-title">Instructions</div>
+      <div class="panel-sub">Assign to selected character</div>
+    </div>
+
+    <!-- ANIMATION PICKER -->
+    <div class="instr-section">
+      <div class="instr-title">▸ Animation Instruction</div>
+      <div class="anim-grid" id="animGrid">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- ACTION SETS -->
+    <div class="instr-section">
+      <div class="instr-title">▸ Action Sets · Whole Crew</div>
+      <button class="action-set-btn" id="as-shed" onclick="applyActionSet('shed')">
+        <span class="action-set-icon">🎸</span>
+        <div class="action-set-text">
+          <div class="t1">Jamming in the Shed</div>
+          <div class="t2">Instruments out · Everyone playing</div>
+        </div>
+      </button>
+      <button class="action-set-btn" id="as-pool" onclick="applyActionSet('pool')">
+        <span class="action-set-icon">🦩</span>
+        <div class="action-set-text">
+          <div class="t1">Pool Day Vibes</div>
+          <div class="t2">Flamingo lilos · Summer chaos</div>
+        </div>
+      </button>
+      <button class="action-set-btn" id="as-club" onclick="applyActionSet('club')">
+        <span class="action-set-icon">🕺</span>
+        <div class="action-set-text">
+          <div class="t1">Going to the Club</div>
+          <div class="t2">All crew · Dressed up · Moving</div>
+        </div>
+      </button>
+      <button class="action-set-btn" id="as-hive" onclick="applyActionSet('hive')">
+        <span class="action-set-icon">🧠</span>
+        <div class="action-set-text">
+          <div class="t1">Hive Mind Active</div>
+          <div class="t2">All agents synced · Thinking</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- VOICE LINE -->
+    <div class="instr-section">
+      <div class="instr-title">▸ Voice Line · Selected</div>
+      <div style="display:flex;gap:4px;">
+        <input id="lineInput" placeholder="What do they say?" oninput="setLine(this.value)"
+          style="flex:1;background:var(--edge);border:1px solid var(--edge2);border-radius:6px;padding:7px 9px;color:var(--ink);font-family:'JetBrains Mono';font-size:9px;outline:none;">
+        <button class="tbtn" onclick="sayNow()">💬</button>
+      </div>
+    </div>
+
+    <!-- SEQUENCER -->
+    <div class="instr-section">
+      <div class="instr-title">▸ Sequence · Keyframes</div>
+      <div style="display:flex;gap:4px;margin-bottom:6px;">
+        <button class="tbtn" onclick="captureStep()">⏺ Capture</button>
+        <button class="tbtn" onclick="playSeq()">▶ Play</button>
+        <button class="tbtn danger" onclick="clearSeq()">✕</button>
+      </div>
+      <div id="seqList" style="display:flex;flex-direction:column;gap:3px;font-size:8px;color:var(--dim);"></div>
+    </div>
+
+    <!-- ENGINE ADAPTERS -->
+    <div class="instr-section">
+      <div class="instr-title">▸ Animation Engine</div>
+      <div class="adapter-list">
+        <div class="adapter-btn active" id="adapter-css" onclick="selectEngine('css')">
+          <div class="adapter-info">
+            <div class="a1">CSS Engine</div>
+            <div class="a2">Built-in · No API needed</div>
+          </div>
+          <div class="adapter-status ready">Ready</div>
+        </div>
+        <div class="adapter-btn" id="adapter-gemini" onclick="selectEngine('gemini')">
+          <div class="adapter-info">
+            <div class="a1">Gemini</div>
+            <div class="a2">Google AI Studio</div>
+          </div>
+          <div class="adapter-status plug">Plug In</div>
+        </div>
+        <div class="adapter-btn" id="adapter-kling" onclick="selectEngine('kling')">
+          <div class="adapter-info">
+            <div class="a1">Kling</div>
+            <div class="a2">Video generation</div>
+          </div>
+          <div class="adapter-status plug">Plug In</div>
+        </div>
+        <div class="adapter-btn" id="adapter-flux" onclick="selectEngine('flux')">
+          <div class="adapter-info">
+            <div class="a1">Flux / Leonardo</div>
+            <div class="a2">Image generation</div>
+          </div>
+          <div class="adapter-status plug">Plug In</div>
+        </div>
+        <div class="adapter-btn" id="adapter-peachy" onclick="selectEngine('peachy')">
+          <div class="adapter-info">
+            <div class="a1">Peachy Engine</div>
+            <div class="a2">Ballsack engine · Drop in</div>
+          </div>
+          <div class="adapter-status plug">Plug In</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CC MANIFEST PREVIEW -->
+    <div class="instr-section">
+      <div class="instr-title">▸ CC Manifest Preview</div>
+      <div class="manifest-box" id="manifestPreview">// No characters yet</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MANIFEST OVERLAY -->
+<div class="overlay" id="manifestOverlay">
+  <div class="overlay-box">
+    <div class="overlay-title">CC Manifest</div>
+    <div class="overlay-sub">Hand this to Claude Code → fan out across whole cast</div>
+    <div class="manifest-output" id="manifestFull"></div>
+    <div class="overlay-actions">
+      <button class="btn btn-gold" onclick="downloadManifest()">↓ Download .json</button>
+      <button class="btn btn-peach" onclick="copyManifest()">Copy</button>
+      <button class="btn btn-ghost" onclick="closeOverlay('manifestOverlay')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ENGINE SELECT OVERLAY -->
+<div class="overlay" id="engineOverlay">
+  <div class="overlay-box">
+    <div class="overlay-title">Swap Engine</div>
+    <div class="overlay-sub">The scaffold stays. Only the animation layer changes.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;" id="engineSelectList"></div>
+    <button class="btn btn-ghost" style="width:100%;" onclick="closeOverlay('engineOverlay')">Close</button>
+  </div>
+</div>
+
+<input type="file" id="bgInput" accept="image/*" style="display:none" onchange="handleBgFile(this)">
+<input type="file" id="sceneFile" accept=".json,application/json" style="display:none" onchange="loadSceneFile(this)">
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let cast = [];          // [{id, name, b64, styleB64, animClass, world, el, x, y, h, flipped, z}]
+let sel = null;         // selected cast id
+let zTop = 10;
+let idC = 0;
+let curEngine = 'css';
+let curActionSet = null;
+let stageBgB64 = null;   // data URL of backdrop
+let SEQ = [];            // [{dur, frames:{castId:{x,y,h,flipped,anim}}}]
+let playing = false;
+
+const ANIMATIONS = [
+  { id:'anim-idle',   label:'Idle',    icon:'😌', desc:'Gentle bob' },
+  { id:'anim-talk',   label:'Talk',    icon:'🗣',  desc:'Arms wide · Camera' },
+  { id:'anim-jump',   label:'Jump',    icon:'🦘', desc:'Full air time' },
+  { id:'anim-bounce', label:'Bounce',  icon:'⬆️', desc:'Energy bounce' },
+  { id:'anim-wave',   label:'Wave',    icon:'👋', desc:'Side sway' },
+  { id:'anim-stomp',  label:'Stomp',   icon:'🥾', desc:'Heavy impact' },
+  { id:'anim-shake',  label:'Shake',   icon:'🤘', desc:'Head bang' },
+  { id:'anim-wiggle', label:'Wiggle',  icon:'🐍', desc:'Full body' },
+  { id:'anim-float',  label:'Float',   icon:'🌊', desc:'Dreamy drift' },
+  { id:'anim-spin',   label:'Spin',    icon:'💫', desc:'360 rotation' },
+];
+
+const ACTION_SETS = {
+  shed:  ['anim-stomp','anim-shake','anim-bounce','anim-wiggle','anim-shake'],
+  pool:  ['anim-float','anim-wave','anim-idle','anim-float','anim-bounce'],
+  club:  ['anim-wiggle','anim-bounce','anim-spin','anim-wave','anim-jump'],
+  hive:  ['anim-idle','anim-float','anim-idle','anim-float','anim-idle'],
+};
+
+const ENGINES = [
+  { id:'css',    name:'CSS Engine',      sub:'Built-in · Zero deps',          status:'ready' },
+  { id:'gemini', name:'Gemini',          sub:'Google AI Studio',              status:'plug' },
+  { id:'kling',  name:'Kling',           sub:'Video generation',              status:'plug' },
+  { id:'flux',   name:'Flux / Leonardo', sub:'Image generation',              status:'plug' },
+  { id:'peachy', name:'Peachy Engine',   sub:'Ballsack engine · Drop in',     status:'plug' },
+];
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+function init() {
+  buildAnimGrid();
+  buildEngineSelectList();
+  updateManifestPreview();
+  initStageDrag();
+  renderSeqList();
+}
+
+function buildAnimGrid() {
+  const grid = document.getElementById('animGrid');
+  grid.innerHTML = ANIMATIONS.map(a => `
+    <button class="anim-btn" id="ab-${a.id}" onclick="applyAnim('${a.id}')">
+      <span class="anim-icon">${a.icon}</span>
+      ${a.label}
+    </button>
+  `).join('');
+}
+
+function buildEngineSelectList() {
+  const list = document.getElementById('engineSelectList');
+  list.innerHTML = ENGINES.map(e => `
+    <div class="adapter-btn ${curEngine===e.id?'active':''}" onclick="selectEngine('${e.id}');closeOverlay('engineOverlay');">
+      <div class="adapter-info">
+        <div class="a1">${e.name}</div>
+        <div class="a2">${e.sub}</div>
+      </div>
+      <div class="adapter-status ${e.status}">${e.status==='ready'?'Ready':'Plug In'}</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// FILE HANDLING
+// ═══════════════════════════════════════════════════════════
+function shrinkImage(dataUrl, max, axis, mime, q, cb) {
+  const img = new Image();
+  img.onload = () => {
+    let w = img.width, h = img.height;
+    const cur = axis === 'h' ? h : w;
+    if (cur > max) { const s = max / cur; w = Math.round(w * s); h = Math.round(h * s); }
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    cv.getContext('2d').drawImage(img, 0, 0, w, h);
+    cb(cv.toDataURL(mime, q));
+  };
+  img.src = dataUrl;
+}
+
+function handleSpriteFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => shrinkImage(e.target.result, 560, 'h', 'image/png', 1, out => {
+    const b64 = out.split(',')[1];
+    const preview = document.getElementById('charPreview');
+    preview.innerHTML = `<img src="${out}" style="max-height:160px;max-width:100%;object-fit:contain;">`;
+    preview.dataset.b64 = b64;
+    // Auto-name from filename
+    const nameInput = document.getElementById('charNameInput');
+    if (!nameInput.value) {
+      nameInput.value = file.name.replace(/\.[^.]+$/, '').toUpperCase().slice(0,16);
+    }
+  });
+  reader.readAsDataURL(file);
+}
+
+function handleStyleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => shrinkImage(e.target.result, 220, 'w', 'image/jpeg', .8, out => {
+    const thumb = document.getElementById('styleThumb');
+    thumb.innerHTML = `<img src="${out}" style="width:100%;height:100%;object-fit:cover;">`;
+    document.getElementById('styleZone').dataset.b64 = out.split(',')[1];
+    extractPalette(out);
+  });
+  reader.readAsDataURL(file);
+}
+
+function extractPalette(src) {
+  const canvas = document.createElement('canvas');
+  const img = new Image();
+  img.onload = () => {
+    canvas.width = 40; canvas.height = 40;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, 40, 40);
+    const data = ctx.getImageData(0, 0, 40, 40).data;
+    // Sample 5 colours from different regions
+    const regions = [[5,5],[15,5],[20,20],[5,30],[30,30]];
+    const palette = document.getElementById('stylePalette');
+    const swatches = palette.querySelectorAll('.swatch');
+    regions.forEach((r,i) => {
+      const idx = (r[1]*40+r[0])*4;
+      const col = `rgb(${data[idx]},${data[idx+1]},${data[idx+2]})`;
+      if (swatches[i]) swatches[i].style.background = col;
+    });
+    palette.style.display = 'flex';
+  };
+  img.src = src;
+}
+
+function handleSpriteDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  const fakeInput = { files: [file] };
+  handleSpriteFile(fakeInput);
+}
+
+// ═══════════════════════════════════════════════════════════
+// STAGE
+// ═══════════════════════════════════════════════════════════
+function spawnChar(d) {
+  const stage = document.getElementById('stage');
+  const id = ++idC;
+  const el = document.createElement('div');
+  el.className = 'sc';
+  el.id = `sc${id}`;
+  el.style.cssText = `left:${d.x}px;top:${d.y}px;--h:${d.h}px;z-index:${zTop++};`;
+  el.innerHTML = `
+    <div class="sc-lbl">${d.name}</div>
+    <div class="sc-bubble" id="bub${id}"></div>
+    <div class="sc-inner">
+      <img src="data:image/png;base64,${d.b64}" draggable="false">
+    </div>
+  `;
+  const obj = {id, name:d.name, b64:d.b64, styleB64:d.styleB64||null, world:d.world,
+    animClass:d.animClass||'anim-idle', el, x:d.x, y:d.y, h:d.h, flipped:!!d.flipped,
+    z:zTop-1, line:d.line||''};
+  cast.push(obj);
+  makeDraggable(el, obj);
+  el.addEventListener('pointerdown', ev => { selectChar(id); ev.stopPropagation(); });
+  el.classList.add(obj.animClass==='none' ? 'anim-idle' : obj.animClass);
+  if (obj.flipped) el.querySelector('img').style.transform = 'scaleX(-1)';
+  stage.appendChild(el);
+  document.getElementById('stageHint').style.display = 'none';
+  addCastChip(obj);
+  updateManifestPreview();
+  updateStatus();
+  return obj;
+}
+
+function addToStage() {
+  const preview = document.getElementById('charPreview');
+  const b64 = preview.dataset.b64;
+  if (!b64) { showToast('Upload a sprite first'); return; }
+  const stage = document.getElementById('stage');
+  const obj = spawnChar({
+    name: document.getElementById('charNameInput').value || `CHAR ${idC+1}`,
+    b64,
+    styleB64: document.getElementById('styleZone').dataset.b64 || null,
+    world: document.getElementById('worldTag').value,
+    x: 60 + Math.random() * Math.max(60, stage.offsetWidth - 200),
+    y: stage.offsetHeight * 0.3 + Math.random() * (stage.offsetHeight * 0.3),
+    h: 160,
+  });
+  selectChar(obj.id);
+}
+
+function makeDraggable(el, obj) {
+  let active=false, ox=0, oy=0;
+  el.addEventListener('pointerdown', e=>{
+    active=true; el.setPointerCapture(e.pointerId);
+    const r=el.getBoundingClientRect(), sr=document.getElementById('stage').getBoundingClientRect();
+    ox=e.clientX-r.left; oy=e.clientY-r.top;
+    el.style.zIndex=++zTop; obj.z=zTop;
+  });
+  el.addEventListener('pointermove', e=>{
+    if(!active) return;
+    const sr=document.getElementById('stage').getBoundingClientRect();
+    let nx=e.clientX-sr.left-ox, ny=e.clientY-sr.top-oy;
+    nx=Math.max(-40,Math.min(sr.width-40,nx));
+    ny=Math.max(-40,Math.min(sr.height-40,ny));
+    el.style.left=nx+'px'; el.style.top=ny+'px';
+    obj.x=nx; obj.y=ny;
+  });
+  el.addEventListener('pointerup',()=>{active=false;});
+  el.addEventListener('pointercancel',()=>{active=false;});
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('stage').addEventListener('pointerdown', e=>{
+    const stage=document.getElementById('stage');
+    if(e.target===stage||e.target===document.getElementById('stage-bg')) deselect();
+  });
+});
+
+function selectChar(id) {
+  deselect();
+  const o = cast.find(c=>c.id===id);
+  if (!o) return;
+  sel = id;
+  o.el.classList.add('sel');
+  document.getElementById('szSlider').value = o.h;
+  // Highlight active anim button
+  document.querySelectorAll('.anim-btn').forEach(b=>b.classList.remove('active'));
+  const ab = document.getElementById(`ab-${o.animClass}`);
+  if (ab) ab.classList.add('active');
+  // Highlight cast chip
+  document.querySelectorAll('.cast-chip').forEach(c=>c.classList.remove('active'));
+  const chip = document.getElementById(`chip${id}`);
+  if (chip) chip.classList.add('active');
+  const li = document.getElementById('lineInput');
+  if (li) li.value = o.line || '';
+  updateStatus();
+}
+
+function deselect() {
+  if (sel!==null) {
+    cast.find(c=>c.id===sel)?.el.classList.remove('sel');
+    document.querySelectorAll('.cast-chip').forEach(c=>c.classList.remove('active'));
+    document.querySelectorAll('.anim-btn').forEach(b=>b.classList.remove('active'));
+  }
+  sel=null; updateStatus();
+}
+
+function resizeSel(v) {
+  if (sel===null) return;
+  const o=cast.find(c=>c.id===sel);
+  if (!o) return;
+  o.h=parseInt(v); o.el.style.setProperty('--h',v+'px');
+}
+
+function flipSel() {
+  if (sel===null) return;
+  const o=cast.find(c=>c.id===sel);
+  if (!o) return;
+  o.flipped=!o.flipped;
+  o.el.querySelector('img').style.transform=o.flipped?'scaleX(-1)':'';
+}
+
+function fwd() {
+  if(sel===null) return;
+  const o=cast.find(c=>c.id===sel); if(!o) return;
+  o.z=++zTop; o.el.style.zIndex=o.z;
+}
+
+function bck() {
+  if(sel===null) return;
+  const o=cast.find(c=>c.id===sel); if(!o) return;
+  o.z=Math.max(1,o.z-2); o.el.style.zIndex=o.z;
+}
+
+function removeSel() {
+  if(sel===null) return;
+  const idx=cast.findIndex(c=>c.id===sel);
+  if(idx===-1) return;
+  const o=cast[idx];
+  o.el.remove();
+  cast.splice(idx,1);
+  const chip=document.getElementById(`chip${o.id}`);
+  if(chip) chip.remove();
+  sel=null;
+  updateManifestPreview();
+  updateStatus();
+}
+
+function clearStage() {
+  cast.forEach(o=>o.el.remove());
+  cast=[]; sel=null;
+  document.getElementById('castRail').innerHTML = `
+    <div class="cast-add" onclick="addToStage()">
+      <span style="font-size:20px;">＋</span>
+      <span style="font-size:7px;letter-spacing:.1em;text-transform:uppercase;">Add</span>
+    </div>`;
+  document.getElementById('stageHint').style.display='flex';
+  updateManifestPreview();
+  updateStatus();
+}
+
+function stopAnim() {
+  if(sel===null) return;
+  const o=cast.find(c=>c.id===sel); if(!o) return;
+  ANIMATIONS.forEach(a=>o.el.classList.remove(a.id));
+  o.animClass='none';
+  updateChipAnim(o);
+}
+
+function updateStatus() {
+  document.getElementById('stageStatus').textContent =
+    sel!==null
+      ? `${cast.find(c=>c.id===sel)?.name} · ${cast.length} on stage`
+      : `${cast.length} on stage · tap to select`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ANIMATIONS
+// ═══════════════════════════════════════════════════════════
+function applyAnim(animId) {
+  if (sel===null) { showToast('Select a character first'); return; }
+  const o=cast.find(c=>c.id===sel); if(!o) return;
+  // Remove all anim classes
+  ANIMATIONS.forEach(a=>o.el.classList.remove(a.id));
+  o.el.classList.add(animId);
+  o.animClass=animId;
+  // Update buttons
+  document.querySelectorAll('.anim-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`ab-${animId}`)?.classList.add('active');
+  updateChipAnim(o);
+  updateManifestPreview();
+  dispatchToEngine(o, animId);
+}
+
+function applyActionSet(setId) {
+  curActionSet=setId;
+  document.querySelectorAll('.action-set-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`as-${setId}`)?.classList.add('active');
+  const anims=ACTION_SETS[setId];
+  cast.forEach((o,i)=>{
+    const animId=anims[i%anims.length];
+    ANIMATIONS.forEach(a=>o.el.classList.remove(a.id));
+    o.el.classList.add(animId);
+    o.animClass=animId;
+    updateChipAnim(o);
+    dispatchToEngine(o, animId);
+  });
+  updateManifestPreview();
+  showToast(`Action set: ${setId.toUpperCase()} applied to ${cast.length} characters`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CAST RAIL
+// ═══════════════════════════════════════════════════════════
+function addCastChip(obj) {
+  const rail=document.getElementById('castRail');
+  const chip=document.createElement('div');
+  chip.className='cast-chip';
+  chip.id=`chip${obj.id}`;
+  chip.innerHTML=`
+    <img src="data:image/png;base64,${obj.b64}" alt="${obj.name}">
+    <div class="cc-name">${obj.name.slice(0,8)}</div>
+    <div class="cc-anim" id="chipAnim${obj.id}">idle</div>
+  `;
+  chip.onclick=()=>selectChar(obj.id);
+  // Insert before add button
+  const addBtn=rail.querySelector('.cast-add');
+  rail.insertBefore(chip, addBtn);
+}
+
+function updateChipAnim(obj) {
+  const el=document.getElementById(`chipAnim${obj.id}`);
+  if(el) el.textContent = obj.animClass.replace('anim-','');
+}
+
+// ═══════════════════════════════════════════════════════════
+// VOICE LINES + BUBBLES
+// ═══════════════════════════════════════════════════════════
+function setLine(v) {
+  if (sel===null) return;
+  const o = cast.find(c=>c.id===sel); if (!o) return;
+  o.line = v;
+}
+function showBubble(o, ms) {
+  if (!o.line) return;
+  const b = document.getElementById(`bub${o.id}`); if (!b) return;
+  b.textContent = o.line;
+  b.classList.add('show');
+  clearTimeout(b._t);
+  b._t = setTimeout(()=>b.classList.remove('show'), ms||2200);
+}
+function sayNow() {
+  if (sel===null) { showToast('Select a character first'); return; }
+  const o = cast.find(c=>c.id===sel); if (!o) return;
+  if (!o.line) { showToast('Type a line first'); return; }
+  applyAnim('anim-talk');
+  showBubble(o);
+}
+
+// ═══════════════════════════════════════════════════════════
+// SEQUENCER — keyframes over the whole stage
+// ═══════════════════════════════════════════════════════════
+function captureStep() {
+  if (!cast.length) { showToast('Nothing on stage'); return; }
+  const frames = {};
+  cast.forEach(o => frames[o.id] = {x:Math.round(o.x), y:Math.round(o.y), h:o.h, flipped:o.flipped, anim:o.animClass});
+  SEQ.push({dur:1.4, frames});
+  renderSeqList(); updateManifestPreview();
+  showToast(`Keyframe ${SEQ.length} captured`);
+}
+function clearSeq() { SEQ=[]; renderSeqList(); updateManifestPreview(); }
+function renderSeqList() {
+  const el = document.getElementById('seqList');
+  if (!SEQ.length) { el.innerHTML = '<span style="opacity:.5">// pose the stage · hit ⏺ · pose again</span>'; return; }
+  el.innerHTML = SEQ.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;background:var(--edge);border:1px solid var(--edge2);border-radius:5px;padding:4px 7px;">
+      <span style="color:var(--gold);font-weight:700;">${i+1}</span>
+      <span style="flex:1;">${Object.keys(s.frames).length} chars</span>
+      <input type="number" step="0.2" min="0.2" value="${s.dur}" onchange="SEQ[${i}].dur=parseFloat(this.value)||1"
+        style="width:44px;background:var(--bg);border:1px solid var(--edge2);border-radius:4px;color:var(--ink);font-family:'JetBrains Mono';font-size:8px;padding:2px 4px;">
+      <span>s</span>
+      <span style="cursor:pointer;color:var(--red);" onclick="SEQ.splice(${i},1);renderSeqList();updateManifestPreview();">✕</span>
+    </div>`).join('');
+}
+function applyFrame(s, tween) {
+  cast.forEach(o=>{
+    const f = s.frames[o.id]; if (!f) return;
+    o.el.classList.toggle('tween', !!tween);
+    if (tween) o.el.style.transitionDuration = s.dur+'s';
+    o.el.style.left = f.x+'px'; o.el.style.top = f.y+'px';
+    o.el.style.setProperty('--h', f.h+'px');
+    o.x=f.x; o.y=f.y; o.h=f.h;
+    o.el.querySelector('img').style.transform = f.flipped ? 'scaleX(-1)' : '';
+    o.flipped = f.flipped;
+    ANIMATIONS.forEach(a=>o.el.classList.remove(a.id));
+    if (f.anim && f.anim!=='none') o.el.classList.add(f.anim);
+    o.animClass = f.anim;
+    if (f.anim==='anim-talk') showBubble(o, s.dur*1000);
+    updateChipAnim(o);
+  });
+}
+function playSeq() {
+  if (playing) return;
+  if (!SEQ.length) { showToast('Capture keyframes first'); return; }
+  playing = true; deselect();
+  applyFrame(SEQ[0], false);
+  let i = 1;
+  const chain = () => {
+    if (i >= SEQ.length) {
+      setTimeout(()=>{ cast.forEach(o=>o.el.classList.remove('tween')); playing=false; showToast('Sequence complete'); }, 300);
+      return;
+    }
+    const s = SEQ[i++];
+    applyFrame(s, true);
+    setTimeout(chain, s.dur*1000 + 80);
+  };
+  setTimeout(chain, 450);
+}
+function serializeSeq() {
+  // frames keyed by cast INDEX so a reloaded scene (new ids) still maps
+  return SEQ.map(s=>({dur:s.dur, frames:cast.map(o=>s.frames[o.id]||null)}));
+}
+function reviveSeq(serial, newCast) {
+  return (serial||[]).map(s=>({dur:s.dur, frames:Object.fromEntries(
+    s.frames.map((f,i)=> f && newCast[i] ? [newCast[i].id, f] : null).filter(Boolean))}));
+}
+
+// ═══════════════════════════════════════════════════════════
+// SCENE SAVE / LOAD
+// ═══════════════════════════════════════════════════════════
+function downloadBlob(name, text, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text],{type}));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+}
+function saveScene() {
+  const stage = document.getElementById('stage');
+  const data = {
+    tool:'PEACHY ANIMATOR', version:'1.1', engine:curEngine,
+    world: document.getElementById('worldTag').value,
+    stage: {w:stage.offsetWidth, h:stage.offsetHeight, bg:stageBgB64},
+    cast: cast.map(o=>({name:o.name, b64:o.b64, styleB64:o.styleB64, world:o.world,
+      animClass:o.animClass, x:Math.round(o.x), y:Math.round(o.y), h:o.h, flipped:o.flipped, line:o.line})),
+    seq: serializeSeq(),
+  };
+  downloadBlob('peachy-scene.json', JSON.stringify(data), 'application/json');
+  showToast('Scene saved — peachy-scene.json');
+}
+function loadSceneFile(input) {
+  const file = input.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result);
+      clearStage(); SEQ = [];
+      if (d.world) document.getElementById('worldTag').value = d.world;
+      if (d.stage && d.stage.bg) setBackdrop(d.stage.bg, true);
+      const newCast = (d.cast||[]).map(c=>spawnChar(c));
+      SEQ = reviveSeq(d.seq, newCast);
+      renderSeqList(); updateManifestPreview();
+      showToast(`Scene loaded — ${newCast.length} characters, ${SEQ.length} keyframes`);
+    } catch(err) { showToast('Could not read that scene file'); }
+  };
+  r.readAsText(file); input.value='';
+}
+
+// ═══════════════════════════════════════════════════════════
+// ENGINE ADAPTER
+// ═══════════════════════════════════════════════════════════
+function selectEngine(id) {
+  curEngine=id;
+  const eng=ENGINES.find(e=>e.id===id);
+  document.getElementById('engineName').textContent=eng.name;
+  document.getElementById('engineSub').textContent=eng.sub;
+  // Dot colour
+  const dot=document.getElementById('engineDot');
+  dot.style.background=eng.status==='ready'?'var(--green)':'var(--peach)';
+  dot.style.boxShadow=eng.status==='ready'?'0 0 8px var(--green)':'0 0 8px var(--peach)';
+  // Update adapter buttons
+  document.querySelectorAll('.adapter-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`adapter-${id}`)?.classList.add('active');
+  buildEngineSelectList();
+  if(eng.status==='plug') showToast(`${eng.name} — wire up API key to activate`);
+}
+
+function dispatchToEngine(obj, animId) {
+  // ADAPTER PATTERN — swap engine here
+  const payload = buildPayload(obj, animId);
+  switch(curEngine) {
+    case 'css':
+      // Already handled via CSS classes — no-op
+      break;
+    case 'gemini':
+      // geminiAdapter(payload);
+      console.log('[GEMINI ADAPTER] payload:', payload);
+      break;
+    case 'kling':
+      // klingAdapter(payload);
+      console.log('[KLING ADAPTER] payload:', payload);
+      break;
+    case 'flux':
+      // fluxAdapter(payload);
+      console.log('[FLUX ADAPTER] payload:', payload);
+      break;
+    case 'peachy':
+      // peachyAdapter(payload);
+      console.log('[PEACHY ADAPTER] payload:', payload);
+      break;
+  }
+}
+
+function buildPayload(obj, animId) {
+  return {
+    character: {
+      id: obj.id,
+      name: obj.name,
+      world: obj.world,
+      hasSprite: !!obj.b64,
+      hasStyleRef: !!obj.styleB64,
+    },
+    instruction: animId,
+    engine: curEngine,
+    position: { x: obj.x, y: obj.y },
+    size: obj.h,
+    flipped: obj.flipped,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT — standalone HTML scene player
+// ═══════════════════════════════════════════════════════════
+function exportPlayer() {
+  if (!cast.length) { showToast('Nothing on stage to export'); return; }
+  const stage = document.getElementById('stage');
+  const data = {
+    w: stage.offsetWidth, h: stage.offsetHeight,
+    bg: stageBgB64,
+    cast: cast.map(o=>({name:o.name, b64:o.b64, animClass:o.animClass,
+      x:Math.round(o.x), y:Math.round(o.y), h:o.h, flipped:o.flipped, line:o.line||''})),
+    seq: serializeSeq(),
+  };
+  // pull the animation keyframes straight out of this document's stylesheet
+  let animCss = '';
+  for (const sheet of document.styleSheets) {
+    let rules; try { rules = sheet.cssRules; } catch(e) { continue; }
+    for (const r of rules) {
+      if (r.type === CSSRule.KEYFRAMES_RULE) animCss += r.cssText + '\n';
+      if (r.type === CSSRule.STYLE_RULE && r.selectorText && r.selectorText.indexOf('.anim-') === 0) animCss += r.cssText + '\n';
+    }
+  }
+  const css =
+    'html,body{margin:0;height:100%;background:#08080d;overflow:hidden;font-family:monospace}' +
+    '#wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}' +
+    '#stage{position:relative;overflow:hidden;background:#0d0d18;border-radius:8px;transform-origin:center}' +
+    '#stage img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}' +
+    '.sc{position:absolute;transform-origin:bottom center;perspective:600px}' +
+    '.sc img{display:block;height:var(--h,160px);width:auto}' +
+    '.sc.tween{transition-property:left,top;transition-timing-function:ease-in-out}' +
+    '.sc-bubble{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translate(-50%,6px) scale(.9);' +
+      'opacity:0;transition:.18s;background:#0f0f18;border:1px solid #ffd166;border-radius:8px;' +
+      'padding:6px 10px;font-size:11px;color:#e8e4ff;width:max-content;max-width:200px;z-index:50;line-height:1.4}' +
+    '.sc-bubble.show{opacity:1;transform:translate(-50%,0) scale(1)}' +
+    '@media (prefers-reduced-motion:reduce){.sc-inner{animation:none!important}.sc.tween{transition:none!important}}' +
+    animCss;
+  const js =
+    'var D=' + JSON.stringify(data) + ';\n' +
+    'var st=document.getElementById("stage");st.style.width=D.w+"px";st.style.height=D.h+"px";\n' +
+    'if(D.bg){var b=document.createElement("img");b.className="bg";b.src=D.bg;st.appendChild(b);}\n' +
+    'var els=[];\n' +
+    'D.cast.forEach(function(c,i){\n' +
+    '  var e=document.createElement("div");e.className="sc "+(c.animClass==="none"?"":c.animClass);\n' +
+    '  e.style.cssText="left:"+c.x+"px;top:"+c.y+"px;--h:"+c.h+"px;z-index:"+(10+i)+";";\n' +
+    '  e.innerHTML="<div class=sc-bubble></div><div class=sc-inner><img draggable=false src=\'data:image/png;base64,"+c.b64+"\'"+(c.flipped?" style=\'transform:scaleX(-1)\'":"")+"></div>";\n' +
+    '  st.appendChild(e);els.push(e);\n' +
+    '});\n' +
+    'function fit(){var s=Math.min((innerWidth-20)/D.w,(innerHeight-20)/D.h);st.style.transform="scale("+s+")";}\n' +
+    'fit();addEventListener("resize",fit);\n' +
+    'function frame(s,tween){\n' +
+    '  s.frames.forEach(function(f,i){var e=els[i],c=D.cast[i];if(!f||!e)return;\n' +
+    '    e.classList.toggle("tween",!!tween);if(tween)e.style.transitionDuration=s.dur+"s";\n' +
+    '    e.style.left=f.x+"px";e.style.top=f.y+"px";e.style.setProperty("--h",f.h+"px");\n' +
+    '    e.className=e.className.replace(/anim-\\w+/g,"").trim()+(f.anim&&f.anim!=="none"?" "+f.anim:"");\n' +
+    '    e.querySelector("img").style.transform=f.flipped?"scaleX(-1)":"";\n' +
+    '    var bub=e.querySelector(".sc-bubble");\n' +
+    '    if(f.anim==="anim-talk"&&c.line){bub.textContent=c.line;bub.classList.add("show");\n' +
+    '      setTimeout(function(){bub.classList.remove("show");},s.dur*1000);}\n' +
+    '  });\n' +
+    '}\n' +
+    'if(D.seq&&D.seq.length){\n' +
+    '  var i=0;\n' +
+    '  function loop(){\n' +
+    '    var s=D.seq[i];frame(s,i>0);\n' +
+    '    i=(i+1)%D.seq.length;\n' +
+    '    setTimeout(loop,(i===0?2:0)*400+s.dur*1000+120);\n' +
+    '  }\n' +
+    '  setTimeout(loop,500);\n' +
+    '}\n';
+  const html =
+    '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">' +
+    '<title>PEACHY SCENE</title><style>' + css + '</style></head><body>' +
+    '<div id="wrap"><div id="stage"></div></div>' +
+    '<scr' + 'ipt>' + js + '</scr' + 'ipt></body></html>';
+  downloadBlob('peachy-scene.html', html, 'text/html');
+  showToast('Scene exported — peachy-scene.html');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CC MANIFEST
+// ═══════════════════════════════════════════════════════════
+function buildManifest() {
+  return {
+    tool: 'PEACHY ANIMATOR',
+    version: '1.1',
+    engine: curEngine,
+    actionSet: curActionSet,
+    world: document.getElementById('worldTag').value,
+    generated: new Date().toISOString(),
+    cast: cast.map(o=>({
+      id: o.id,
+      name: o.name,
+      world: o.world,
+      animClass: o.animClass,
+      hasSprite: !!o.b64,
+      hasStyleRef: !!o.styleB64,
+      line: o.line || null,
+      position: { x: Math.round(o.x), y: Math.round(o.y) },
+      size: o.h,
+      flipped: o.flipped,
+      sprite_b64: o.b64,
+      styleRef_b64: o.styleB64 || null,
+    })),
+    backdrop_b64: stageBgB64 || null,
+    sequence: serializeSeq(),
+    instructions: ANIMATIONS.map(a=>a.id),
+    actionSets: Object.keys(ACTION_SETS),
+    adapterSlots: ENGINES.map(e=>({ id:e.id, name:e.name, status:e.status })),
+    ccInstructions: [
+      'For each character in cast[], generate the full animation instruction set',
+      'Fan out — one subagent per character × instructions[]',
+      'Output: /output/<character.name>/<instruction>.png or .webm',
+      'Style ref: apply consistently across all frames for that character',
+      'Engine: swap adapter in dispatchToEngine() for target engine',
+      'sprite_b64 / styleRef_b64 / backdrop_b64 carry the actual pixels — manifest is self-sufficient',
+      'sequence[] = keyframes; frames indexed by cast order; dur in seconds — render motion between frames',
+    ],
+  };
+}
+
+function updateManifestPreview() {
+  const manifest=buildManifest();
+  const preview=document.getElementById('manifestPreview');
+  if(cast.length===0){
+    preview.textContent='// No characters yet';
+    return;
+  }
+  const lines=[
+    `// PEACHY ANIMATOR · CC MANIFEST`,
+    `// ${cast.length} character(s) · engine: ${curEngine}`,
+    ``,
+    ...cast.map(o=>`${o.name.padEnd(14)} → ${o.animClass.replace('anim-','').padEnd(10)} [${o.world}]`),
+    ``,
+    `// ${ANIMATIONS.length} animation instructions ready`,
+    `// ${ENGINES.filter(e=>e.status==='plug').length} engine adapters available to wire`,
+  ];
+  preview.textContent=lines.join('\n');
+}
+
+function openManifest() {
+  const manifest=buildManifest();
+  document.getElementById('manifestFull').textContent=JSON.stringify(manifest,null,2);
+  document.getElementById('manifestOverlay').classList.add('open');
+}
+
+function downloadManifest() {
+  const manifest=buildManifest();
+  const blob=new Blob([JSON.stringify(manifest,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='peachy-manifest.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
+function copyManifest() {
+  const manifest=buildManifest();
+  navigator.clipboard.writeText(JSON.stringify(manifest,null,2))
+    .then(()=>showToast('Manifest copied'))
+    .catch(()=>showToast('Copy failed'));
+}
+
+// ═══════════════════════════════════════════════════════════
+// OVERLAYS
+// ═══════════════════════════════════════════════════════════
+function openEngineSelect() {
+  buildEngineSelectList();
+  document.getElementById('engineOverlay').classList.add('open');
+}
+
+function closeOverlay(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Close on backdrop click
+document.addEventListener('click', e=>{
+  if(e.target.classList.contains('overlay')) {
+    e.target.classList.remove('open');
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// STAGE DRAG (backdrop)
+// ═══════════════════════════════════════════════════════════
+function setBackdrop(dataUrl, raw) {
+  const apply = out => {
+    stageBgB64 = out;
+    const bg = document.getElementById('stage-bg');
+    bg.src = out; bg.style.display = 'block';
+    document.getElementById('stageHint').style.opacity = '0';
+  };
+  raw ? apply(dataUrl) : shrinkImage(dataUrl, 1000, 'w', 'image/jpeg', .75, apply);
+}
+
+function handleBgFile(input) {
+  const file = input.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => setBackdrop(e.target.result);
+  r.readAsDataURL(file);
+  input.value = '';
+}
+
+function initStageDrag() {
+  const stage=document.getElementById('stage');
+  stage.addEventListener('dragover',e=>e.preventDefault());
+  stage.addEventListener('drop',e=>{
+    e.preventDefault();
+    const file=e.dataTransfer.files[0];
+    if(!file || !file.type.startsWith('image/')) return;
+    const reader=new FileReader();
+    reader.onload=ev=>setBackdrop(ev.target.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+function showToast(msg) {
+  let t=document.getElementById('toast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='toast';
+    t.style.cssText=`position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+      background:var(--surface);border:1px solid var(--edge2);border-radius:8px;
+      padding:10px 18px;font-size:9px;letter-spacing:.15em;text-transform:uppercase;
+      color:var(--ink);z-index:9999;transition:opacity .3s;white-space:nowrap;`;
+    document.body.appendChild(t);
+  }
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>{t.style.opacity='0';},2200);
+}
+
+// Keys
+window.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  if(e.key.startsWith('Arrow') && sel!==null){
+    e.preventDefault();
+    const o=cast.find(c=>c.id===sel); if(!o) return;
+    const d=e.shiftKey?12:4;
+    if(e.key==='ArrowLeft')o.x-=d; if(e.key==='ArrowRight')o.x+=d;
+    if(e.key==='ArrowUp')o.y-=d;   if(e.key==='ArrowDown')o.y+=d;
+    o.el.style.left=o.x+'px'; o.el.style.top=o.y+'px';
+    return;
+  }
+  if(e.key==='Delete'||e.key==='Backspace') removeSel();
+  if(e.key==='f'||e.key==='F') flipSel();
+  if(e.key==='Escape') deselect();
+  if(e.key===']') fwd();
+  if(e.key==='[') bck();
+  if(e.key==='1') applyAnim('anim-idle');
+  if(e.key==='2') applyAnim('anim-talk');
+  if(e.key==='3') applyAnim('anim-jump');
+  if(e.key==='4') applyAnim('anim-bounce');
+  if(e.key==='5') applyAnim('anim-wave');
+});
+
+init();
+</script>
+</body>
+</html>

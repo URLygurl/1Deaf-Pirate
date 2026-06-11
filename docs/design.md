@@ -10,6 +10,10 @@ import or copy that block; never hand-pick hex values per file again.
 > cyan `#33c8ff` = info/interactive.** The Peachy/coral aesthetic is retired from product
 > surfaces (it lives on only as The Peach owner-control component's own skin, if at all).
 
+> **Name:** the product is **DeafPirates** (one word). Branding/logo are **not done yet** —
+> until then, the wordmark is just `DeafPirates` set in Oswald 700. Reconcile the drift
+> (`DefPirate` / `Deaf Pirate` / `DEFPIRATE`) to **DeafPirates** during the branding pass.
+
 ## Why this exists
 
 Surfaces had drifted into two palettes (navy+cyan dashboards vs coral/peach/Fraunces
@@ -53,10 +57,21 @@ Letter-spacing is part of the look: wide tracking (`.1em`–`.3em`) on mono labe
 
 ## 3. Motion
 
-Three canonical avatar animations (from the floor scaffold) — keep these names:
+Avatar animations (floor scaffold) — keep these names:
 - **`bob`** — idle breathing, `var(--bob)` (3s). Every avatar, staggered by `--d`.
 - **`groove`** — brief "active/working" wiggle (~1.6s) when an agent is pinged or acts.
 - **`rockon`** (`.wave`) — "speaking/celebrating" tilt, used on Ping / focus.
+
+Chat-stage animations (from the chat board) — for agents that *enter the conversation*:
+- **`walkOn`** — agent slides up/in from the bottom (default entrance, spring ease).
+- **`facetimeIn`** — scale + blur-in "call connects" entrance, with a pulsing frame
+  (`.facetime`); use for a more present/urgent dispatch.
+- **`talkBob`** — faster bob + accent drop-shadow glow while an agent is **speaking**.
+- **`idleBob`** — slow bob once an agent has spoken and is waiting on stage.
+- **typing dots** — three pulsing `--info`/`--live` dots while DIME routes / an agent composes.
+- Speech **bubble** appears above the sprite; agent is dismissed (slides back down) when no
+  longer needed. (Re-skin note: in the chat board these use peach/Fraunces — recolour to the
+  role tokens and set bubbles in `--font-display`/`--font-ui`.)
 
 Always honour `prefers-reduced-motion` (tokens.css already disables `[data-anim]`/`.char img`).
 
@@ -88,7 +103,39 @@ Keep these so the dashboards can go from ambient demo → real Hermes events wit
   real Hermes events later. Blocked/approval/incident events render in their role colours
   (`--alert` / `--warn` / `--live`).
 
-## 7. Conformance checklist (every new surface, incl. the chat board)
+## 7. Surfaces & conformance status
+
+Staged in [`/dashboards`](../dashboards/) until the `deafpirate-dashboards` repo is scaffolded.
+
+| Surface | File | Conforms? |
+|---|---|---|
+| Studio floor (editor + export) | `floor-scaffold`, `studio-floor` | ✅ canonical (source of truth) |
+| Orchestration hub | `deaf-pirates-hub` | ✅ canonical |
+| **Chat board** | `defpirate-chat-demo` | ⚠️ **re-skin needed** — built in retired Peachy palette + Fraunces; recolour to tokens, swap fonts. Animations are good, keep them. |
+| Peachy animator | `peachy-animator` | ⚠️ Peachy palette by design (animation tool) — align if it becomes a product surface |
+| **Background Ops** (cron/tasks) | `deafpirates-taskboard` | ✅ canonical (reference build) |
+| Hidden Hermes dashboard | *(in the webapp, `music-events-platform-prod`)* | wire to design tokens when surfaced |
+
+## 8. Background Ops — the cron / task board
+
+The squad runs work in the background (SEO sweeps, inbox triage, audits, builds). The
+**Background Ops** board (`dashboards/deafpirates-taskboard.html`) shows it. Task shape — the
+seam Hermes' `cronjob`/`kanban` tools emit:
+
+```
+{ id, title, owner (agent), kind:'cron'|'task'|'project',
+  schedule (cron expr | 'one-off'), status:'running'|'queued'|'blocked'|'done'|'overdue',
+  startedAt, budgetMin /* the "length it must take" — time budget / SLA */, progress, hitl /* 'Cory'|'dev'|null */ }
+```
+
+- **Time budget = "length it must take".** Each task carries a `budgetMin`; the board shows
+  elapsed vs budget as a bar — `--live` within budget, `--warn` past 80%, `--alert` when
+  **overdue**. Cron jobs show their schedule + next run.
+- **HITL is first-class.** A task waiting on Cory (action lock) or the developer (build lock)
+  renders **Blocked · HITL** with a `⏸ waiting · Cory` chip — it's prepared, not done.
+- Owner shown by agent accent; wire avatars via `resolve-avatar.js` when surfaced live.
+
+## 9. Conformance checklist (every new surface, incl. the chat board)
 
 - [ ] Imports/copies `world/brand/tokens.css`; **zero** hand-picked hex values.
 - [ ] Green only ever means live/active/success; cyan only ever means info/interactive.
