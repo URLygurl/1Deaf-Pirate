@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "_doc": "Single source of truth for squad avatars. Swap any 'avatar' value (a filename under basePath, or a full https URL) and every dashboard updates. null = use fallback. See README.md.",
+  "fallback": "world/brand/icons/noun-skull-2314-7EFF00.svg",
+  "basePath": "world/brand/avatars/files",
+  "agents": {
+    "DIME":     { "avatar": null, "alt": "DIME — orchestrator" },
+    "LEMMY":    { "avatar": null, "alt": "LEMMY — A&R" },
+    "EDDIE":    { "avatar": null, "alt": "EDDIE — producer / recording" },
+    "GEDDY":    { "avatar": null, "alt": "GEDDY — acoustician" },
+    "SLASH":    { "avatar": null, "alt": "SLASH — live audio engineer" },
+    "HALFORD":  { "avatar": null, "alt": "HALFORD — lighting designer" },
+    "HETFIELD": { "avatar": null, "alt": "HETFIELD — tour manager" },
+    "GENE":     { "avatar": null, "alt": "GENE — royalties & business" },
+    "NIKKI":    { "avatar": null, "alt": "NIKKI — release strategy" },
+    "GIGGUIDE": { "avatar": null, "alt": "GIGGUIDE — NZ scene curator" },
+    "ANGUS":    { "avatar": null, "alt": "ANGUS — studio builder" },
+    "RANDY":    { "avatar": null, "alt": "RANDY — speaker cabinets" },
+    "DIO":      { "avatar": null, "alt": "DIO — stage electrician" },
+    "OZZY":     { "avatar": null, "alt": "OZZY — roadie / fixer" },
+    "NEIL":     { "avatar": null, "alt": "NEIL — concierge (front-facing)" }
+  }
+}
