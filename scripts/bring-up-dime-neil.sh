@@ -31,7 +31,7 @@ bring_up() {            # $1=profile(lowercase)  $2=repo agent dir  $3=descripti
   fi
 
   # SOUL = persona (soul.md) + the shared squad brain (brain.md)
-  { cat "$src/soul.md"; printf '\n\n---\n\n'; cat "$src/brain.md" 2>/dev/null; } > "$pdir/SOUL.md"
+  { cat "$src/soul.md"; printf '\n\n---\n\n'; cat "$src/brain.md" 2>/dev/null; [ -f "$REPO/CLIENT.md" ] && { printf '\n\n---\n\n'; cat "$REPO/CLIENT.md"; }; } > "$pdir/SOUL.md"
   echo "  ✓ SOUL.md set  ($pdir/SOUL.md)"
 
   if [ -d "$src/skills" ] && [ -n "$(ls -A "$src/skills" 2>/dev/null)" ]; then

@@ -36,7 +36,7 @@ bring_up() {
     echo "     ! no $pdir — run 'hermes profile show $name' and tell Claude"
     return 0
   fi
-  { cat "$src/soul.md"; printf '\n\n---\n\n'; cat "$src/brain.md" 2>/dev/null; } > "$pdir/SOUL.md"
+  { cat "$src/soul.md"; printf '\n\n---\n\n'; cat "$src/brain.md" 2>/dev/null; [ -f "$REPO/CLIENT.md" ] && { printf '\n\n---\n\n'; cat "$REPO/CLIENT.md"; }; } > "$pdir/SOUL.md"
   if [ -d "$src/skills" ] && [ -n "$(ls -A "$src/skills" 2>/dev/null)" ]; then
     mkdir -p "$pdir/skills"; cp -r "$src/skills/." "$pdir/skills/"
   fi
