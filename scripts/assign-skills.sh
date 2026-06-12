@@ -70,10 +70,18 @@ assign() {
     # Heavy ones (blackbox, openhands, docker-management, audiocraft …) can sit
     # for a minute here — that's normal, not stuck.
     printf '     • %-34s' "$id"
-    if hermes -p "$name" skills install "$id" >/dev/null 2>&1; then
+    # </dev/null  → a heavy installer can never hang waiting on a hidden prompt
+    #               (it gets EOF and fails fast instead of stalling forever).
+    # timeout     → backstop: if one genuinely wedges, skip it after N seconds
+    #               and keep going, so the run never freezes on one bad skill.
+    timeout "${SKILL_TIMEOUT:-300}" hermes -p "$name" skills install "$id" </dev/null >/dev/null 2>&1
+    rc=$?
+    if [ "$rc" -eq 0 ]; then
       printf ' ✓\n'; ok=$((ok+1))
+    elif [ "$rc" -eq 124 ]; then
+      printf ' ⏳ timed out, skipped (heavy — retry later)\n'; fail=$((fail+1))
     else
-      printf ' ✗ skipped (renamed/dropped?)\n'; fail=$((fail+1))
+      printf ' ✗ skipped\n'; fail=$((fail+1))
     fi
   done
   printf '     %d installed%s\n' "$ok" "$([ "$fail" -gt 0 ] && printf ', %d skipped' "$fail")"
@@ -99,9 +107,9 @@ echo
 echo "── music toolkit ($MUSIC_SKILLS) ──"
 for m in $MUSIC_MAKERS; do
   for id in $MUSIC_SKILLS; do
-    hermes -p "$m" skills install "$id" >/dev/null 2>&1 \
-      && printf '     ✓ %-8s ← %s\n' "$m" "$id" \
-      || printf '     ! %-8s ✗ %s\n' "$m" "$id"
+    printf '     • %-8s ← %-12s' "$m" "$id"
+    timeout "${SKILL_TIMEOUT:-300}" hermes -p "$m" skills install "$id" </dev/null >/dev/null 2>&1 \
+      && printf ' ✓\n' || printf ' ✗ skipped\n'
   done
 done
 
