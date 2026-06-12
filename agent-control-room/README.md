@@ -1,5 +1,16 @@
 # agent-control-room
 
+> **Adoption note (2026-06-12):** the canonical template is **kishoreHQ/agent-control-room**
+> (MIT) — https://github.com/kishoreHQ/agent-control-room. It ships **8 bundled skills**
+> (VPS creation, `setup-control-room`, registry mgmt, backup/security audit, cron
+> planning), a **4-level scaling model**, a **task-bus** (`/srv/agent-bus`), and 3 setup
+> paths. **Plan:** clone it as a separate control-plane on the box, run the
+> `setup-control-room` skill (Option 3), and **register our existing squad into it**.
+> *This folder is the **populated instance** — our real map/registry/runbooks — that
+> fills the template's empty slots. Not a competing control room.*
+
+---
+
 > The **sidecar that governs the fleet.** Not the agents themselves — the *map,
 > manual, registry, runbooks, and recovery notebook* for running and scaling them.
 > When something breaks at 2am, you open this folder, not a month of old chats.
