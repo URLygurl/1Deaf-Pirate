@@ -21,6 +21,11 @@ Two halves: **operational readiness** (does it work) and **security & containmen
       network policy), not Hermes config alone.
 - [ ] **Allow-list, don't deny-list.** When internet is granted, grant *specific
       domains* (the skill source sites, APIs) rather than open egress.
+- [ ] **iron-proxy egress firewall (Hermes-native).** Hermes ships an iron-proxy
+      integration — the recommended **production** egress leash. Route the squad's
+      traffic through it with a **domain allow-list** so an agent can only reach
+      sanctioned hosts. This is the concrete answer to the "no sandbox" flag above.
+      See `docs/production-hardening.md`. _(Verify exact config on the box first.)_
 - [ ] _To verify when wiring:_ Hermes `terminal.backend` sandbox options (e.g.
       docker backend) for per-agent isolation.
 
@@ -54,8 +59,14 @@ Two halves: **operational readiness** (does it work) and **security & containmen
 - [ ] Lockfile committed; review every new transitive dep.
 
 ### Secrets & identity
+- [ ] **Bitwarden secrets manager (Hermes-native).** Hermes ships a Bitwarden
+      integration — the recommended **production** secrets store. Migrate keys out
+      of plaintext `.env` into Bitwarden so secrets are vaulted, rotated, and pulled
+      at runtime. See `docs/production-hardening.md`. _(Verify exact config on the
+      box first.)_
 - [ ] All keys (Anthropic, Honcho, Hindsight) + a **distinct bot token per profile**
-      in each profile's `.env`, never committed. Hermes token-locks dup bot tokens.
+      held in the secrets store (Bitwarden in prod; `.env` only as a local fallback,
+      never committed). Hermes token-locks dup bot tokens.
 - [ ] Least-privilege API keys (scoped tokens where the provider supports it).
 
 ### Kill switch & observability
