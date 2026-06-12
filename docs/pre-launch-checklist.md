@@ -24,6 +24,20 @@ Two halves: **operational readiness** (does it work) and **security & containmen
 - [ ] _To verify when wiring:_ Hermes `terminal.backend` sandbox options (e.g.
       docker backend) for per-agent isolation.
 
+### Gateway / messaging channels — gate the front door
+> The gateway runs as a persistent service (`hermes-gateway.service`). On first
+> start it warns: **"No user allowlists configured"** and **"No messaging platforms
+> enabled."** The second is the safe default (no inbound surface). The first is the
+> gate below.
+- [ ] **Allowlist BEFORE enabling any channel.** Never turn on a messaging platform
+      (Telegram/Discord/Slack/WhatsApp/Signal/Email/SMS) until a **user allowlist**
+      is set — otherwise anyone who finds the channel can message the squad.
+- [ ] **One channel at a time, allow-listed**, proving each before the next (mirrors
+      the progressive-trust ramp).
+- [ ] **NEIL stays send-less at the front.** The exposed concierge drafts/triages
+      only; any actual send/call is held at the **action-lock** (or routed to a
+      gated *internal* sender) — never on the public profile.
+
 ### Vulnerability scanning
 - [ ] **Scan the repo + plugins** before launch — the `hive-loop` / `reveal-gate`
       Python, plus any agent deps. (Run the `/security-review` skill on the branch;
