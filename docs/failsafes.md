@@ -45,32 +45,34 @@ message.** One `touch FREEZE` halts all action squad-wide without killing proces
 
 ## Containment that doesn't depend on the agents behaving
 
-**The squad runs on Lightning AI** (cloud GPU). Honest trust-chain note: it's
-**not** physical ownership — Lightning (and the underlying cloud) sit in the trust
-chain. Lightning's posture helps (SOC2/HIPAA, audit logs, observability, cost
-alerts), and the **"Run on your cloud" (BYOC)** option puts the compute + network
-in *your own* cloud account for tighter control. There's no literal "pull the
-cable" — the equivalent is **stop/destroy the Studio or deployment** from the
-console, plus **scale-to-zero**.
+**The squad runs on a DigitalOcean Droplet** (cloud VM — currently a small CPU box,
+`pirates-s-1vcpu-2gb-syd1` in SYD1). Honest trust-chain note: it's **not** physical
+ownership — DigitalOcean (and the underlying cloud) sit in the trust chain. DO gives
+you **Cloud Firewalls, monitoring/alerts, and full console control** of the Droplet.
+There's no literal "pull the cable" — the equivalent is **power-off or destroy the
+Droplet** from the DO console.
 
-Architecture on Lightning: one **Studio/DevBox** runs the Hermes host (all 15
-profiles + Kanban) and the **self-hosted brains** (Honcho/Hindsight local); a
-**LitServe/vLLM** engine on the GPU serves the model, and Hermes points its model
-`base_url` at it. So **inference is local to the environment** — the off-switch
-becomes "stop the LitServe server," a process you own.
+Architecture on DigitalOcean: one **Droplet** runs the Hermes host (all 15 profiles
++ Kanban) and the **self-hosted brains** (Honcho/Hindsight local). Unlike the old
+Lightning plan, this CPU box does **not** serve local GPU inference — the model is
+**Claude via the Anthropic API**. So the model "off-switch" here is **revoke the API
+key**, not "stop a local inference server." (Owned/local GPU inference returns at
+**Phase 7**, on your own hardware — see `roadmap.md`.)
 
 ⚠️ Hermes profiles **do not sandbox** (same FS/network reach as the host user). So
-the hard failsafes live **below** Hermes — on Lightning that means:
+the hard failsafes live **below** Hermes — on DigitalOcean that means:
 
-- **Process/host:** stop or delete the Studio/deployment from the console;
-  scale-to-zero. Atomic halt of everything.
-- **Local inference:** stop the LitServe/vLLM engine → the squad can't think.
-- **Network egress:** in-guest firewall; **with BYOC, your cloud's VPC /
-  security-group egress controls** (the real leash — yours to set).
-- **Spend + audit:** Lightning's native **cost alerts + audit logs** feed the spend
-  circuit breaker and the recovery audit directly.
-- **Credentials:** local inference means no cloud model key to leak; any remaining
-  keys held in the environment, revocable without touching an agent.
+- **Process/host:** power-off or destroy the Droplet from the DO console. Atomic
+  halt of everything.
+- **Model access:** revoke/rotate the `ANTHROPIC_API_KEY` (Anthropic Console) → the
+  squad can't think.
+- **Network egress:** in-guest firewall (ufw) **+ DigitalOcean Cloud Firewalls**
+  with a domain/IP allow-list (the real leash — yours to set).
+- **Spend + audit:** Anthropic Console usage caps/billing limits for model spend; DO
+  monitoring/alerts for the box; Hermes' own audit logs + Kanban `task_events` for
+  the agent trail.
+- **Credentials:** API keys live in the box's `.env` (gitignored), revocable in the
+  Anthropic Console without touching an agent.
 
 - **Network:** OS/container egress firewall with a domain allow-list. Pull it and
   the squad is deaf to the outside world instantly.

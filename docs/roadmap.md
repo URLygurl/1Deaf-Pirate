@@ -17,12 +17,14 @@ soundcheck → small gig → big tour → buy your own venue.
   work, what brains it uses. All saved in `docs/` and in git (so nothing is ever
   lost again).
 
-## 🎸 Phase 1 — Give them a home (Lightning AI)
+## 🎸 Phase 1 — Give them a home (DigitalOcean)
 *Rent a rehearsal space before buying a venue.*
-- **You:** spin up a Lightning AI **Studio** (your GPU box) + first Hermes account.
+- **You:** spin up a **DigitalOcean Droplet** (your always-on cloud box) + install
+  Hermes and add your Claude key.
 - **Me:** turn each character into a **profile** (its own SOUL, skills, memory,
   name). Start with just **DIME + NEIL**.
 - **Why:** prove it works on rented gear before committing to owned hardware.
+  *(We started on Lightning AI — it was unstable, so we moved to DigitalOcean.)*
 
 ## 🧠 Phase 2 — Give them memory (the brains)
 *So they wake up smarter instead of starting blank every day.*

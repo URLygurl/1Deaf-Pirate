@@ -28,9 +28,9 @@ Cory is the **single operator** at this deck. The naive end users never touch it
 
 ## Corrected facts (don't repeat these mistakes)
 
-- ❌ **Not Lightning anymore.** Host is moving to **DigitalOcean** (always-on box, $200 credit
-  redeeming). `docs/setup-hermes.md` and `docs/roadmap.md` still say "Lightning" — **stale, needs
-  updating** (see Open items).
+- ❌ **Not Lightning anymore.** Host moved to **DigitalOcean** (always-on Droplet, $200 credit
+  redeeming). Lightning was unstable. The stale Lightning references in `setup-hermes.md`,
+  `roadmap.md`, `architecture.md`, and `failsafes.md` are now **reconciled to DigitalOcean**.
 - ✅ **End-user channel already exists.** The user-facing **NakedApp** (`music-events-platform-prod`)
   has the **dashboard chat GUI** — that's how the no-computer-knowledge end users reach an agent.
   *Not* a terminal at their end. This is largely handled; the operator console is a separate surface.
@@ -73,9 +73,9 @@ So treat the above as a **shortlist to trial**, not a final pick. If building:
 
 - [ ] **Pick & trial** GUIs (Studio first) — preview-first per `SECURITY.md`.
 - [ ] **Decide build-vs-buy** after trialling.
-- [ ] **Update stale docs**: `setup-hermes.md` + `roadmap.md` say Lightning → should say DigitalOcean.
+- [x] **Update stale docs**: Lightning → DigitalOcean reconciled in `setup-hermes.md`, `roadmap.md`, `architecture.md`, `failsafes.md`.
 - [ ] **End-user channel**: confirm NakedApp chat dashboard is the final answer (looks handled).
-- [ ] Engine base on DigitalOcean: Hermes CLI installed + squad profiles wired (DIME live; rest staged).
+- [x] Engine base on DigitalOcean: Hermes CLI installed + 15 profiles wired + DIME orchestrator + Kanban board live. *(Flip DIME/NEIL to `live` is the separate Phase 5 gate.)*
 
 ## Next steps for the fresh session
 

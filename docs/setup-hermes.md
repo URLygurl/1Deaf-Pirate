@@ -1,6 +1,6 @@
 # Setup Hermes — The Dumb Doc (your part)
 
-Plain steps to get Hermes alive on Lightning, up to the point where **you hand it to
+Plain steps to get Hermes alive on your DigitalOcean Droplet, up to the point where **you hand it to
 me and I attach the squad.** Don't do anything fancy — we just want one clean chat
 working first. Tick the boxes as you go.
 
@@ -10,18 +10,19 @@ One clean conversation first. Everything else comes after.
 ---
 
 ## What you'll have at the end
-A Hermes that chats on your Lightning box, with our squad's files sitting next to it
+A Hermes that chats on your DigitalOcean Droplet, with our squad's files sitting next to it
 — ready for me to turn into DIME, NEIL, and the rest.
 
 ---
 
-## Step 1 — Make the box (Lightning Studio) 🖥️
-- [ ] Log in to **Lightning AI**.
-- [ ] Create a new **Studio** (this is your cloud computer). A GPU one is fine —
-      we'll use the GPU later; not needed for first chat.
-- [ ] Open the Studio's **Terminal** (that's where you type the commands below).
+## Step 1 — Make the box (DigitalOcean Droplet) 🖥️
+- [ ] Log in to **DigitalOcean**.
+- [ ] Create a new **Droplet** (this is your cloud computer). A basic CPU Droplet
+      is fine — the model runs via the Claude API, so no GPU is needed.
+- [ ] Open the Droplet's **Console** (the web Console, or SSH in) — that's where you
+      type the commands below.
 
-*A Studio is just a Linux computer in the cloud. Every command below is typed into
+*A Droplet is just a Linux computer in the cloud. Every command below is typed into
 its terminal.*
 
 ## Step 2 — Install Hermes ⚙️
@@ -66,8 +67,8 @@ most things.
 Prefer a real window over the terminal? Run `hermes desktop` (macOS/Windows/Linux). It's the
 **same agent, same Claude key, same skills** — just polished. Two ways to use it:
 - **Local** (on your laptop): quickest for a throwaway first chat — its own local brain.
-- **Remote → Lightning** (the goal): the desktop becomes a client to the Hermes brain on your
-  Lightning box. Needs the gateway/remote backend wired + creds secured — **that's a "later,
+- **Remote → DigitalOcean** (the goal): the desktop becomes a client to the Hermes brain on your
+  DigitalOcean Droplet. Needs the gateway/remote backend wired + creds secured — **that's a "later,
   together" step**, not for the first boot.
 - ⛔ Keep **voice + cron OFF** in the desktop for now (same don't-do-these-yet rule).
 
