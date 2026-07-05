@@ -36,6 +36,11 @@ bring_up() {
     echo "     ! no $pdir — run 'hermes profile show $name' and tell Claude"
     return 0
   fi
+  # HOUSE RULE: no keys/secrets in profile .envs. `--clone` copies the source
+  # profile's .env wholesale (keys included) — scrub credential lines (set OR
+  # empty; an empty `VAR=` still MASKS the global credential store) so every
+  # profile falls through to the single global auth (OAuth / managed store).
+  sed -i '/^ANTHROPIC_API_KEY=/d;/^ANTHROPIC_TOKEN=/d' "$pdir/.env" 2>/dev/null || true
   { cat "$src/soul.md"; printf '\n\n---\n\n'; cat "$src/brain.md" 2>/dev/null; [ -f "$REPO/CLIENT.md" ] && { printf '\n\n---\n\n'; cat "$REPO/CLIENT.md"; }; } > "$pdir/SOUL.md"
   if [ -d "$src/skills" ] && [ -n "$(ls -A "$src/skills" 2>/dev/null)" ]; then
     mkdir -p "$pdir/skills"; cp -r "$src/skills/." "$pdir/skills/"
