@@ -938,7 +938,7 @@ function bake(){
 function clipList(){
   if(S.clips.length) return S.clips;
   if(S.frames.length) return [{name:(ANIMS[S.anim]||{label:S.anim}).label.toLowerCase().replace(/\s+/g,'_'),
-                               frames:S.frames, fps:S.fps}];
+                               frames:S.frames, fps:S.fps, palette:S.palette}];
   return [];
 }
 function layout(){
@@ -1169,7 +1169,7 @@ function exportGif(){
   toast('Encoding GIF…');
   setTimeout(()=>{
     try{
-      const bytes=encodeGif(cl.frames, cl.fps||S.fps, S.palette);
+      const bytes=encodeGif(cl.frames, cl.fps||S.fps, cl.palette||S.palette);
       save(baseName()+'_'+cl.name+'.gif', bytes, 'image/gif',
         cl.frames.length+' frames · '+(bytes.length/1024).toFixed(1)+' KB');
     }catch(e){ toast('GIF encode failed: '+e.message, true); }
@@ -1184,6 +1184,7 @@ function rects(L){
 function buildMeta(L){
   const R=rects(L), fmt=$('#fmt').value, nm=baseName(), s=S.scale;
   const sc=v=>v*s;
+  const fpsOf={}; L.tags.forEach(t=>{ fpsOf[t.name]=t.fps||S.fps; });   // per-clip fps for durations
   if(fmt==='phaser'||fmt==='aseprite'){
     const F={};
     R.forEach(r=>{
@@ -1192,7 +1193,7 @@ function buildMeta(L){
         rotated:false, trimmed:false,
         spriteSourceSize:{x:0,y:0,w:sc(r.w),h:sc(r.h)},
         sourceSize:{w:sc(r.w),h:sc(r.h)},
-        duration:Math.round(1000/S.fps) };
+        duration:Math.round(1000/(fpsOf[r.clip]||S.fps)) };
     });
     const meta={ app:'SPRITERIG', version:'1.0', image:nm+'.png', format:'RGBA8888',
       size:{w:sc(L.W),h:sc(L.H)}, scale:String(s) };
@@ -1209,7 +1210,7 @@ function buildMeta(L){
       note:'Rects for Sprite Editor slicing. Origin top-left, y-down.',
       texture:nm+'.png', textureSize:{width:sc(L.W),height:sc(L.H)},
       pixelsPerUnit:100, frameRate:S.fps,
-      clips:L.tags.map(t=>({name:t.name, from:t.from, to:t.to})),
+      clips:L.tags.map(t=>({name:t.name, from:t.from, to:t.to, fps:t.fps||S.fps})),
       sprites:R.map(r=>({name:r.name,x:sc(r.x),y:sc(r.y),w:sc(r.w),h:sc(r.h)}))
     }, null, 2)};
   } else if(fmt==='godot'){
@@ -1308,7 +1309,7 @@ async function exportAll(){
                   data:await pngBytes(L.placed[i].canvas)});
     clipList().forEach(cl=>{
       try{ files.push({name:'gif/'+nm+'_'+cl.name+'.gif',
-                       data:encodeGif(cl.frames, cl.fps||S.fps, S.palette)}); }
+                       data:encodeGif(cl.frames, cl.fps||S.fps, cl.palette||S.palette)}); }
       catch(e){ /* one bad clip shouldn't sink the archive */ }
     });
     const m=buildMeta(L);
@@ -1333,7 +1334,7 @@ function addClip(){
   const label=(ANIMS[S.anim]||{label:S.anim}).label.toLowerCase().replace(/\s+/g,'_');
   let name=label, k=2;
   while(S.clips.some(c=>c.name===name)) name=label+'_'+(k++);
-  S.clips.push({name, frames:S.frames.slice(), fps:S.fps});
+  S.clips.push({name, frames:S.frames.slice(), fps:S.fps, palette:S.palette});
   renderClips(); renderSheet();
   toast('Clip "'+name+'" added — '+S.frames.length+' frames');
 }
