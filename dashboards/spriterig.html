@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPRITERIG — Sprite Sheet Forge</title>
+<style>
+  :root{
+    --bg:#0b0a10; --surface:#131119; --panel:#181622; --line:#2b2738;
+    --accent:#a78bfa; --accent2:#5eead4; --accent3:#fb7185; --lime:#bef264;
+    --text:#e9e7f2; --muted:#8b86a3; --dim:#4a4560;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;overflow-x:hidden}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;
+    background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+  .logo{font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:-.3px}
+  .logo b{color:var(--accent)}
+  .tag{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+  .app{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;gap:1px;background:var(--line);
+    min-height:calc(100vh - 42px)}
+  .col{background:var(--panel);padding:14px;overflow-y:auto;max-height:calc(100vh - 42px)}
+  .col.center{background:var(--bg);padding:16px}
+  @media (max-width:1080px){ .app{grid-template-columns:1fr} .col{max-height:none} }
+
+  h2{font-family:var(--mono);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);
+    padding-bottom:6px;border-bottom:1px solid var(--line);margin:18px 0 10px}
+  h2:first-child{margin-top:0}
+  .hint{font-size:10.5px;color:var(--muted);line-height:1.45;margin-top:6px}
+  label.f{display:block;font-size:10.5px;color:var(--muted);margin:9px 0 4px}
+  label.f.sp{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  select,input[type=text],input[type=number]{width:100%;background:#0e0c14;border:1px solid var(--line);
+    border-radius:5px;color:var(--text);font-family:var(--sans);font-size:12px;padding:6px 8px;outline:none}
+  select:focus,input:focus{border-color:var(--accent)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:var(--line);
+    border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;
+    background:var(--accent);cursor:pointer}
+  input[type=color]{width:34px;height:26px;padding:0;background:#0e0c14;border:1px solid var(--line);border-radius:5px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .sv{font-family:var(--mono);font-size:10px;color:var(--accent)}
+  .flex{display:flex;align-items:center;gap:8px}
+  .sp{display:flex;align-items:center;justify-content:space-between}
+
+  button{font-family:var(--sans);cursor:pointer;border-radius:6px;transition:.15s;border:1px solid var(--line);
+    background:#0e0c14;color:var(--text);font-size:12px;padding:7px 10px}
+  button:hover:not(:disabled){border-color:var(--accent)}
+  button:disabled{opacity:.32;cursor:not-allowed}
+  .primary{width:100%;padding:11px;background:linear-gradient(135deg,#7c3aed,#a78bfa);border:none;color:#fff;
+    font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:1px;margin-top:12px}
+  .primary:hover:not(:disabled){filter:brightness(1.12)}
+  .ghost{width:100%;background:transparent;border:1px solid var(--accent2);color:var(--accent2);
+    font-family:var(--mono);font-size:11px;letter-spacing:.6px;padding:9px;margin-top:6px}
+  .ghost:hover:not(:disabled){background:rgba(94,234,212,.1);border-color:var(--accent2)}
+  .ghost.v{border-color:var(--accent);color:var(--accent)}
+  .ghost.v:hover:not(:disabled){background:rgba(167,139,250,.12)}
+
+  #drop{border:1.5px dashed var(--dim);border-radius:8px;padding:18px 12px;text-align:center;cursor:pointer;
+    background:#0e0c14;position:relative;transition:.15s}
+  #drop:hover,#drop.on{border-color:var(--accent);background:rgba(167,139,250,.07)}
+  #drop input{display:none}
+  #drop .big{font-size:20px;opacity:.5}
+  #drop p{font-size:11.5px;color:var(--muted);margin-top:4px}
+  .hdr-exp{display:flex;gap:6px}
+  .dl{font-family:var(--mono);font-size:11px;letter-spacing:.5px;padding:6px 11px;
+    border-color:var(--accent2);color:var(--accent2);background:rgba(94,234,212,.07)}
+  .dl:hover:not(:disabled){background:var(--accent2);color:#0b0a10;border-color:var(--accent2)}
+  #srcCv{display:block;margin:0 auto;max-width:100%;cursor:crosshair}
+  #srcWrap{position:relative;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:8px}
+  .keys{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;min-height:22px;align-items:center}
+  .key{width:22px;height:22px;border-radius:4px;border:1px solid var(--dim);cursor:pointer;position:relative}
+  .key:hover::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;
+    justify-content:center;font-size:11px;color:#fff;text-shadow:0 0 3px #000}
+  .keys .none{font-size:10.5px;color:var(--dim)}
+  .checker{background-image:
+      linear-gradient(45deg,#211d2b 25%,transparent 25%,transparent 75%,#211d2b 75%),
+      linear-gradient(45deg,#211d2b 25%,transparent 25%,transparent 75%,#211d2b 75%);
+    background-size:12px 12px;background-position:0 0,6px 6px;background-color:#191622}
+
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{border:1px solid var(--line);border-radius:99px;padding:4px 10px;font-size:11px;cursor:pointer;
+    background:#0e0c14;color:var(--muted);user-select:none;transition:.12s}
+  .chip:hover{color:var(--text);border-color:var(--dim)}
+  .chip.on{border-color:var(--accent);color:var(--accent);background:rgba(167,139,250,.14)}
+
+  .stage{display:flex;flex-direction:column;gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:12px}
+  .card .sp{margin-bottom:9px}
+  .card h3{font-family:var(--mono);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted)}
+  .num{font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .num b{color:var(--accent2);font-weight:400}
+
+  #playWrap{position:relative;width:224px;height:224px;border:1px solid var(--line);border-radius:6px;flex:0 0 auto}
+  #play{width:100%;height:100%;display:block;image-rendering:pixelated}
+  #rigWrap{position:relative;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:8px}
+  #rigCv{display:block;margin:0 auto;max-width:100%}
+
+  #sheetWrap{position:relative;display:inline-block;border:1px dashed #45397a;max-width:100%;overflow:auto}
+  #sheet,#grid{display:block;image-rendering:pixelated;max-width:100%;height:auto}
+  #grid{position:absolute;inset:0;pointer-events:none}
+  #strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+  .th{position:relative;flex:0 0 auto;border:1px solid var(--line);border-radius:5px;overflow:hidden;cursor:pointer}
+  .th.on{border-color:var(--accent)}
+  .th canvas{display:block;width:56px;height:56px;image-rendering:pixelated}
+  .th span{position:absolute;top:1px;left:2px;font-family:var(--mono);font-size:9px;color:#fff;
+    background:rgba(0,0,0,.6);padding:0 3px;border-radius:2px}
+  .empty{color:var(--muted);font-style:italic;font-size:12px;padding:26px 0;text-align:center}
+
+  .clip{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#0e0c14;
+    border:1px solid var(--line);border-radius:5px;padding:5px 8px;margin-top:5px;font-size:11px}
+  .clip b{font-family:var(--mono);font-weight:400;color:var(--accent2);font-size:10px}
+  .clip button{padding:1px 6px;font-size:11px;border-color:transparent;color:var(--accent3);background:transparent}
+
+  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(60px);background:#221d33;
+    border:1px solid var(--accent);color:var(--text);padding:9px 16px;border-radius:7px;font-size:12px;
+    opacity:0;transition:.25s;z-index:99;pointer-events:none;max-width:80vw;text-align:center}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.clickable{pointer-events:auto}
+  .warn{color:var(--accent3)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">SPRITE<b>RIG</b></div>
+  <div class="tag" id="hdr">no character loaded</div>
+  <div class="hdr-exp">
+    <button id="hZip" class="dl" style="border-color:var(--lime);color:var(--lime);background:rgba(190,242,100,.08)">⬇ EVERYTHING</button>
+    <button id="hPng" class="dl">⬇ PNG</button>
+    <button id="hGif" class="dl">⬇ GIF</button>
+    <button id="hMeta" class="dl">⬇ DATA</button>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- ══════════ LEFT: SOURCE + RIG ══════════ -->
+  <div class="col">
+    <h2>1 · Character</h2>
+    <div id="drop">
+      <input type="file" id="file" accept="image/*">
+      <div class="big">⬆</div>
+      <p><b>Drop / click / paste</b><br>one character image (PNG w/ transparency is best)</p>
+    </div>
+    <button class="ghost v" id="demo" style="margin-top:8px">▶ load demo rocker</button>
+
+    <div id="srcWrap" class="checker"><canvas id="srcCv"></canvas></div>
+    <div class="hint" style="margin-top:5px">Result preview — <b>click any background pixel</b> to key that
+      colour out. Click a swatch to drop it.</div>
+    <div class="keys" id="keys"></div>
+
+    <label class="f">Background removal</label>
+    <select id="bgm">
+      <option value="auto">Auto — detect &amp; strip</option>
+      <option value="flood">Edge flood — connected border colour</option>
+      <option value="key">Colour key — picked colours, everywhere</option>
+      <option value="checker">Checkerboard — fake-transparency tiles</option>
+      <option value="dark">Luma — drop dark background</option>
+      <option value="light">Luma — drop light background</option>
+      <option value="off">Off — image already has alpha</option>
+    </select>
+    <label class="f sp"><span>Tolerance</span><span class="sv" id="tolV">48</span></label>
+    <input type="range" id="tol" min="0" max="160" value="48">
+    <div class="sp" style="margin-top:8px"><span style="font-size:11px">Protect interior</span>
+      <input type="checkbox" id="hole" checked style="width:auto;accent-color:#a78bfa"></div>
+    <div class="sp" style="margin-top:5px"><span style="font-size:11px">Despeckle</span>
+      <input type="checkbox" id="desp" checked style="width:auto;accent-color:#a78bfa"></div>
+    <label class="f sp"><span>Shrink edge (kills JPEG halo)</span><span class="sv" id="erV">0px</span></label>
+    <input type="range" id="er" min="0" max="4" value="0">
+    <div class="hint"><b>Auto</b> handles the common cases: real alpha is left alone, a flat background is
+      flooded, and a preview <b>checkerboard</b> gets both tile colours stripped. <b>Protect interior</b> keeps
+      matching colours that aren't connected to the border — so a white guitar body survives a white-key removal.</div>
+
+    <h2>2 · Rig <span style="color:var(--dim)">— cut lines</span></h2>
+    <div id="rigWrap" class="checker"><canvas id="rigCv"></canvas></div>
+    <button class="ghost" id="autorig" style="margin-top:8px">⌖ auto-fit rig</button>
+
+    <label class="f sp"><span>Neck line (head / torso)</span><span class="sv" id="headV">30%</span></label>
+    <input type="range" id="head" min="8" max="60" value="30">
+    <label class="f sp"><span>Hip line (torso / legs)</span><span class="sv" id="hipV">60%</span></label>
+    <input type="range" id="hip" min="35" max="90" value="60">
+    <label class="f sp"><span>Arm band bottom</span><span class="sv" id="abV">80%</span></label>
+    <input type="range" id="ab" min="35" max="100" value="80">
+    <label class="f sp"><span>Left arm edge</span><span class="sv" id="alV">30%</span></label>
+    <input type="range" id="al" min="2" max="48" value="30">
+    <label class="f sp"><span>Right arm edge</span><span class="sv" id="arV">70%</span></label>
+    <input type="range" id="ar" min="52" max="98" value="70">
+    <label class="f sp"><span>Leg split</span><span class="sv" id="lmV">50%</span></label>
+    <input type="range" id="lm" min="20" max="80" value="50">
+    <label class="f sp"><span>Seam overlap</span><span class="sv" id="ovV">3px</span></label>
+    <input type="range" id="ov" min="0" max="12" value="3">
+    <div class="hint">Each part becomes its own layer, rotated around its joint — that's what makes the frames
+      actually move instead of tilting as one flat picture. Overlap hides the cut seams.</div>
+  </div>
+
+  <!-- ══════════ CENTER: PREVIEW + SHEET ══════════ -->
+  <div class="col center">
+    <div class="stage">
+
+      <div class="card">
+        <div class="sp"><h3>Animation preview</h3>
+          <span class="num">frame <b id="pfN">0</b>/<b id="pfT">0</b> · <b id="fpsN">10</b> fps</span></div>
+        <div class="flex" style="align-items:flex-start;gap:14px;flex-wrap:wrap">
+          <div id="playWrap" class="checker"><canvas id="play"></canvas></div>
+          <div style="flex:1;min-width:180px">
+            <div class="flex">
+              <button id="pp">⏸ pause</button>
+              <button id="prev">◀</button><button id="next">▶</button>
+              <button id="zoomOut">−</button><span class="num" id="zoomV">1×</span><button id="zoomIn">+</button>
+            </div>
+            <label class="f sp"><span>Playback / export fps</span><span class="sv" id="fpsV">10</span></label>
+            <input type="range" id="fps" min="1" max="30" value="10">
+            <label class="f sp"><span>Scrub</span><span class="sv" id="scrubV">0</span></label>
+            <input type="range" id="scrub" min="0" max="0" value="0">
+            <div class="hint" id="livehint">Live rig preview — plays continuously from the rig even before you
+              bake frames, so you can tune joints against the motion.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sp"><h3>Baked frames</h3><span class="num" id="frameInfo">—</span></div>
+        <div id="strip"><div class="empty">No baked frames yet — hit BAKE FRAMES.</div></div>
+      </div>
+
+      <div class="card">
+        <div class="sp"><h3>Sheet</h3>
+          <span class="num" id="sheetInfo">—</span></div>
+        <div class="flex" style="margin-bottom:9px">
+          <button id="gridT">grid overlay</button>
+          <button id="sZoomOut">−</button><span class="num" id="sZoomV">2×</span><button id="sZoomIn">+</button>
+          <span class="num" style="color:var(--dim)">overlay is preview-only, never baked into the PNG</span>
+        </div>
+        <div id="sheetHost"><div class="empty">Sheet renders here once frames are baked.</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════ RIGHT: MOTION / STYLE / EXPORT ══════════ -->
+  <div class="col">
+    <h2>3 · Motion</h2>
+    <div class="chips" id="anims"></div>
+    <div class="row" style="margin-top:10px">
+      <div><label class="f sp"><span>Frames</span><span class="sv" id="fcV">8</span></label>
+        <input type="range" id="fc" min="2" max="24" value="8"></div>
+      <div><label class="f">Render box (px)</label>
+        <input type="number" id="box" min="32" max="1024" step="16" value="256"></div>
+    </div>
+    <div class="hint" id="animDesc"></div>
+    <button class="primary" id="bake">⚡ BAKE FRAMES</button>
+
+    <h2>4 · Pixel pass</h2>
+    <div class="sp"><span>Pixel-art quantise</span>
+      <input type="checkbox" id="px" checked style="width:auto;accent-color:#a78bfa"></div>
+    <label class="f sp"><span>Sprite resolution</span><span class="sv" id="resV">64px</span></label>
+    <input type="range" id="res" min="16" max="256" step="8" value="64">
+    <label class="f sp"><span>Palette colours</span><span class="sv" id="colV">24</span></label>
+    <input type="range" id="col" min="2" max="64" value="24">
+    <label class="f sp"><span>Alpha cutoff</span><span class="sv" id="acV">128</span></label>
+    <input type="range" id="ac" min="8" max="250" value="128">
+    <div class="sp" style="margin-top:9px"><span>1px outline</span>
+      <div class="flex"><input type="color" id="olc" value="#171225">
+        <input type="checkbox" id="ol" style="width:auto;accent-color:#a78bfa"></div></div>
+    <div class="hint">One palette is median-cut across every frame at once, so the whole sheet stays colour-consistent
+      — the thing that makes a sheet read as one character.</div>
+
+    <h2>5 · Sheet layout</h2>
+    <div class="row3">
+      <div><label class="f">Columns</label><input type="number" id="cols" min="1" value="6"></div>
+      <div><label class="f">Padding</label><input type="number" id="pad" min="0" value="2"></div>
+      <div><label class="f">Scale</label>
+        <select id="scale"><option>1</option><option>2</option><option>3</option><option>4</option><option>6</option><option>8</option></select></div>
+    </div>
+    <label class="f">Background</label>
+    <div class="flex">
+      <select id="bgMode"><option value="transparent">Transparent</option><option value="color">Solid</option></select>
+      <input type="color" id="bgColor" value="#1b1622">
+    </div>
+
+    <h2>6 · Clips <span style="color:var(--dim)">— multi-row sheet</span></h2>
+    <button class="ghost" id="addClip">+ add baked frames as clip</button>
+    <div id="clips"></div>
+    <div class="hint">Bake one motion, add it, switch motion, bake, add again — each clip becomes its own row block
+      and its own tagged animation in the metadata.</div>
+
+    <h2>7 · Export</h2>
+    <button class="ghost" id="eZip" style="border-color:var(--lime);color:var(--lime)">⬇ EVERYTHING (.zip)</button>
+    <button class="ghost" id="ePng">⬇ sheet PNG</button>
+    <button class="ghost" id="eGif">⬇ animated GIF (current clip)</button>
+    <label class="f">Metadata format</label>
+    <select id="fmt">
+      <option value="phaser">TexturePacker / Phaser (.json)</option>
+      <option value="aseprite">Aseprite + frameTags (.json)</option>
+      <option value="unity">Unity sprite rects (.json)</option>
+      <option value="godot">Godot 4 SpriteFrames (.tres)</option>
+      <option value="css">CSS steps() (.css)</option>
+    </select>
+    <button class="ghost v" id="eMeta">⬇ metadata</button>
+    <label class="f">File name base</label>
+    <input type="text" id="name" value="my_sprite">
+    <div class="hint">PNG + metadata share the name base so engine importers pair them. GIF is encoded here in-page
+      (GIF89a + LZW), no server, no library. Chrome only allows <b>one</b> automatic download per page unless you grant
+      "Automatic downloads" — so <b>EVERYTHING (.zip)</b> is the reliable path: sheet, every frame, a GIF per
+      clip, metadata and a spec README in a single file. Individual buttons still work; if one doesn't land,
+      use the <b>click here to save it</b> link in the toast.</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ════════════════════════════════════════════════════════════════════
+   SPRITERIG — one character image → rigged cut-out puppet → posed
+   frames → pixel pass → packed sheet → real exports. All local.
+   ════════════════════════════════════════════════════════════════════ */
+
+const $ = s => document.querySelector(s);
+const TAU = Math.PI * 2;
+const clamp = (v,a,b) => Math.min(b, Math.max(a,v));
+const cv = (w,h) => { const c=document.createElement('canvas'); c.width=w; c.height=h; return c; };
+const ctxOf = c => c.getContext('2d', {willReadFrequently:true});
+
+const S = {
+  raw:null,            // untouched source canvas
+  cut:null,            // background removed, NOT trimmed (1:1 with raw, for colour picking)
+  base:null,           // cut-out + trimmed character
+  parts:null,          // {name:{canvas,pivot}}
+  bg:{mode:'auto', tol:48, keys:[], hole:true, desp:true, er:0},
+  rig:{head:.30, hip:.60, ab:.80, al:.30, ar:.70, lm:.50, ov:3},
+  anim:'strum', fc:8, box:256,
+  px:{on:true, res:64, colors:24, ac:128, ol:false, olc:'#171225'},
+  frames:[], palette:null,
+  clips:[],
+  fps:10, cols:6, pad:2, bgMode:'transparent', bgColor:'#1b1622', scale:1,
+  playing:true, zoom:1, sZoom:2, showGrid:true, sel:0, scrubbing:false,
+};
+
+/* ── toast ───────────────────────────────────────────────────────── */
+let toastT=null;
+function toast(msg, warn){
+  const t=$('#toast'); t.innerHTML = warn ? '<span class="warn">'+msg+'</span>' : msg;
+  t.classList.add('on'); clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('on'), 2600);
+}
+
+/* ════════════════ INGEST ════════════════ */
+function fileToUrl(f){ return new Promise((res,rej)=>{ const r=new FileReader();
+  r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); }); }
+function loadImg(src){ return new Promise((res,rej)=>{ const i=new Image();
+  i.onload=()=>res(i); i.onerror=()=>rej(new Error('image decode failed')); i.src=src; }); }
+
+async function ingestFile(f){
+  if(!f || !/^image\//.test(f.type)) { toast('That is not an image file', true); return; }
+  try{
+    const img = await loadImg(await fileToUrl(f));
+    // cap the working copy — frames bake at ≤256px, so nothing is lost and the
+    // per-pixel background passes stay interactive
+    const CAP=1400, iw=img.naturalWidth, ih=img.naturalHeight;
+    const k=Math.min(1, CAP/Math.max(iw,ih));
+    const c = cv(Math.round(iw*k), Math.round(ih*k));
+    const cx=ctxOf(c);
+    cx.imageSmoothingEnabled=true;
+    cx.drawImage(img, 0,0, c.width, c.height);
+    S.raw = c;
+    process();
+    toast('Loaded '+f.name+' — '+iw+'×'+ih+(k<1?' (working at '+c.width+'×'+c.height+')':'')
+      +' · bg: '+(S.bgUsed||S.bg.mode));
+  }catch(e){ toast('Could not read that image: '+e.message, true); }
+}
+
+/* ════════════════ BACKGROUND REMOVAL ════════════════
+   Six strategies over one shared remove-mask, then three cleanup passes.
+   Everything is per-pixel and local — no service, no model. */
+
+function borderRing(w,h,d,depth){
+  const out=[];
+  const px=(x,y)=>{ const i=(y*w+x)*4; return d[i+3]<16 ? null : [d[i],d[i+1],d[i+2]]; };
+  const add=c=>{ if(c) out.push(c); };
+  for(let x=0;x<w;x++) for(let k=0;k<depth;k++){ add(px(x,k)); add(px(x,h-1-k)); }
+  for(let y=0;y<h;y++) for(let k=0;k<depth;k++){ add(px(k,y)); add(px(w-1-k,y)); }
+  return out;
+}
+/* quantised histogram — a preview checkerboard shows up as two dominant bins */
+function topColours(list, n, bin){
+  if(!list.length) return [];
+  const m=new Map();
+  for(const c of list){
+    const k=(((c[0]/bin)|0)<<16)|(((c[1]/bin)|0)<<8)|((c[2]/bin)|0);
+    let e=m.get(k);
+    if(!e){ e={n:0,r:0,g:0,b:0}; m.set(k,e); }
+    e.n++; e.r+=c[0]; e.g+=c[1]; e.b+=c[2];
+  }
+  return [...m.values()].sort((a,b)=>b.n-a.n).slice(0,n).map(e=>({
+    col:[Math.round(e.r/e.n), Math.round(e.g/e.n), Math.round(e.b/e.n)], frac:e.n/list.length }));
+}
+
+function cutout(src){
+  const w=src.width, h=src.height, n=w*h;
+  const out=cv(w,h), cx=ctxOf(out);
+  cx.drawImage(src,0,0);
+  const B=S.bg;
+  if(B.mode==='off' && !B.keys.length) return out;
+  const id=cx.getImageData(0,0,w,h), d=id.data;
+
+  let clear=0;
+  for(let i=3;i<d.length;i+=4) if(d[i]<16) clear++;
+  const hasAlpha = clear > n*0.04;
+  const tops=topColours(borderRing(w,h,d,2), 4, 12);
+
+  let mode=B.mode;
+  if(mode==='auto'){
+    if(hasAlpha) mode='none';                              // real transparency: hands off
+    else if(tops[0] && tops[0].frac>=0.80) mode='flood';   // one flat colour
+    else mode='checker';                                   // tiles / multi-tone backdrop
+  }
+  S.bgUsed=mode;
+
+  const tol=Math.max(1, B.tol), lim=tol*tol*3;
+  const rm=new Uint8Array(n);
+
+  /* ── global colour keys (picked + auto-detected tiles) ── */
+  const keys=B.keys.slice();
+  if(mode==='checker') tops.filter(t=>t.frac>=0.06).slice(0,3).forEach(t=>keys.push(t.col));
+  if(mode==='key' && !keys.length && tops[0]) keys.push(tops[0].col);
+  if(keys.length) for(let p=0;p<n;p++){
+    const i=p*4;
+    for(let k=0;k<keys.length;k++){
+      const dr=d[i]-keys[k][0], dg=d[i+1]-keys[k][1], db=d[i+2]-keys[k][2];
+      if(dr*dr+dg*dg+db*db<=lim){ rm[p]=1; break; }
+    }
+  }
+
+  /* ── luma key ── */
+  if(mode==='dark'||mode==='light') for(let p=0;p<n;p++){
+    const i=p*4, y=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;
+    if(mode==='dark' ? y<=B.tol : y>=255-B.tol) rm[p]=1;
+  }
+
+  /* ── connected edge flood ── */
+  if(mode==='flood'){
+    const ref=tops[0] ? tops[0].col : [d[0],d[1],d[2]];
+    const seen=new Uint8Array(n), st=[];
+    for(let x=0;x<w;x++) st.push(x, (h-1)*w+x);
+    for(let y=0;y<h;y++) st.push(y*w, y*w+w-1);
+    while(st.length){
+      const p=st.pop();
+      if(seen[p]) continue;
+      seen[p]=1;
+      const i=p*4;
+      if(d[i+3]>=16){
+        const dr=d[i]-ref[0], dg=d[i+1]-ref[1], db=d[i+2]-ref[2];
+        if(dr*dr+dg*dg+db*db>lim) continue;
+      }
+      rm[p]=1;
+      const x=p%w, y=(p-x)/w;
+      if(x>0) st.push(p-1);
+      if(x<w-1) st.push(p+1);
+      if(y>0) st.push(p-w);
+      if(y<h-1) st.push(p+w);
+    }
+  }
+
+  for(let p=0;p<n;p++) if(d[p*4+3]<16) rm[p]=1;   // existing alpha stays removed
+
+  /* ── protect interior: a global key would otherwise punch holes through
+        matching colours inside the character. Only keep removals that are
+        reachable from the border. ── */
+  if(B.hole && (keys.length || mode==='dark' || mode==='light')){
+    const conn=new Uint8Array(n), st=[];
+    const push=p=>{ if(rm[p] && !conn[p]){ conn[p]=1; st.push(p); } };
+    for(let x=0;x<w;x++){ push(x); push((h-1)*w+x); }
+    for(let y=0;y<h;y++){ push(y*w); push(y*w+w-1); }
+    while(st.length){
+      const p=st.pop(), x=p%w, y=(p-x)/w;
+      if(x>0) push(p-1);
+      if(x<w-1) push(p+1);
+      if(y>0) push(p-w);
+      if(y<h-1) push(p+w);
+    }
+    for(let p=0;p<n;p++) if(rm[p] && !conn[p]) rm[p]=0;
+  }
+
+  /* ── despeckle: strip lone survivors, refill lone pinholes ── */
+  if(B.desp){
+    const cp=rm.slice();
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+      const p=y*w+x;
+      let k=0;
+      for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){
+        if(!dx && !dy) continue;
+        const xx=x+dx, yy=y+dy;
+        if(xx<0||yy<0||xx>=w||yy>=h){ k++; continue; }
+        if(cp[yy*w+xx]) k++;
+      }
+      if(!cp[p] && k>=7) rm[p]=1;
+      else if(cp[p] && k<=1) rm[p]=0;
+    }
+  }
+
+  /* ── shrink edge: eats the JPEG/anti-alias halo ── */
+  for(let k=0;k<B.er;k++){
+    const cp=rm.slice();
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+      const p=y*w+x;
+      if(cp[p]) continue;
+      if((x>0&&cp[p-1])||(x<w-1&&cp[p+1])||(y>0&&cp[p-w])||(y<h-1&&cp[p+w])) rm[p]=1;
+    }
+  }
+
+  for(let p=0;p<n;p++) if(rm[p]){ const i=p*4; d[i]=d[i+1]=d[i+2]=0; d[i+3]=0; }
+  cx.putImageData(id,0,0);
+  return out;
+}
+
+function trim(src){
+  const w=src.width, h=src.height;
+  const d=ctxOf(src).getImageData(0,0,w,h).data;
+  let x0=w,y0=h,x1=-1,y1=-1;
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    if(d[(y*w+x)*4+3]>10){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  }
+  if(x1<0) return src;
+  const nw=x1-x0+1, nh=y1-y0+1;
+  const out=cv(nw,nh);
+  ctxOf(out).drawImage(src, x0,y0,nw,nh, 0,0,nw,nh);
+  return out;
+}
+
+function process(){
+  if(!S.raw) return;
+  S.cut  = cutout(S.raw);            // untrimmed → 1:1 with raw, so clicks map straight through
+  S.base = trim(S.cut);
+  buildParts();
+  drawSource();
+  drawRig();
+  renderKeys();
+  $('#hdr').textContent = 'character '+S.base.width+'×'+S.base.height
+    +' · bg: '+(S.bgUsed||S.bg.mode)+' · rigged into 6 parts';
+}
+let procT=null;
+function reprocess(){ clearTimeout(procT); procT=setTimeout(process, 70); }
+
+function drawSource(){
+  const c=$('#srcCv');
+  if(!S.cut){ c.width=1; c.height=1; return; }
+  const w=S.cut.width, h=S.cut.height;
+  const s=Math.min(1, 272/w, 200/h);
+  c.width=Math.round(w*s); c.height=Math.round(h*s);
+  const x=ctxOf(c);
+  x.clearRect(0,0,c.width,c.height);
+  x.drawImage(S.cut, 0,0, c.width, c.height);
+}
+function renderKeys(){
+  const host=$('#keys');
+  host.innerHTML='';
+  if(!S.bg.keys.length){ host.innerHTML='<span class="none">no picked colours</span>'; return; }
+  S.bg.keys.forEach((k,i)=>{
+    const d=document.createElement('div');
+    d.className='key';
+    d.style.background='rgb('+k[0]+','+k[1]+','+k[2]+')';
+    d.title='rgb('+k.join(',')+') — click to remove';
+    d.onclick=()=>{ S.bg.keys.splice(i,1); process(); };
+    host.appendChild(d);
+  });
+}
+/* click the preview → read that pixel from the RAW image → add a colour key */
+function pickAt(ev){
+  if(!S.raw || !S.cut) return;
+  const c=$('#srcCv'), r=c.getBoundingClientRect();
+  const x=Math.floor((ev.clientX-r.left)/r.width * S.raw.width);
+  const y=Math.floor((ev.clientY-r.top)/r.height * S.raw.height);
+  if(x<0||y<0||x>=S.raw.width||y>=S.raw.height) return;
+  const p=ctxOf(S.raw).getImageData(x,y,1,1).data;
+  if(S.bg.keys.length>=6){ toast('6 colour keys is the max — drop one first', true); return; }
+  if(S.bg.keys.some(k=>k[0]===p[0]&&k[1]===p[1]&&k[2]===p[2])) { toast('That colour is already keyed'); return; }
+  S.bg.keys.push([p[0],p[1],p[2]]);
+  process();
+  toast('Keyed out rgb('+p[0]+','+p[1]+','+p[2]+')');
+}
+
+/* ════════════════ RIG ════════════════ */
+function ownerFn(w,h,r){
+  const hy=r.head*h, py=r.hip*h, ab=r.ab*h, alx=r.al*w, arx=r.ar*w, lm=r.lm*w;
+  return (x,y)=>{
+    if(x<0||y<0||x>=w||y>=h) return null;
+    if(y<hy) return 'head';
+    if(y<ab && x<alx) return 'armL';
+    if(y<ab && x>arx) return 'armR';
+    if(y<py) return 'torso';
+    return x<lm ? 'legL' : 'legR';
+  };
+}
+const PART_NAMES=['head','torso','armL','armR','legL','legR'];
+const PART_COL={head:'#fb7185', torso:'#a78bfa', armL:'#5eead4', armR:'#38bdf8', legL:'#bef264', legR:'#fbbf24'};
+
+/* Seam bleed, per part. own(x+dx,y+dy)===n grows part n's mask in the OPPOSITE
+   direction, so each part reaches back toward its own joint — where rotation
+   opens a wedge gap. Legs reach up past the hip, head down past the neck,
+   arms inward past the shoulder. */
+const PROBE={ head:{l:1,r:1,u:2,d:1}, torso:{l:2,r:2,u:2,d:2},
+              armL:{l:3,r:1,u:2,d:1}, armR:{l:1,r:3,u:2,d:1},
+              legL:{l:1,r:1,u:1,d:3}, legR:{l:1,r:1,u:1,d:3} };
+
+function buildParts(){
+  if(!S.base) return;
+  const b=S.base, w=b.width, h=b.height;
+  const sd=ctxOf(b).getImageData(0,0,w,h).data;
+  const own=ownerFn(w,h,S.rig);
+  // slider is calibrated against a 256px character; scale it to the real one
+  const ov=Math.max(0, Math.round(S.rig.ov * Math.max(w,h)/256));
+  const parts={};
+  for(const n of PART_NAMES){
+    const P=PROBE[n];
+    const c=cv(w,h), cx=ctxOf(c), id=cx.createImageData(w,h), dd=id.data;
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+      const i=(y*w+x)*4;
+      if(sd[i+3]<=10) continue;
+      let keep = own(x,y)===n;
+      if(!keep && ov>0){
+        keep = own(x-ov*P.l,y)===n || own(x+ov*P.r,y)===n
+            || own(x,y-ov*P.u)===n || own(x,y+ov*P.d)===n;
+      }
+      if(!keep) continue;
+      dd[i]=sd[i]; dd[i+1]=sd[i+1]; dd[i+2]=sd[i+2]; dd[i+3]=sd[i+3];
+    }
+    cx.putImageData(id,0,0);
+    parts[n]={canvas:c};
+  }
+  const r=S.rig;
+  parts.head.pivot  = {x:w*.5, y:h*r.head};
+  parts.torso.pivot = {x:w*.5, y:h*r.hip};
+  parts.armL.pivot  = {x:w*r.al, y:h*(r.head+.05)};
+  parts.armR.pivot  = {x:w*r.ar, y:h*(r.head+.05)};
+  parts.legL.pivot  = {x:w*Math.max(.04,r.lm-.09), y:h*r.hip};
+  parts.legR.pivot  = {x:w*Math.min(.96,r.lm+.09), y:h*r.hip};
+  S.parts=parts;
+}
+
+function autoRig(){
+  if(!S.base){ toast('Load a character first', true); return; }
+  const w=S.base.width, h=S.base.height;
+  const d=ctxOf(S.base).getImageData(0,0,w,h).data;
+  const rowW=new Int32Array(h);
+  for(let y=0;y<h;y++){ let n=0; for(let x=0;x<w;x++) if(d[(y*w+x)*4+3]>10) n++; rowW[y]=n; }
+  const narrowest=(a,b)=>{ let bi=Math.floor(a*h), bv=1e9;
+    for(let y=Math.floor(a*h); y<Math.floor(b*h); y++){ if(rowW[y]>0 && rowW[y]<bv){ bv=rowW[y]; bi=y; } }
+    return bi/h; };
+  S.rig.head = clamp(narrowest(.12,.46), .08,.60);
+  S.rig.hip  = clamp(narrowest(.44,.76), S.rig.head+.08,.90);
+  S.rig.ab   = clamp(S.rig.hip+.20, .35, 1);
+  const sy=Math.floor(clamp(S.rig.head+.06,0,.99)*h);
+  let x0=w, x1=-1;
+  for(let y=Math.max(0,sy-2); y<Math.min(h,sy+3); y++)
+    for(let x=0;x<w;x++) if(d[(y*w+x)*4+3]>10){ if(x<x0)x0=x; if(x>x1)x1=x; }
+  if(x1>x0){ const span=x1-x0;
+    S.rig.al = clamp((x0+span*.24)/w, .02,.48);
+    S.rig.ar = clamp((x0+span*.76)/w, .52,.98); }
+  syncRigUI(); buildParts(); drawRig();
+  toast('Rig estimated from the alpha silhouette — nudge the sliders to taste');
+}
+
+function drawRig(){
+  const c=$('#rigCv');
+  if(!S.base){ c.width=1; c.height=1; return; }
+  const w=S.base.width, h=S.base.height;
+  const s=Math.min(1, 272/w, 260/h);
+  c.width=Math.round(w*s); c.height=Math.round(h*s);
+  const x=ctxOf(c);
+  x.clearRect(0,0,c.width,c.height);
+  x.imageSmoothingEnabled=true;
+  x.drawImage(S.base, 0,0, c.width, c.height);
+  const r=S.rig, W=c.width, H=c.height;
+  x.lineWidth=1;
+  const line=(x1,y1,x2,y2,col)=>{ x.strokeStyle=col; x.beginPath(); x.moveTo(x1,y1); x.lineTo(x2,y2); x.stroke(); };
+  line(0, r.head*H, W, r.head*H, PART_COL.head);
+  line(0, r.hip*H,  W, r.hip*H,  PART_COL.torso);
+  x.setLineDash([3,3]);
+  line(0, r.ab*H, W, r.ab*H, '#5eead4');
+  x.setLineDash([]);
+  line(r.al*W, r.head*H, r.al*W, r.ab*H, PART_COL.armL);
+  line(r.ar*W, r.head*H, r.ar*W, r.ab*H, PART_COL.armR);
+  line(r.lm*W, r.hip*H, r.lm*W, H, PART_COL.legL);
+  if(S.parts) for(const n of PART_NAMES){
+    const p=S.parts[n].pivot;
+    x.fillStyle=PART_COL[n];
+    x.beginPath(); x.arc(p.x/w*W, p.y/h*H, 3, 0, TAU); x.fill();
+  }
+}
+
+/* ════════════════ MOTION ════════════════
+   t ∈ [0,1). tx/ty are percent of character height. rot in radians.
+   Parts are hierarchical: root → torso → {head, armL, armR}; root → legs. */
+const ez = t => t*t*(3-2*t);
+const sn = t => Math.sin(TAU*t);
+
+const ANIMS = {
+  idle:{label:'Idle', loop:true, desc:'Breathing sway — subtle head and arm drift.', fn:t=>({
+    root:{ty:-0.9*sn(t)}, torso:{rot:.012*sn(t)}, head:{rot:.035*sn(t+.12)},
+    armL:{rot:.05*sn(t)}, armR:{rot:-.05*sn(t)} })},
+
+  strum:{label:'Strum', loop:true, desc:'Picking arm oscillates at 2× loop rate, body counter-bobs.', fn:t=>({
+    root:{ty:-1.1*Math.abs(Math.sin(TAU*t))}, torso:{rot:.03*sn(t*2)},
+    head:{rot:.05*sn(t)}, armR:{rot:.55*sn(t*2), ty:.8*Math.abs(sn(t*2))}, armL:{rot:.07*sn(t*2)} })},
+
+  headbang:{label:'Headbang', loop:true, desc:'Fast nod down, slow recovery — the classic 2-beat.', fn:t=>{
+    const p = t<.34 ? ez(t/.34) : 1-ez((t-.34)/.66);
+    return { root:{ty:1.4*p}, torso:{rot:.14*p}, head:{rot:-.14+.80*p},
+             armR:{rot:.22*p}, armL:{rot:-.10*p} }; }},
+
+  windmill:{label:'Windmill', loop:true, desc:'Full 360° arm rotation around the shoulder joint.', fn:t=>({
+    root:{ty:-1.4*sn(t)}, torso:{rot:.07*sn(t)}, head:{rot:-.05},
+    armR:{rot:-TAU*t}, armL:{rot:.1*sn(t)} })},
+
+  solo:{label:'Solo', loop:true, desc:'Leg planted up, fretting hand vibrato, head thrown back.', fn:t=>({
+    root:{ty:-2.6}, torso:{rot:-.08}, head:{rot:-.20+.03*sn(t*2)},
+    armL:{rot:.13*sn(t*6)}, armR:{rot:-.06+.05*sn(t*3)},
+    legR:{rot:-.52-.09*sn(t*3)}, legL:{rot:.06} })},
+
+  walk:{label:'Walk', loop:true, desc:'Opposed leg/arm swing with a 2-per-loop vertical bob.', fn:t=>({
+    root:{ty:-1.2*Math.abs(sn(t*2))}, torso:{rot:.03*sn(t*2)+.03},
+    head:{rot:-.02*sn(t*2)},
+    legL:{rot:.45*sn(t)}, legR:{rot:-.45*sn(t)},
+    armL:{rot:-.35*sn(t)}, armR:{rot:.35*sn(t)} })},
+
+  run:{label:'Run', loop:true, desc:'Walk at 1.9× amplitude with a forward torso lean.', fn:t=>({
+    root:{ty:-2.6*Math.abs(sn(t*2))}, torso:{rot:.17},
+    head:{rot:-.06-.03*sn(t*2)},
+    legL:{rot:.85*sn(t)}, legR:{rot:-.85*sn(t)},
+    armL:{rot:-.66*sn(t)}, armR:{rot:.66*sn(t)} })},
+
+  jump:{label:'Jump', loop:false, desc:'Squash → launch arc → squash, legs tuck, arms up.', fn:t=>{
+    const k=Math.sin(Math.PI*t), edge = (t<.10||t>.90) ? 1 : 0;
+    return { root:{ty:-22*k, sy:1+.10*k-.15*edge, sx:1-.06*k+.13*edge},
+      torso:{rot:-.06*k}, head:{rot:-.10*k},
+      legL:{rot:-.40*k}, legR:{rot:.34*k},
+      armL:{rot:-1.10*k}, armR:{rot:1.10*k} }; }},
+
+  bounce:{label:'Bounce', loop:true, desc:'Two hops per loop with real knee bend.', fn:t=>{
+    const k=Math.abs(Math.sin(Math.PI*t*2));
+    return { root:{ty:-9*k, sy:1+.06*k, sx:1-.04*k},
+      legL:{rot:-.22*(1-k)}, legR:{rot:.22*(1-k)},
+      armL:{rot:-.5*k}, armR:{rot:.5*k}, head:{rot:-.08*k} }; }},
+
+  hairflip:{label:'Hair flip', loop:false, desc:'Big head swing around the neck joint.', fn:t=>{
+    const k=Math.sin(Math.PI*t);
+    return { root:{ty:-1.6*k}, torso:{rot:-.12*k}, head:{rot:1.05*k},
+      armL:{rot:-.2*k}, armR:{rot:.15*k} }; }},
+
+  hurt:{label:'Hurt', loop:false, desc:'Recoil shake with a red tint that decays.', fn:t=>({
+    root:{tx:2.6*sn(t*5)*(1-t), rot:-.05*(1-t), tint:{c:'#ff2f4d', a:.42*(1-t)}},
+    head:{rot:-.26*(1-t)}, torso:{rot:-.10*(1-t)},
+    armL:{rot:-.4*(1-t)}, armR:{rot:.4*(1-t)} })},
+
+  death:{label:'Death', loop:false, desc:'Topple to the ground, fade out.', fn:t=>({
+    root:{rot:1.35*ez(t), ty:5*ez(t), alpha:1-.72*t},
+    head:{rot:-.30*t}, torso:{rot:.15*t},
+    legL:{rot:-.35*t}, legR:{rot:.25*t}, armL:{rot:.5*t}, armR:{rot:-.5*t} })},
+};
+
+function poseAt(key, t){
+  const a = ANIMS[key] || ANIMS.idle;
+  const p = a.fn(t) || {};
+  const root = Object.assign({tx:0,ty:0,rot:0,sx:1,sy:1,alpha:1,tint:null}, p.root||{});
+  return {root, parts:p};
+}
+
+function drawPose(x, key, t, size){
+  const b=S.base;
+  if(!b || !S.parts) return;
+  const w=b.width, h=b.height, U=h/100;
+  const P=poseAt(key,t), root=P.root;
+  const s=(size*0.88)/Math.max(w,h);
+  x.save();
+  x.imageSmoothingEnabled=true;
+  x.translate(size/2, size*0.96);
+  x.scale(s,s);
+  x.translate(root.tx*U, root.ty*U);
+  x.rotate(root.rot);
+  x.scale(root.sx, root.sy);
+  x.translate(-w/2, -h);
+  x.globalAlpha=root.alpha;
+
+  const enter=name=>{
+    const pt=S.parts[name], po=P.parts[name]||{};
+    x.save();
+    x.translate(pt.pivot.x + (po.tx||0)*U, pt.pivot.y + (po.ty||0)*U);
+    x.rotate(po.rot||0);
+    x.scale(po.sx===undefined?1:po.sx, po.sy===undefined?1:po.sy);
+    x.translate(-pt.pivot.x, -pt.pivot.y);
+  };
+  const put=name=>{ enter(name); x.drawImage(S.parts[name].canvas,0,0); x.restore(); };
+
+  put('legR'); put('legL');
+  enter('torso');                       // torso group: arms + head ride along
+    put('armR');
+    x.drawImage(S.parts.torso.canvas,0,0);
+    put('head');
+    put('armL');
+  x.restore();
+
+  x.restore();
+  if(root.tint){
+    x.save();
+    x.globalCompositeOperation='source-atop';
+    x.globalAlpha=root.tint.a;
+    x.fillStyle=root.tint.c;
+    x.fillRect(0,0,size,size);
+    x.restore();
+  }
+}
+
+function renderFrame(key,t,size){
+  const c=cv(size,size);
+  drawPose(ctxOf(c), key, t, size);
+  return c;
+}
+
+/* ════════════════ PIXEL PASS ════════════════ */
+function samplePixels(canvases, maxN){
+  const pts=[];
+  let total=0;
+  canvases.forEach(c=>total+=c.width*c.height);
+  const step=Math.max(1, Math.floor(total/maxN));
+  let k=0;
+  canvases.forEach(c=>{
+    const d=ctxOf(c).getImageData(0,0,c.width,c.height).data;
+    for(let i=0;i<d.length;i+=4){
+      if(d[i+3]<128) continue;
+      if((k++ % step)!==0) continue;
+      pts.push([d[i],d[i+1],d[i+2]]);
+    }
+  });
+  return pts;
+}
+function boxAxis(b){
+  const mn=[255,255,255], mx=[0,0,0];
+  for(const p of b) for(let i=0;i<3;i++){ if(p[i]<mn[i])mn[i]=p[i]; if(p[i]>mx[i])mx[i]=p[i]; }
+  const d=[mx[0]-mn[0], mx[1]-mn[1], mx[2]-mn[2]];
+  let ch=0;
+  if(d[1]>d[ch])ch=1;
+  if(d[2]>d[ch])ch=2;
+  return {ch, range:d[ch]};
+}
+function medianCut(canvases, n){
+  const pts=samplePixels(canvases, 24000);
+  if(!pts.length) return [[20,18,28]];
+  let boxes=[pts];
+  while(boxes.length<n){
+    let bi=-1, best=0;
+    boxes.forEach((b,i)=>{ if(b.length<2) return; const r=boxAxis(b).range; if(r>best){best=r; bi=i;} });
+    if(bi<0) break;
+    const b=boxes[bi], ch=boxAxis(b).ch;
+    b.sort((p,q)=>p[ch]-q[ch]);
+    const mid=b.length>>1;
+    boxes.splice(bi,1, b.slice(0,mid), b.slice(mid));
+  }
+  return boxes.filter(b=>b.length).map(b=>{
+    let r=0,g=0,bl=0;
+    for(const p of b){ r+=p[0]; g+=p[1]; bl+=p[2]; }
+    return [Math.round(r/b.length), Math.round(g/b.length), Math.round(bl/b.length)];
+  });
+}
+function nearest(pal,r,g,b){
+  let bi=0, bd=Infinity;
+  for(let i=0;i<pal.length;i++){
+    const dr=pal[i][0]-r, dg=pal[i][1]-g, db=pal[i][2]-b;
+    const d=dr*dr*0.30+dg*dg*0.59+db*db*0.11;
+    if(d<bd){ bd=d; bi=i; }
+  }
+  return bi;
+}
+function applyPalette(c, pal, aCut){
+  const x=ctxOf(c), w=c.width, h=c.height;
+  const id=x.getImageData(0,0,w,h), d=id.data, cache=new Map();
+  for(let i=0;i<d.length;i+=4){
+    if(d[i+3]<aCut){ d[i]=d[i+1]=d[i+2]=0; d[i+3]=0; continue; }
+    d[i+3]=255;
+    const key=(d[i]<<16)|(d[i+1]<<8)|d[i+2];
+    let idx=cache.get(key);
+    if(idx===undefined){ idx=nearest(pal,d[i],d[i+1],d[i+2]); cache.set(key,idx); }
+    d[i]=pal[idx][0]; d[i+1]=pal[idx][1]; d[i+2]=pal[idx][2];
+  }
+  x.putImageData(id,0,0);
+}
+function hexRgb(hx){
+  const m=/^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(hx);
+  return m ? [parseInt(m[1],16),parseInt(m[2],16),parseInt(m[3],16)] : [0,0,0];
+}
+function addOutline(c, hex){
+  const x=ctxOf(c), w=c.width, h=c.height;
+  const id=x.getImageData(0,0,w,h), d=id.data;
+  const solid=new Uint8Array(w*h);
+  for(let p=0;p<w*h;p++) solid[p] = d[p*4+3]>0 ? 1 : 0;
+  const col=hexRgb(hex);
+  for(let y=0;y<h;y++) for(let xx=0;xx<w;xx++){
+    const p=y*w+xx;
+    if(solid[p]) continue;
+    const near = (xx>0&&solid[p-1]) || (xx<w-1&&solid[p+1]) || (y>0&&solid[p-w]) || (y<h-1&&solid[p+w]);
+    if(near){ const i=p*4; d[i]=col[0]; d[i+1]=col[1]; d[i+2]=col[2]; d[i+3]=255; }
+  }
+  x.putImageData(id,0,0);
+}
+
+/* ════════════════ BAKE ════════════════ */
+function bake(){
+  if(!S.base){ toast('Load a character image first', true); return; }
+  buildParts();
+  const n=S.fc, box=clamp(S.box|0, 32, 1024);
+  const out=[];
+  for(let i=0;i<n;i++){
+    const t=i/n;
+    const big=renderFrame(S.anim, t, box);
+    if(S.px.on){
+      const r=S.px.res, sm=cv(r,r), x=ctxOf(sm);
+      x.imageSmoothingEnabled=true;
+      x.drawImage(big, 0,0, r,r);
+      out.push(sm);
+    } else out.push(big);
+  }
+  if(S.px.on){
+    const pal=medianCut(out, S.px.colors);
+    out.forEach(c=>applyPalette(c, pal, S.px.ac));
+    if(S.px.ol) out.forEach(c=>addOutline(c, S.px.olc));
+    S.palette=pal;
+  } else S.palette=null;
+  S.frames=out; S.sel=0;
+  renderStrip(); renderSheet(); updateInfo();
+  toast('Baked '+n+' frames · '+out[0].width+'×'+out[0].height+'px'
+        + (S.palette ? ' · '+S.palette.length+' colours' : ''));
+}
+
+/* ════════════════ SHEET ════════════════ */
+function clipList(){
+  if(S.clips.length) return S.clips;
+  if(S.frames.length) return [{name:(ANIMS[S.anim]||{label:S.anim}).label.toLowerCase().replace(/\s+/g,'_'),
+                               frames:S.frames, fps:S.fps}];
+  return [];
+}
+function layout(){
+  const clips=clipList();
+  if(!clips.length) return null;
+  const fw=clips[0].frames[0].width, fh=clips[0].frames[0].height;
+  const cols=Math.max(1, S.cols|0), pad=Math.max(0, S.pad|0);
+  const placed=[]; let row=0;
+  const tags=[];
+  clips.forEach(cl=>{
+    tags.push({name:cl.name, from:placed.length, to:placed.length+cl.frames.length-1, fps:cl.fps});
+    cl.frames.forEach((f,i)=>{
+      placed.push({clip:cl.name, i, col:i%cols, row:row+Math.floor(i/cols), canvas:f,
+                   mismatch:(f.width!==fw||f.height!==fh)});
+    });
+    row += Math.ceil(cl.frames.length/cols);
+  });
+  return {placed, tags, cols, rows:row, fw, fh, pad,
+          W: cols*fw+(cols+1)*pad, H: row*fh+(row+1)*pad};
+}
+function paintSheet(canvas, L, scale, withBg){
+  canvas.width=L.W*scale; canvas.height=L.H*scale;
+  const x=ctxOf(canvas);
+  x.imageSmoothingEnabled=false;
+  x.clearRect(0,0,canvas.width,canvas.height);
+  if(withBg && S.bgMode==='color'){ x.fillStyle=S.bgColor; x.fillRect(0,0,canvas.width,canvas.height); }
+  L.placed.forEach(p=>{
+    const px=(L.pad+p.col*(L.fw+L.pad))*scale, py=(L.pad+p.row*(L.fh+L.pad))*scale;
+    x.drawImage(p.canvas, px,py, L.fw*scale, L.fh*scale);
+  });
+}
+function renderSheet(){
+  const host=$('#sheetHost'), L=layout();
+  if(!L){ host.innerHTML='<div class="empty">Sheet renders here once frames are baked.</div>'; return; }
+  host.innerHTML='<div id="sheetWrap" class="checker"><canvas id="sheet"></canvas><canvas id="grid"></canvas></div>';
+  const sc=S.sZoom;
+  paintSheet($('#sheet'), L, sc, true);
+  const g=$('#grid');
+  g.width=L.W*sc; g.height=L.H*sc;
+  g.style.width=$('#sheet').style.width='';
+  const x=ctxOf(g);
+  x.clearRect(0,0,g.width,g.height);
+  if(S.showGrid){
+    x.strokeStyle='rgba(167,139,250,.55)';
+    x.lineWidth=1;
+    L.placed.forEach(p=>{
+      const px=(L.pad+p.col*(L.fw+L.pad))*sc, py=(L.pad+p.row*(L.fh+L.pad))*sc;
+      x.strokeRect(px+.5, py+.5, L.fw*sc-1, L.fh*sc-1);
+    });
+  }
+  $('#sheetInfo').textContent = L.W+'×'+L.H+'px · '+L.cols+'×'+L.rows+' · cell '+L.fw+'×'+L.fh
+    + ' · '+L.placed.length+' frames'+(S.scale>1?' · export ×'+S.scale:'');
+  const bad=L.placed.some(p=>p.mismatch);
+  if(bad) toast('Clips have different frame sizes — re-bake at one resolution for a clean sheet', true);
+}
+function renderStrip(){
+  const st=$('#strip');
+  if(!S.frames.length){ st.innerHTML='<div class="empty">No baked frames yet — hit BAKE FRAMES.</div>'; return; }
+  st.innerHTML='';
+  S.frames.forEach((f,i)=>{
+    const d=document.createElement('div');
+    d.className='th'+(i===S.sel?' on':'');
+    const t=cv(56,56), x=ctxOf(t);
+    x.imageSmoothingEnabled=false;
+    const s=Math.min(56/f.width, 56/f.height);
+    x.drawImage(f, (56-f.width*s)/2, (56-f.height*s)/2, f.width*s, f.height*s);
+    d.appendChild(t);
+    const sp=document.createElement('span'); sp.textContent=i; d.appendChild(sp);
+    d.onclick=()=>{ S.sel=i; S.playing=false; $('#pp').textContent='▶ play'; renderStrip(); };
+    st.appendChild(d);
+  });
+  $('#scrub').max=Math.max(0,S.frames.length-1);
+}
+function updateInfo(){
+  $('#frameInfo').textContent = S.frames.length
+    ? S.frames.length+' frames · '+S.frames[0].width+'×'+S.frames[0].height+'px'
+      +(S.palette?' · palette '+S.palette.length:'')
+    : '—';
+  $('#pfT').textContent=S.frames.length;
+}
+
+/* ════════════════ PLAYER ════════════════ */
+let last=0, acc=0;
+function tick(ts){
+  const dt=ts-last; last=ts;
+  const c=$('#play'), size=Math.round(224*1);
+  c.width=size; c.height=size;
+  const x=ctxOf(c);
+  x.clearRect(0,0,size,size);
+  x.imageSmoothingEnabled=false;
+
+  if(S.frames.length){
+    if(S.playing){
+      acc+=dt;
+      const step=1000/Math.max(1,S.fps);
+      while(acc>step){ acc-=step; S.sel=(S.sel+1)%S.frames.length; }
+    }
+    const f=S.frames[Math.min(S.sel, S.frames.length-1)];
+    const z=S.zoom, s=Math.min(size/f.width, size/f.height)*z;
+    x.drawImage(f, (size-f.width*s)/2, (size-f.height*s)/2, f.width*s, f.height*s);
+    $('#pfN').textContent=S.sel;
+    if(!S.scrubbing) $('#scrub').value=S.sel;
+    $('#scrubV').textContent=S.sel;
+  } else if(S.base){
+    // live rig preview straight off the rig, before baking
+    if(S.playing) acc+=dt;
+    const dur=1000/Math.max(1,S.fps)*Math.max(2,S.fc);
+    drawPose(x, S.anim, (acc%dur)/dur, size);
+    $('#pfN').textContent='live';
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ════════════════ GIF89a ENCODER ════════════════ */
+function lzw(minCode, idx){
+  const clearCode=1<<minCode, eoi=clearCode+1;
+  let size=minCode+1, next=eoi+1;
+  let dict=new Map(), cur=0, bits=0;
+  const out=[];
+  const emit=code=>{
+    cur |= code<<bits; bits+=size;
+    while(bits>=8){ out.push(cur&0xff); cur>>=8; bits-=8; }
+  };
+  emit(clearCode);
+  let prefix=idx[0];
+  for(let i=1;i<idx.length;i++){
+    const k=idx[i], key=(prefix<<8)|k;
+    const have=dict.get(key);
+    if(have!==undefined){ prefix=have; continue; }
+    emit(prefix);
+    if(next===4096){
+      emit(clearCode);
+      dict=new Map(); size=minCode+1; next=eoi+1;
+    } else {
+      if(next >= (1<<size)) size++;
+      dict.set(key, next++);
+    }
+    prefix=k;
+  }
+  emit(prefix);
+  emit(eoi);
+  if(bits>0) out.push(cur&0xff);
+  return out;
+}
+function indexFrame(c, pal, tIdx){
+  const w=c.width,h=c.height;
+  const d=ctxOf(c).getImageData(0,0,w,h).data;
+  const idx=new Uint8Array(w*h), cache=new Map();
+  for(let p=0;p<w*h;p++){
+    const i=p*4;
+    if(d[i+3]<128){ idx[p]=tIdx; continue; }
+    const key=(d[i]<<16)|(d[i+1]<<8)|d[i+2];
+    let v=cache.get(key);
+    if(v===undefined){ v=nearest(pal,d[i],d[i+1],d[i+2]); cache.set(key,v); }
+    idx[p]=v;
+  }
+  return idx;
+}
+function encodeGif(frames, fps, palIn){
+  const w=frames[0].width, h=frames[0].height;
+  let pal = palIn ? palIn.slice(0,255) : medianCut(frames,255);
+  const tIdx=pal.length;
+  let bits=1;
+  while((1<<bits) < pal.length+1) bits++;
+  bits=Math.min(8,bits);
+  const tableSize=1<<bits;
+  const out=[];
+  const str=s=>{ for(let i=0;i<s.length;i++) out.push(s.charCodeAt(i)); };
+  const u16=v=>out.push(v&0xff,(v>>8)&0xff);
+
+  str('GIF89a'); u16(w); u16(h);
+  out.push(0x80|(bits-1), tIdx&0xff, 0);
+  for(let i=0;i<tableSize;i++){ const c=pal[i]||[0,0,0]; out.push(c[0],c[1],c[2]); }
+  out.push(0x21,0xFF,0x0B); str('NETSCAPE2.0'); out.push(0x03,0x01,0x00,0x00,0x00);
+
+  const delay=Math.max(2, Math.round(100/Math.max(1,fps)));
+  const minCode=Math.max(2,bits);
+  frames.forEach(f=>{
+    out.push(0x21,0xF9,0x04, 0x09);            // disposal=2 | transparency on
+    u16(delay); out.push(tIdx&0xff, 0x00);
+    out.push(0x2C); u16(0); u16(0); u16(w); u16(h); out.push(0);
+    out.push(minCode);
+    const data=lzw(minCode, indexFrame(f, pal, tIdx));
+    for(let i=0;i<data.length;i+=255){
+      const n=Math.min(255, data.length-i);
+      out.push(n);
+      for(let j=0;j<n;j++) out.push(data[i+j]);
+    }
+    out.push(0);
+  });
+  out.push(0x3B);
+  return new Uint8Array(out);
+}
+
+/* ════════════════ EXPORT ════════════════ */
+/* Chrome blocks the 2nd+ *programmatic* download from a page, silently. So every
+   save also leaves a real clickable link in the toast — a user-gesture download
+   is never blocked, and a file can't disappear without you noticing. */
+function save(name, data, mime, note){
+  const blob = data instanceof Blob ? data : new Blob([data], {type:mime});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  const t=$('#toast');
+  t.innerHTML='<b>'+name+'</b>'+(note?' · '+note:'')+'<br><span style="font-size:11px;color:var(--muted)">'
+    +'not in Downloads? </span><a href="'+url+'" download="'+name
+    +'" style="color:var(--accent2);font-size:11px">click here to save it</a>';
+  t.classList.add('on','clickable');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('on','clickable'), 14000);
+  setTimeout(()=>URL.revokeObjectURL(url), 180000);
+}
+const baseName = () => ($('#name').value||'my_sprite').replace(/[^\w-]/g,'_');
+
+function exportPng(){
+  const L=layout();
+  if(!L){ toast('Bake frames first', true); return; }
+  const c=cv(1,1);
+  paintSheet(c, L, S.scale, true);          // clean: no grid overlay
+  c.toBlob(b=>{ save(baseName()+'.png', b, 'image/png',
+    'sheet '+c.width+'×'+c.height+'px'); }, 'image/png');
+}
+function exportGif(){
+  const clips=clipList();
+  if(!clips.length){ toast('Bake frames first', true); return; }
+  const cl=clips[clips.length-1];
+  toast('Encoding GIF…');
+  setTimeout(()=>{
+    try{
+      const bytes=encodeGif(cl.frames, cl.fps||S.fps, S.palette);
+      save(baseName()+'_'+cl.name+'.gif', bytes, 'image/gif',
+        cl.frames.length+' frames · '+(bytes.length/1024).toFixed(1)+' KB');
+    }catch(e){ toast('GIF encode failed: '+e.message, true); }
+  }, 30);
+}
+function rects(L){
+  return L.placed.map((p,i)=>({
+    name: baseName()+'_'+String(i).padStart(3,'0'),
+    clip: p.clip, index:i,
+    x: L.pad+p.col*(L.fw+L.pad), y: L.pad+p.row*(L.fh+L.pad), w:L.fw, h:L.fh }));
+}
+function buildMeta(L){
+  const R=rects(L), fmt=$('#fmt').value, nm=baseName(), s=S.scale;
+  const sc=v=>v*s;
+  if(fmt==='phaser'||fmt==='aseprite'){
+    const F={};
+    R.forEach(r=>{
+      const key = fmt==='aseprite' ? r.name+'.png' : r.name;
+      F[key]={ frame:{x:sc(r.x),y:sc(r.y),w:sc(r.w),h:sc(r.h)},
+        rotated:false, trimmed:false,
+        spriteSourceSize:{x:0,y:0,w:sc(r.w),h:sc(r.h)},
+        sourceSize:{w:sc(r.w),h:sc(r.h)},
+        duration:Math.round(1000/S.fps) };
+    });
+    const meta={ app:'SPRITERIG', version:'1.0', image:nm+'.png', format:'RGBA8888',
+      size:{w:sc(L.W),h:sc(L.H)}, scale:String(s) };
+    if(fmt==='aseprite'){
+      meta.frameTags=L.tags.map(t=>({name:t.name, from:t.from, to:t.to, direction:'forward'}));
+      return {name:nm+'.json', text:JSON.stringify({frames:F, meta}, null, 2), mime:'application/json'};
+    } else {
+      const anims={};
+      L.tags.forEach(t=>{ anims[t.name]=R.slice(t.from,t.to+1).map(r=>r.name); });
+      return {name:nm+'.json', text:JSON.stringify({frames:F, meta, animations:anims}, null, 2), mime:'application/json'};
+    }
+  } else if(fmt==='unity'){
+    return {name:nm+'_unity.json', mime:'application/json', text:JSON.stringify({
+      note:'Rects for Sprite Editor slicing. Origin top-left, y-down.',
+      texture:nm+'.png', textureSize:{width:sc(L.W),height:sc(L.H)},
+      pixelsPerUnit:100, frameRate:S.fps,
+      clips:L.tags.map(t=>({name:t.name, from:t.from, to:t.to})),
+      sprites:R.map(r=>({name:r.name,x:sc(r.x),y:sc(r.y),w:sc(r.w),h:sc(r.h)}))
+    }, null, 2)};
+  } else if(fmt==='godot'){
+    let o='[gd_resource type="SpriteFrames" load_steps='+(R.length+2)+' format=3]\n\n';
+    o+='[ext_resource type="Texture2D" path="res://'+nm+'.png" id="1"]\n\n';
+    R.forEach((r,i)=>{
+      o+='[sub_resource type="AtlasTexture" id="Atlas_'+i+'"]\n';
+      o+='atlas = ExtResource("1")\n';
+      o+='region = Rect2('+sc(r.x)+', '+sc(r.y)+', '+sc(r.w)+', '+sc(r.h)+')\n\n';
+    });
+    o+='[resource]\nanimations = [';
+    o+=L.tags.map(t=>{
+      const fr=[];
+      for(let i=t.from;i<=t.to;i++) fr.push('{\n"duration": 1.0,\n"texture": SubResource("Atlas_'+i+'")\n}');
+      return '{\n"frames": ['+fr.join(', ')+'],\n"loop": true,\n"name": &"'+t.name+'",\n"speed": '+(t.fps||S.fps)+'.0\n}';
+    }).join(', ');
+    o+=']\n';
+    return {name:nm+'_spriteframes.tres', text:o, mime:'text/plain'};
+  } else {
+    let css='/* '+nm+' — SPRITERIG */\n.'+nm+'{width:'+sc(L.fw)+'px;height:'+sc(L.fh)+'px;'+
+      'background-image:url("'+nm+'.png");background-repeat:no-repeat;image-rendering:pixelated}\n';
+    R.forEach((r,i)=>{ css+='.'+nm+'-'+i+'{background-position:-'+sc(r.x)+'px -'+sc(r.y)+'px}\n'; });
+    L.tags.forEach(t=>{
+      const n=t.to-t.from+1, row0=L.placed[t.from].row, dur=(n/(t.fps||S.fps)).toFixed(3);
+      css+='\n@keyframes '+nm+'-'+t.name+'{\n';
+      for(let i=0;i<=n;i++){
+        const j=Math.min(t.to, t.from+i), p=L.placed[j];
+        css+='  '+(i/n*100).toFixed(2)+'%{background-position:-'+
+          sc(L.pad+p.col*(L.fw+L.pad))+'px -'+sc(L.pad+p.row*(L.fh+L.pad))+'px}\n';
+      }
+      css+='}\n.'+nm+'--'+t.name+'{animation:'+nm+'-'+t.name+' '+dur+'s steps(1) infinite}\n';
+      void row0;
+    });
+    return {name:nm+'.css', text:css, mime:'text/css'};
+  }
+}
+function exportMeta(){
+  const L=layout();
+  if(!L){ toast('Bake frames first', true); return; }
+  const m=buildMeta(L);
+  if(m) save(m.name, m.text, m.mime, 'metadata · '+$('#fmt').value);
+}
+
+/* ════════════════ ZIP (stored, no compression) ════════════════
+   Chrome only lets a page trigger ONE automatic download, and the
+   "Automatic downloads" permission has to be granted by hand. So the
+   everything-export is a single file: one download, never blocked. */
+const CRC_T=(()=>{ const t=new Uint32Array(256);
+  for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = (c&1) ? (0xEDB88320^(c>>>1)) : (c>>>1); t[n]=c>>>0; }
+  return t; })();
+function crc32(u8){
+  let c=0xFFFFFFFF;
+  for(let i=0;i<u8.length;i++) c = CRC_T[(c^u8[i])&0xFF] ^ (c>>>8);
+  return (c^0xFFFFFFFF)>>>0;
+}
+function zip(files){
+  const te=new TextEncoder(), parts=[], cd=[];
+  let off=0;
+  const u16=(a,v)=>a.push(v&0xff,(v>>8)&0xff);
+  const u32=(a,v)=>a.push(v&0xff,(v>>8)&0xff,(v>>16)&0xff,(v>>>24)&0xff);
+  files.forEach(f=>{
+    const nm=te.encode(f.name), crc=crc32(f.data), sz=f.data.length;
+    const lh=[];
+    u32(lh,0x04034b50); u16(lh,20); u16(lh,0); u16(lh,0); u16(lh,0); u16(lh,0);
+    u32(lh,crc); u32(lh,sz); u32(lh,sz); u16(lh,nm.length); u16(lh,0);
+    parts.push(new Uint8Array(lh), nm, f.data);
+    const ch=[];
+    u32(ch,0x02014b50); u16(ch,20); u16(ch,20); u16(ch,0); u16(ch,0); u16(ch,0); u16(ch,0);
+    u32(ch,crc); u32(ch,sz); u32(ch,sz); u16(ch,nm.length);
+    u16(ch,0); u16(ch,0); u16(ch,0); u16(ch,0); u32(ch,0); u32(ch,off);
+    cd.push(new Uint8Array(ch), nm);
+    off += lh.length + nm.length + sz;
+  });
+  let cdSize=0;
+  cd.forEach(a=>cdSize+=a.length);
+  const eo=[];
+  u32(eo,0x06054b50); u16(eo,0); u16(eo,0); u16(eo,files.length); u16(eo,files.length);
+  u32(eo,cdSize); u32(eo,off); u16(eo,0);
+  return new Blob([...parts, ...cd, new Uint8Array(eo)], {type:'application/zip'});
+}
+const pngBytes = c => new Promise(res =>
+  c.toBlob(b => b.arrayBuffer().then(a=>res(new Uint8Array(a))), 'image/png'));
+
+async function exportAll(){
+  const L=layout();
+  if(!L){ toast('Bake frames first', true); return; }
+  toast('Packing everything…');
+  await new Promise(r=>setTimeout(r,30));
+  const te=new TextEncoder(), nm=baseName(), files=[];
+  try{
+    const sheet=cv(1,1);
+    paintSheet(sheet, L, S.scale, true);
+    files.push({name:nm+'.png', data:await pngBytes(sheet)});
+    for(let i=0;i<L.placed.length;i++)
+      files.push({name:'frames/'+nm+'_'+String(i).padStart(3,'0')+'.png',
+                  data:await pngBytes(L.placed[i].canvas)});
+    clipList().forEach(cl=>{
+      try{ files.push({name:'gif/'+nm+'_'+cl.name+'.gif',
+                       data:encodeGif(cl.frames, cl.fps||S.fps, S.palette)}); }
+      catch(e){ /* one bad clip shouldn't sink the archive */ }
+    });
+    const m=buildMeta(L);
+    if(m) files.push({name:m.name, data:te.encode(m.text)});
+    files.push({name:'README.txt', data:te.encode(
+      'SPRITERIG export\n\n'
+      +'sheet      : '+nm+'.png ('+(L.W*S.scale)+'x'+(L.H*S.scale)+'px)\n'
+      +'cell       : '+(L.fw*S.scale)+'x'+(L.fh*S.scale)+'px, '+L.cols+' cols, '+L.pad*S.scale+'px padding\n'
+      +'frames     : '+L.placed.length+' (also split out under frames/)\n'
+      +'clips      : '+L.tags.map(t=>t.name+' '+t.from+'-'+t.to).join(', ')+'\n'
+      +'fps        : '+S.fps+'\n'
+      +'palette    : '+(S.palette?S.palette.length+' colours':'full colour')+'\n'
+      +'metadata   : '+(m?m.name:'(none)')+'\n\n'
+      +'Frame N sits at x = pad + (N % cols) * (cellW + pad), y = pad + floor(N / cols) * (cellH + pad).\n')});
+    save(nm+'_spriterig.zip', zip(files), 'application/zip', files.length+' files in one archive');
+  }catch(e){ toast('Pack failed: '+e.message, true); }
+}
+
+/* ════════════════ CLIPS ════════════════ */
+function addClip(){
+  if(!S.frames.length){ toast('Bake frames first', true); return; }
+  const label=(ANIMS[S.anim]||{label:S.anim}).label.toLowerCase().replace(/\s+/g,'_');
+  let name=label, k=2;
+  while(S.clips.some(c=>c.name===name)) name=label+'_'+(k++);
+  S.clips.push({name, frames:S.frames.slice(), fps:S.fps});
+  renderClips(); renderSheet();
+  toast('Clip "'+name+'" added — '+S.frames.length+' frames');
+}
+function renderClips(){
+  const host=$('#clips');
+  host.innerHTML='';
+  if(!S.clips.length){ host.innerHTML='<div class="hint" style="margin-top:6px">No clips — the sheet uses the '+
+    'currently baked frames.</div>'; return; }
+  S.clips.forEach((c,i)=>{
+    const d=document.createElement('div');
+    d.className='clip';
+    d.innerHTML='<span>'+c.name+' <b>'+c.frames.length+'f · '+c.frames[0].width+'px</b></span>';
+    const b=document.createElement('button');
+    b.textContent='✕';
+    b.onclick=()=>{ S.clips.splice(i,1); renderClips(); renderSheet(); };
+    d.appendChild(b);
+    host.appendChild(d);
+  });
+}
+
+/* ════════════════ DEMO CHARACTER ════════════════ */
+function demoRocker(){
+  const W=320,H=560, c=cv(W,H), x=ctxOf(c);
+  const skin='#f0c39a', skinS='#d8a479', jean='#4a5a86', jeanS='#3a4870',
+        shirt='#c8323c', shirtS='#96222c', boot='#2a2530', hair='#f4671f', hair2='#c34a10';
+  // legs
+  x.fillStyle=jean;  x.fillRect(104,330,48,150); x.fillRect(168,330,48,150);
+  x.fillStyle=jeanS; x.fillRect(104,330,14,150); x.fillRect(168,330,14,150);
+  x.fillStyle=boot;  x.fillRect(96,470,64,42);  x.fillRect(160,470,64,42);
+  // torso
+  x.fillStyle=shirt;  x.fillRect(96,190,128,150);
+  x.fillStyle=shirtS; x.fillRect(96,190,26,150);
+  x.fillStyle='#20202a'; x.fillRect(134,190,52,150);      // tee
+  x.fillStyle='#171725'; x.fillRect(96,320,128,20);       // belt
+  // arms
+  x.fillStyle=shirt;  x.fillRect(56,196,40,120);
+  x.fillStyle=shirtS; x.fillRect(224,196,40,120);
+  x.fillStyle=skin;   x.fillRect(58,306,36,44); x.fillRect(226,306,36,44);
+  // guitar body + neck
+  x.save(); x.translate(160,300); x.rotate(-0.42);
+  x.fillStyle='#9c1b26'; x.fillRect(-96,-34,120,68);
+  x.fillStyle='#efe6d6'; x.fillRect(-30,-16,44,32);
+  x.fillStyle='#3b2a1c'; x.fillRect(20,-9,150,18);
+  x.fillStyle='#d8d8e0'; x.fillRect(166,-13,20,26);
+  x.restore();
+  // head
+  x.fillStyle=skinS; x.beginPath(); x.arc(160,120,60,0,TAU); x.fill();
+  x.fillStyle=skin;  x.beginPath(); x.arc(160,116,56,0,TAU); x.fill();
+  x.fillStyle='#15131c'; x.fillRect(108,100,104,26);              // shades
+  x.fillStyle='#2b2838'; x.fillRect(112,104,44,18); x.fillRect(164,104,44,18);
+  x.fillStyle=skinS; x.fillRect(140,146,40,10);                   // grin
+  // spiky hair
+  for(let i=0;i<11;i++){
+    const a=-Math.PI*0.96 + i*(Math.PI*0.92/10);
+    const bx=160+Math.cos(a)*46, by=112+Math.sin(a)*46;
+    const tx=160+Math.cos(a)*(96+(i%3)*14), ty=112+Math.sin(a)*(96+(i%3)*14);
+    x.fillStyle = i%2 ? hair : hair2;
+    x.beginPath();
+    x.moveTo(bx-13,by); x.lineTo(tx,ty); x.lineTo(bx+13,by); x.closePath(); x.fill();
+  }
+  x.fillStyle=hair; x.beginPath(); x.arc(160,104,50,Math.PI,TAU); x.fill();
+  S.raw=c;
+  S.bg.mode='off'; S.bg.keys=[]; $('#bgm').value='off';
+  S.rig={head:.30, hip:.60, ab:.80, al:.30, ar:.70, lm:.50, ov:3};
+  syncRigUI();
+  process();
+  toast('Demo rocker loaded — 6-part rig ready');
+}
+
+/* ════════════════ UI WIRING ════════════════ */
+function syncRigUI(){
+  const r=S.rig;
+  const set=(id,val,txt)=>{ $('#'+id).value=val; $('#'+id+'V').textContent=txt; };
+  set('head', Math.round(r.head*100), Math.round(r.head*100)+'%');
+  set('hip',  Math.round(r.hip*100),  Math.round(r.hip*100)+'%');
+  set('ab',   Math.round(r.ab*100),   Math.round(r.ab*100)+'%');
+  set('al',   Math.round(r.al*100),   Math.round(r.al*100)+'%');
+  set('ar',   Math.round(r.ar*100),   Math.round(r.ar*100)+'%');
+  set('lm',   Math.round(r.lm*100),   Math.round(r.lm*100)+'%');
+  set('ov',   r.ov, r.ov+'px');
+}
+
+// source
+$('#drop').onclick = e => { if(e.target.id!=='file') $('#file').click(); };
+$('#file').onchange = e => { if(e.target.files[0]) ingestFile(e.target.files[0]); };
+['dragenter','dragover'].forEach(ev=>$('#drop').addEventListener(ev, e=>{
+  e.preventDefault(); $('#drop').classList.add('on'); }));
+['dragleave','drop'].forEach(ev=>$('#drop').addEventListener(ev, e=>{
+  e.preventDefault(); $('#drop').classList.remove('on'); }));
+$('#drop').addEventListener('drop', e=>{ if(e.dataTransfer.files[0]) ingestFile(e.dataTransfer.files[0]); });
+window.addEventListener('paste', e=>{
+  if(!e.clipboardData) return;
+  const it=[...e.clipboardData.items].find(i=>i.kind==='file' && /^image\//.test(i.type));
+  if(!it) return;
+  e.preventDefault();
+  ingestFile(it.getAsFile());
+});
+$('#demo').onclick = demoRocker;
+$('#autorig').onclick = autoRig;
+
+// background removal
+$('#bgm').onchange = e => { S.bg.mode=e.target.value; process(); };
+$('#tol').oninput  = e => { S.bg.tol=+e.target.value; $('#tolV').textContent=S.bg.tol; reprocess(); };
+$('#hole').onchange= e => { S.bg.hole=e.target.checked; process(); };
+$('#desp').onchange= e => { S.bg.desp=e.target.checked; process(); };
+$('#er').oninput   = e => { S.bg.er=+e.target.value; $('#erV').textContent=S.bg.er+'px'; reprocess(); };
+$('#srcCv').onclick = pickAt;
+
+// rig sliders
+const rigMap={head:'head', hip:'hip', ab:'ab', al:'al', ar:'ar', lm:'lm'};
+Object.keys(rigMap).forEach(id=>{
+  $('#'+id).oninput = e => {
+    S.rig[rigMap[id]] = (+e.target.value)/100;
+    if(S.rig.hip <= S.rig.head+.05) S.rig.hip = S.rig.head+.05;
+    $('#'+id+'V').textContent = e.target.value+'%';
+    $('#hipV').textContent = Math.round(S.rig.hip*100)+'%';
+    $('#hip').value = Math.round(S.rig.hip*100);
+    buildParts(); drawRig();
+  };
+});
+$('#ov').oninput = e => { S.rig.ov=+e.target.value; $('#ovV').textContent=S.rig.ov+'px';
+  buildParts(); drawRig(); };
+
+// motion
+const chips=$('#anims');
+Object.keys(ANIMS).forEach(k=>{
+  const d=document.createElement('div');
+  d.className='chip'+(k===S.anim?' on':'');
+  d.textContent=ANIMS[k].label;
+  d.onclick=()=>{ S.anim=k;
+    [...chips.children].forEach(c=>c.classList.remove('on'));
+    d.classList.add('on');
+    $('#animDesc').textContent=ANIMS[k].desc;
+    S.frames=[]; S.palette=null; S.sel=0; acc=0;
+    renderStrip(); renderSheet(); updateInfo(); };
+  chips.appendChild(d);
+});
+$('#animDesc').textContent=ANIMS[S.anim].desc;
+$('#fc').oninput = e => { S.fc=+e.target.value; $('#fcV').textContent=S.fc; };
+$('#box').onchange = e => { S.box=clamp(+e.target.value||256,32,1024); e.target.value=S.box; };
+$('#bake').onclick = bake;
+
+// pixel pass
+$('#px').onchange = e => { S.px.on=e.target.checked; };
+$('#res').oninput = e => { S.px.res=+e.target.value; $('#resV').textContent=S.px.res+'px'; };
+$('#col').oninput = e => { S.px.colors=+e.target.value; $('#colV').textContent=S.px.colors; };
+$('#ac').oninput  = e => { S.px.ac=+e.target.value; $('#acV').textContent=S.px.ac; };
+$('#ol').onchange = e => { S.px.ol=e.target.checked; };
+$('#olc').oninput = e => { S.px.olc=e.target.value; };
+
+// sheet
+$('#cols').onchange = e => { S.cols=Math.max(1,+e.target.value||1); e.target.value=S.cols; renderSheet(); };
+$('#pad').onchange  = e => { S.pad=Math.max(0,+e.target.value||0); e.target.value=S.pad; renderSheet(); };
+$('#scale').onchange= e => { S.scale=+e.target.value; renderSheet(); };
+$('#bgMode').onchange= e => { S.bgMode=e.target.value; renderSheet(); };
+$('#bgColor').oninput= e => { S.bgColor=e.target.value; renderSheet(); };
+$('#gridT').onclick = () => { S.showGrid=!S.showGrid; renderSheet(); };
+$('#sZoomIn').onclick = () => { S.sZoom=clamp(S.sZoom+1,1,8); $('#sZoomV').textContent=S.sZoom+'×'; renderSheet(); };
+$('#sZoomOut').onclick= () => { S.sZoom=clamp(S.sZoom-1,1,8); $('#sZoomV').textContent=S.sZoom+'×'; renderSheet(); };
+
+// player
+$('#pp').onclick = () => { S.playing=!S.playing; $('#pp').textContent=S.playing?'⏸ pause':'▶ play'; };
+$('#prev').onclick = () => { if(!S.frames.length) return; S.playing=false; $('#pp').textContent='▶ play';
+  S.sel=(S.sel-1+S.frames.length)%S.frames.length; renderStrip(); };
+$('#next').onclick = () => { if(!S.frames.length) return; S.playing=false; $('#pp').textContent='▶ play';
+  S.sel=(S.sel+1)%S.frames.length; renderStrip(); };
+$('#zoomIn').onclick = () => { S.zoom=clamp(S.zoom+.25,.25,4); $('#zoomV').textContent=S.zoom+'×'; };
+$('#zoomOut').onclick= () => { S.zoom=clamp(S.zoom-.25,.25,4); $('#zoomV').textContent=S.zoom+'×'; };
+$('#fps').oninput = e => { S.fps=+e.target.value; $('#fpsV').textContent=S.fps; $('#fpsN').textContent=S.fps; };
+$('#scrub').addEventListener('pointerdown',()=>{ S.scrubbing=true; S.playing=false; $('#pp').textContent='▶ play'; });
+$('#scrub').addEventListener('pointerup',()=>{ S.scrubbing=false; });
+$('#scrub').oninput = e => { if(!S.frames.length) return; S.sel=clamp(+e.target.value,0,S.frames.length-1);
+  $('#scrubV').textContent=S.sel; renderStrip(); };
+
+// clips + export
+$('#addClip').onclick = addClip;
+$('#eZip').onclick = exportAll;
+$('#ePng').onclick = exportPng;
+$('#eGif').onclick = exportGif;
+$('#eMeta').onclick = exportMeta;
+
+// header export cluster — same handlers, always reachable
+$('#hZip').onclick = exportAll;
+$('#hPng').onclick = exportPng;
+$('#hGif').onclick = exportGif;
+$('#hMeta').onclick = exportMeta;
+
+// keyboard: space = play/pause, B = bake, ←/→ = step
+window.addEventListener('keydown', e=>{
+  const t=e.target.tagName;
+  if(t==='INPUT'||t==='SELECT'||t==='TEXTAREA') return;
+  if(e.key===' '){ e.preventDefault(); $('#pp').click(); }
+  else if(e.key==='b'||e.key==='B'){ e.preventDefault(); bake(); }
+  else if(e.key==='ArrowLeft'){ $('#prev').click(); }
+  else if(e.key==='ArrowRight'){ $('#next').click(); }
+});
+
+renderKeys();
+renderClips();
+updateInfo();
+requestAnimationFrame(ts=>{ last=ts; tick(ts); });
+</script>
+</body>
+</html>

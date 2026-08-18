@@ -11,6 +11,7 @@ scaffolded. Visual rules: [`../docs/design.md`](../docs/design.md) · tokens:
 | `deaf-pirates-hub.html` | orchestration hub — floor · comms feed · map/inventory | ✅ |
 | `defpirate-chat-demo.html` | chat board — DIME routes, agents walk on & talk | ⚠️ **re-skin** (Peachy palette/Fraunces; animations good) |
 | `peachy-animator.html` | animation tool (Peachy palette by design) | ⚠️ align if it becomes a product surface |
+| `spriterig.html` | **sprite-sheet forge** — one character image → bg-strip → rigged 6-part puppet → animated frames → pixel pass → packed sheet + engine exports (Phaser/Aseprite/Unity/Godot/CSS). Feeds chat-board avatars. All local, zero deps. | ⚠️ purple/teal; re-skin to tokens if it becomes a product surface |
 | `deafpirates-taskboard.html` | **Background Ops** — cron + tasks with time budgets | ✅ reference build |
 
 `SESSION-LOG.md` — the original dashboard build log (assets, decisions, bugs-for-the-vault).
