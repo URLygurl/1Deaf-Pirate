@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap">
+  <style>
+    body {
+      margin: 0;
+      background: #0B0D0A;
+      color: #E8EDE3;
+      font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: #7EFF00; text-decoration: none; }
+    a:hover { color: #A6FF4D; }
+  </style>
+</helmet>
+<div style="width: 1120px; height: 860px; box-sizing: border-box; padding: 60px 64px 52px 64px; background: #0B0D0A; display: flex; flex-direction: column; gap: 34px;">
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <span style="font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: #8C958A;">Where it actually stands</span>
+      <h2 style="margin: 0; font-family: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif; font-size: 46px; line-height: 1; letter-spacing: -0.02em; color: #E8EDE3;">The ledger</h2>
+    </div>
+    <p style="margin: 0; max-width: 360px; font-size: 12px; line-height: 1.7; color: #8C958A; text-align: right; text-wrap: pretty;">Read off the two repos, 20 Aug 2026. No opinions in this column &mdash; only what is on disk.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+
+    <div style="display: flex; align-items: center; gap: 20px; padding: 0 0 12px 0; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #5E665B;">
+      <span style="flex-grow: 1;">Piece</span>
+      <span style="width: 132px;">State</span>
+      <span style="width: 320px;">Evidence</span>
+    </div>
+    <div style="height: 1px; background: #7EFF00;"></div>
+
+    <div style="display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid #1B2018;">
+      <span style="flex-grow: 1; font-size: 14px; color: #E8EDE3;">Agent platform scaffold</span>
+      <span style="width: 132px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #7EFF00;">Shipped</span>
+      <span style="width: 320px; font-size: 12px; color: #8C958A;">6 commits, full folder tree</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid #1B2018;">
+      <span style="flex-grow: 1; font-size: 14px; color: #E8EDE3;">Hermes orchestrator</span>
+      <span style="width: 132px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #C4562E;">Empty</span>
+      <span style="width: 320px; font-size: 12px; color: #8C958A;">7 folders, every one a .gitkeep</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid #1B2018;">
+      <span style="flex-grow: 1; font-size: 14px; color: #E8EDE3;">Runtime code</span>
+      <span style="width: 132px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #8C958A;">Thin</span>
+      <span style="width: 320px; font-size: 12px; color: #8C958A;">platform/src &mdash; 238 lines across 8 files</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid #1B2018;">
+      <span style="flex-grow: 1; font-size: 14px; color: #E8EDE3;">DIME and NEIL</span>
+      <span style="width: 132px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #8C958A;">Stub</span>
+      <span style="width: 320px; font-size: 12px; color: #8C958A;">agent.json only &mdash; no SOUL, SKILLS or tools</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid #1B2018;">
+      <span style="flex-grow: 1; font-size: 14px; color: #E8EDE3;">Roster slots 05&ndash;15</span>
+      <span style="width: 132px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #8C958A;">Unnamed</span>
+      <span style="width: 320px; font-size: 12px; color: #8C958A;">11 of 15 still marked TBD</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid #1B2018;">
+      <span style="flex-grow: 1; font-size: 14px; color: #E8EDE3;">The HIVE</span>
+      <span style="width: 132px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #8C958A;">Docs only</span>
+      <span style="width: 320px; font-size: 12px; color: #8C958A;">6 stages, 6 READMEs, 0 wiring</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid #1B2018;">
+      <span style="flex-grow: 1; font-size: 14px; color: #E8EDE3;">Memory provider</span>
+      <span style="width: 132px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #C4562E;">Parked</span>
+      <span style="width: 320px; font-size: 12px; color: #8C958A;">Honcho / Mem0 / Hindsight &mdash; undecided</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid #1B2018;">
+      <span style="flex-grow: 1; font-size: 14px; color: #E8EDE3;">Railway control plane</span>
+      <span style="width: 132px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #C4562E;">Blocked</span>
+      <span style="width: 320px; font-size: 12px; color: #8C958A;">wants a project-scoped RAILWAY_API_TOKEN</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid #1B2018;">
+      <span style="flex-grow: 1; font-size: 14px; color: #E8EDE3;">Skills library</span>
+      <span style="width: 132px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #C4562E;">Overfull</span>
+      <span style="width: 320px; font-size: 12px; color: #8C958A;">120 folders, 339 files, none wired to an agent</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid #1B2018;">
+      <span style="flex-grow: 1; font-size: 14px; color: #E8EDE3;">Business verticals</span>
+      <span style="width: 132px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #8C958A;">Zipped</span>
+      <span style="width: 320px; font-size: 12px; color: #8C958A;">label, TV, band manager, media-OS &mdash; 4 unopened</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid #1B2018;">
+      <span style="flex-grow: 1; font-size: 14px; color: #E8EDE3;">The roadmap</span>
+      <span style="width: 132px; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #C4562E;">Empty file</span>
+      <span style="width: 320px; font-size: 12px; color: #8C958A;">Down-the Road-map/readme.md is 1 byte</span>
+    </div>
+
+  </div>
+
+  <div style="display: flex; gap: 32px; align-items: baseline;">
+    <span style="font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: #7EFF00; width: 132px; flex-shrink: 0;">Diagnosis</span>
+    <p style="margin: 0; font-size: 17px; line-height: 1.55; color: #E8EDE3;">One row is green. Everything else is a beginning. The work is not to start better &mdash; it is to finish once.</p>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1120,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

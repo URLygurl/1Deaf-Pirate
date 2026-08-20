@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap">
+  <style>
+    body {
+      margin: 0;
+      background: #0B0D0A;
+      color: #E8EDE3;
+      font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: #7EFF00; text-decoration: none; }
+    a:hover { color: #A6FF4D; }
+  </style>
+</helmet>
+<div style="width: 1120px; height: 760px; box-sizing: border-box; padding: 56px 64px 48px 64px; background: #0B0D0A; display: flex; flex-direction: column; gap: 30px;">
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: #8C958A;">The rhythm that keeps it</span>
+      <h2 style="margin: 0; font-family: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif; font-size: 42px; line-height: 1; letter-spacing: -0.02em; color: #E8EDE3;">A groove is a bar you repeat</h2>
+    </div>
+    <p style="margin: 0; max-width: 300px; font-size: 12px; line-height: 1.7; color: #8C958A; text-align: right; text-wrap: pretty;">Not a solo. Three beats a week and one running underneath, whatever else is on fire.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px;">
+      <div style="height: 76px; background: #7EFF00; display: flex; align-items: flex-end; padding: 10px; box-sizing: border-box;"><span style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #0B0D0A;">Commit</span></div>
+      <div style="height: 76px; border: 1px solid #242A20; box-sizing: border-box;"></div>
+      <div style="height: 76px; background: #7EFF00; display: flex; align-items: flex-end; padding: 10px; box-sizing: border-box;"><span style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #0B0D0A;">Cut</span></div>
+      <div style="height: 76px; border: 1px solid #242A20; box-sizing: border-box;"></div>
+      <div style="height: 76px; background: #7EFF00; display: flex; align-items: flex-end; padding: 10px; box-sizing: border-box;"><span style="font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #0B0D0A;">Rule</span></div>
+      <div style="height: 76px; border: 1px solid #242A20; box-sizing: border-box;"></div>
+      <div style="height: 76px; border: 1px solid #242A20; box-sizing: border-box;"></div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;">
+      <span style="color: #7EFF00;">Mon</span>
+      <span style="color: #5E665B;">Tue</span>
+      <span style="color: #7EFF00;">Wed</span>
+      <span style="color: #5E665B;">Thu</span>
+      <span style="color: #7EFF00;">Fri</span>
+      <span style="color: #5E665B;">Sat</span>
+      <span style="color: #5E665B;">Sun</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px; border: 1px solid #242A20; padding: 12px 16px; margin-top: 8px;">
+      <span style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #7EFF00;">Every day</span>
+      <span style="font-size: 13px; color: #A8B2A3;">DIME asks Cory the two-track question &mdash; rage day, or keep-it-rollin&#39; day &mdash; and plays both snippets.</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 26px; flex-grow: 1;">
+
+    <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #242A20; padding-top: 18px;">
+      <span style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #7EFF00;">Mon &mdash; Commit</span>
+      <h4 style="margin: 0; font-size: 16px; line-height: 1.35; color: #E8EDE3;">One line in the roadmap file</h4>
+      <p style="margin: 0; font-size: 12px; line-height: 1.65; color: #8C958A; text-wrap: pretty;">Write the single thing that will be true by Friday. That file is currently one byte &mdash; the cheapest fix in either repo.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #242A20; padding-top: 18px;">
+      <span style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #7EFF00;">Wed &mdash; Cut</span>
+      <h4 style="margin: 0; font-size: 16px; line-height: 1.35; color: #E8EDE3;">Remove one thing, with a date</h4>
+      <p style="margin: 0; font-size: 12px; line-height: 1.65; color: #8C958A; text-wrap: pretty;">Delete it, archive it, or park it with the date you will look again. Surface area only ever comes down on purpose.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #242A20; padding-top: 18px;">
+      <span style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #7EFF00;">Fri &mdash; Rule</span>
+      <h4 style="margin: 0; font-size: 16px; line-height: 1.35; color: #E8EDE3;">One correction becomes a rule</h4>
+      <p style="margin: 0; font-size: 12px; line-height: 1.65; color: #8C958A; text-wrap: pretty;">Take something you got wrong this week into hive/5-feedback-loops. Run the loop by hand until it runs itself.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #242A20; padding-top: 18px;">
+      <span style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #5E665B;">Sat &amp; Sun &mdash; Rest</span>
+      <h4 style="margin: 0; font-size: 16px; line-height: 1.35; color: #E8EDE3;">Two dead steps, on purpose</h4>
+      <p style="margin: 0; font-size: 12px; line-height: 1.65; color: #8C958A; text-wrap: pretty;">The silent steps are what make the lit ones a rhythm. A bar with every step filled is just noise.</p>
+    </div>
+
+  </div>
+
+  <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #E8EDE3; border-top: 1px solid #242A20; padding-top: 22px;">Miss a beat and the bar still plays. Miss the bar and there is no groove.</p>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1120,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

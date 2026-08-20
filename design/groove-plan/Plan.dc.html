@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap">
+  <style>
+    body {
+      margin: 0;
+      background: #0B0D0A;
+      color: #E8EDE3;
+      font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: #7EFF00; text-decoration: none; }
+    a:hover { color: #A6FF4D; }
+  </style>
+</helmet>
+<div style="width: 1400px; height: 900px; box-sizing: border-box; padding: 60px 64px 52px 64px; background: #0B0D0A; display: flex; flex-direction: column; gap: 40px;">
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <span style="font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: #8C958A;">Sixteen weeks, four moves</span>
+      <h2 style="margin: 0; font-family: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif; font-size: 46px; line-height: 1; letter-spacing: -0.02em; color: #E8EDE3;">The plan</h2>
+    </div>
+    <p style="margin: 0; max-width: 420px; font-size: 12px; line-height: 1.7; color: #8C958A; text-align: right; text-wrap: pretty;">Each phase has one deliverable, one finish line, and a list of things you are deliberately not doing. The not-doing column is the load-bearing one.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; flex-grow: 1;">
+
+    <div style="display: flex; flex-direction: column; gap: 20px; border-top: 2px solid #7EFF00; padding-top: 22px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+        <span style="font-family: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif; font-size: 34px; line-height: 1; color: #7EFF00;">01</span>
+        <span style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #8C958A;">Week 1</span>
+      </div>
+      <h3 style="margin: 0; font-family: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif; font-size: 24px; line-height: 1.1; letter-spacing: -0.01em; color: #E8EDE3;">Close one loop</h3>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #5E665B;">Deliverable</span>
+        <p style="margin: 0; font-size: 13px; line-height: 1.65; color: #A8B2A3; text-wrap: pretty;">NEIL, complete. SOUL.md, SKILLS.md, tools.yaml, agent.config.yaml &mdash; straight from the template, nothing invented.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #5E665B;">Done when</span>
+        <p style="margin: 0; font-size: 13px; line-height: 1.65; color: #E8EDE3; text-wrap: pretty;">Cory says hello on the NakedApp dash and NEIL answers &mdash; not you.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px; margin-top: auto; border-top: 1px solid #1B2018; padding-top: 16px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #C4562E;">Not doing</span>
+        <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #8C958A; text-wrap: pretty;">The other fourteen agents. The HIVE. Any new skill.</p>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 20px; border-top: 2px solid #242A20; padding-top: 22px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+        <span style="font-family: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif; font-size: 34px; line-height: 1; color: #E8EDE3;">02</span>
+        <span style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #8C958A;">Weeks 2&ndash;4</span>
+      </div>
+      <h3 style="margin: 0; font-family: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif; font-size: 24px; line-height: 1.1; letter-spacing: -0.01em; color: #E8EDE3;">Two stages, not six</h3>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #5E665B;">Deliverable</span>
+        <p style="margin: 0; font-size: 13px; line-height: 1.65; color: #A8B2A3; text-wrap: pretty;">HIVE stages 1 and 2 only &mdash; Capture and Retrieval &mdash; wired to NEIL. Memory provider chosen by Friday of week 1; the delay costs more than a wrong pick.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #5E665B;">Done when</span>
+        <p style="margin: 0; font-size: 13px; line-height: 1.65; color: #E8EDE3; text-wrap: pretty;">NEIL holds a correction from last week without being told twice.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px; margin-top: auto; border-top: 1px solid #1B2018; padding-top: 16px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #C4562E;">Not doing</span>
+        <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #8C958A; text-wrap: pretty;">Source-truth, permissions, feedback, execution. Week 6 problems at the earliest.</p>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 20px; border-top: 2px solid #242A20; padding-top: 22px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+        <span style="font-family: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif; font-size: 34px; line-height: 1; color: #E8EDE3;">03</span>
+        <span style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #8C958A;">Weeks 5&ndash;8</span>
+      </div>
+      <h3 style="margin: 0; font-family: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif; font-size: 24px; line-height: 1.1; letter-spacing: -0.01em; color: #E8EDE3;">Graduate one</h3>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #5E665B;">Deliverable</span>
+        <p style="margin: 0; font-size: 13px; line-height: 1.65; color: #A8B2A3; text-wrap: pretty;">Whatever Cory asks for most often, run open eight times, then locked closed: fixed IO, scoped tools, cheap model, on the backlog.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #5E665B;">Done when</span>
+        <p style="margin: 0; font-size: 13px; line-height: 1.65; color: #E8EDE3; text-wrap: pretty;">It runs on cron for a full week and you never open it.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px; margin-top: auto; border-top: 1px solid #1B2018; padding-top: 16px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #C4562E;">Not doing</span>
+        <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #8C958A; text-wrap: pretty;">Graduating anything that has not been run eight times. Your own doc says eight.</p>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 20px; border-top: 2px solid #242A20; padding-top: 22px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+        <span style="font-family: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif; font-size: 34px; line-height: 1; color: #E8EDE3;">04</span>
+        <span style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #8C958A;">Weeks 9&ndash;16</span>
+      </div>
+      <h3 style="margin: 0; font-family: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif; font-size: 24px; line-height: 1.1; letter-spacing: -0.01em; color: #E8EDE3;">Repeat the bar</h3>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #5E665B;">Deliverable</span>
+        <p style="margin: 0; font-size: 13px; line-height: 1.65; color: #A8B2A3; text-wrap: pretty;">One agent per fortnight, same template, no new machinery. The skills library becomes a parts bin &mdash; a skill gets pulled only when an agent needs it.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #5E665B;">Done when</span>
+        <p style="margin: 0; font-size: 13px; line-height: 1.65; color: #E8EDE3; text-wrap: pretty;">Week 16 closes with seven agents live and the reveal order intact.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px; margin-top: auto; border-top: 1px solid #1B2018; padding-top: 16px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #C4562E;">Not doing</span>
+        <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #8C958A; text-wrap: pretty;">Rebuilding the platform because you learned things on the way. Log it, ship the bar.</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1400,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
