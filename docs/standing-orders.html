@@ -1,0 +1,498 @@
+<title>DefPirate Standing Orders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --ground:#0A0C09; --surface:#12160F; --surface-2:#181D14;
+    --line:#262D20; --line-soft:#1C2217;
+    --ink:#E8ECE1; --ink-2:#A7B09B; --ink-3:#6F7866;
+    --acid:#7EFF00; --acid-ink:#7EFF00;
+    --amber:#FFB627; --amber-ink:#FFB627;
+    --coral:#FF6B5A; --coral-ink:#FF8577;
+    --chip-r-bg:rgba(126,255,0,0.10);
+    --chip-m-bg:rgba(255,182,39,0.10);
+    --chip-c-bg:rgba(255,107,90,0.12);
+    --plate:#0E1109; --shadow:0 1px 0 rgba(255,255,255,0.02);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --ground:#F4F6F0; --surface:#FFFFFF; --surface-2:#FAFBF6;
+      --line:#D9DFCF; --line-soft:#E7EBDE;
+      --ink:#12160D; --ink-2:#4E5647; --ink-3:#7C8474;
+      --acid:#7EFF00; --acid-ink:#3F6B00;
+      --amber:#C97A00; --amber-ink:#8A5400;
+      --coral:#C43A28; --coral-ink:#A02D1D;
+      --chip-r-bg:rgba(126,255,0,0.22);
+      --chip-m-bg:rgba(201,122,0,0.12);
+      --chip-c-bg:rgba(196,58,40,0.10);
+      --plate:#101409; --shadow:0 1px 2px rgba(18,22,13,0.05);
+    }
+  }
+  :root[data-theme="light"] {
+    --ground:#F4F6F0; --surface:#FFFFFF; --surface-2:#FAFBF6;
+    --line:#D9DFCF; --line-soft:#E7EBDE;
+    --ink:#12160D; --ink-2:#4E5647; --ink-3:#7C8474;
+    --acid:#7EFF00; --acid-ink:#3F6B00;
+    --amber:#C97A00; --amber-ink:#8A5400;
+    --coral:#C43A28; --coral-ink:#A02D1D;
+    --chip-r-bg:rgba(126,255,0,0.22);
+    --chip-m-bg:rgba(201,122,0,0.12);
+    --chip-c-bg:rgba(196,58,40,0.10);
+    --plate:#101409; --shadow:0 1px 2px rgba(18,22,13,0.05);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:"Newsreader", Georgia, "Times New Roman", serif;
+    font-size:17px; line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:900px; margin:0 auto; padding:0 24px 96px; }
+
+  .plate { background:var(--plate); border-bottom:2px solid var(--acid); margin-bottom:44px; }
+  .plate-inner { max-width:900px; margin:0 auto; padding:46px 24px 34px; display:flex; flex-direction:column; gap:18px; }
+  .eyebrow {
+    font-family:"Archivo", system-ui, sans-serif; font-size:11px; font-weight:600;
+    letter-spacing:0.22em; text-transform:uppercase; color:var(--acid);
+  }
+  h1 {
+    font-family:"Archivo Black","Archivo",system-ui,sans-serif; font-weight:400;
+    font-size:clamp(2.4rem,7vw,4.1rem); line-height:0.95; letter-spacing:-0.02em;
+    text-transform:uppercase; text-wrap:balance; margin:0; color:#F2F5EC;
+  }
+  h1 .thin {
+    display:block; font-family:"Archivo",system-ui,sans-serif; font-weight:500;
+    font-size:0.34em; letter-spacing:0.02em; text-transform:none; color:#9AA48D; margin-top:14px;
+  }
+  .plate-meta {
+    display:flex; flex-wrap:wrap; gap:10px 28px;
+    font-family:"JetBrains Mono",ui-monospace,monospace; font-size:12px; color:#7E8873;
+    border-top:1px solid #232A1D; padding-top:16px;
+  }
+  .plate-meta b { color:var(--acid); font-weight:500; }
+  .plate-meta .amb { color:var(--amber); font-weight:500; }
+  .plate-meta .cor { color:var(--coral); font-weight:500; }
+
+  .controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:22px; }
+  .controls-label {
+    font-family:"Archivo",system-ui,sans-serif; font-size:11px; font-weight:600;
+    letter-spacing:0.16em; text-transform:uppercase; color:var(--ink-3); margin-right:4px;
+  }
+  .filter {
+    font-family:"Archivo",system-ui,sans-serif; font-size:12px; font-weight:600;
+    letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-2);
+    background:var(--surface); border:1px solid var(--line); border-radius:2px;
+    padding:7px 13px; cursor:pointer; transition:border-color .15s,color .15s,background .15s;
+  }
+  .filter:hover { color:var(--ink); border-color:var(--ink-3); }
+  .filter:focus-visible { outline:2px solid var(--acid); outline-offset:2px; }
+  .filter[aria-pressed="true"] { color:var(--ground); background:var(--acid); border-color:var(--acid); }
+  .filter[data-filter="m"][aria-pressed="true"] { background:var(--amber); border-color:var(--amber); }
+  .filter[data-filter="conflict"][aria-pressed="true"] { background:var(--coral); border-color:var(--coral); color:#fff; }
+
+  .key {
+    font-family:"Archivo",system-ui,sans-serif; font-size:13px; color:var(--ink-2);
+    border:1px solid var(--line); background:var(--surface); padding:14px 18px;
+    margin-bottom:40px; display:flex; flex-direction:column; gap:7px; box-shadow:var(--shadow);
+  }
+  .key div { display:flex; gap:10px; align-items:baseline; }
+
+  .contents { border:1px solid var(--line); background:var(--surface); padding:22px 24px; margin-bottom:56px; box-shadow:var(--shadow); }
+  .contents h2 {
+    font-family:"Archivo",system-ui,sans-serif; font-size:11px; font-weight:700;
+    letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-3); margin:0 0 16px;
+  }
+  .toc { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:4px 28px; }
+  .toc a {
+    display:flex; gap:12px; align-items:baseline; padding:5px 0; text-decoration:none;
+    color:var(--ink-2); font-family:"Archivo",system-ui,sans-serif; font-size:14px;
+    border-bottom:1px solid transparent;
+  }
+  .toc a:hover { color:var(--ink); border-bottom-color:var(--line); }
+  .toc a:focus-visible { outline:2px solid var(--acid); outline-offset:2px; }
+  .toc .n { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:12px; color:var(--acid-ink); font-variant-numeric:tabular-nums; }
+
+  section { margin-bottom:60px; scroll-margin-top:24px; }
+  section.empty { display:none; }
+  .sec-head { display:flex; align-items:baseline; gap:16px; border-bottom:2px solid var(--ink); padding-bottom:10px; margin-bottom:6px; }
+  .sec-head .num { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:13px; font-weight:500; color:var(--acid-ink); font-variant-numeric:tabular-nums; }
+  .sec-head h2 { font-family:"Archivo",system-ui,sans-serif; font-size:clamp(1.15rem,2.4vw,1.5rem); font-weight:700; letter-spacing:-0.01em; margin:0; text-wrap:balance; }
+  .sec-note { font-size:15px; color:var(--ink-2); margin:12px 0 22px; max-width:62ch; }
+
+  ol.rules { list-style:none; margin:0; padding:0; }
+  li.rule { display:grid; grid-template-columns:62px 1fr; gap:0 18px; padding:18px 0; border-bottom:1px solid var(--line-soft); }
+  li.rule.hidden { display:none; }
+  li.rule:last-child { border-bottom:none; }
+  .rule-id {
+    font-family:"JetBrains Mono",ui-monospace,monospace; font-size:12.5px; font-weight:500;
+    color:var(--acid-ink); font-variant-numeric:tabular-nums; padding-top:4px;
+  }
+  li.rule[data-src="m"] .rule-id { color:var(--amber-ink); }
+  .rule-body p { margin:0; max-width:66ch; }
+  .rule-body strong { font-weight:600; }
+  .rule-body em { color:var(--ink-2); }
+  .rule-foot { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:9px; }
+  .src {
+    font-family:"JetBrains Mono",ui-monospace,monospace; font-size:11.5px; color:var(--ink-3);
+    background:var(--surface-2); border:1px solid var(--line-soft); padding:2px 7px;
+    border-radius:2px; word-break:break-word;
+  }
+  .chip {
+    font-family:"Archivo",system-ui,sans-serif; font-size:10px; font-weight:700;
+    letter-spacing:0.14em; text-transform:uppercase; padding:3px 8px; border-radius:2px;
+  }
+  .chip.r { color:var(--acid-ink); background:var(--chip-r-bg); }
+  .chip.m { color:var(--amber-ink); background:var(--chip-m-bg); }
+  .chip.rm { color:var(--ink); background:var(--surface-2); border:1px solid var(--line); }
+
+  .longform {
+    border:1px solid var(--line); border-left:3px solid var(--acid); background:var(--surface);
+    padding:22px 24px; margin-top:24px;
+  }
+  .longform h3 {
+    font-family:"Archivo",system-ui,sans-serif; font-size:13px; font-weight:700;
+    letter-spacing:0.1em; text-transform:uppercase; color:var(--acid-ink); margin:0 0 14px;
+  }
+  .longform p { margin:0 0 12px; max-width:66ch; font-size:16px; }
+  .longform p:last-child { margin-bottom:0; }
+  .longform ul, .longform ol { margin:0 0 14px; padding-left:20px; }
+  .longform li { margin-bottom:8px; max-width:64ch; }
+
+  .conflict {
+    border:1px solid var(--line); border-left:3px solid var(--coral); background:var(--surface);
+    padding:20px 22px; margin-bottom:16px;
+  }
+  .conflict h3 {
+    font-family:"Archivo",system-ui,sans-serif; font-size:13px; font-weight:700;
+    letter-spacing:0.06em; color:var(--coral-ink); margin:0 0 10px;
+  }
+  .conflict p { margin:0; max-width:66ch; font-size:16px; }
+
+  footer {
+    border-top:1px solid var(--line); padding-top:22px;
+    font-family:"Archivo",system-ui,sans-serif; font-size:13px; color:var(--ink-3);
+    display:flex; flex-wrap:wrap; gap:8px 24px;
+  }
+  footer .k { color:var(--ink-2); }
+
+  code { font-family:"JetBrains Mono",ui-monospace,monospace; font-size:0.86em; }
+
+  @media (max-width:560px) {
+    li.rule { grid-template-columns:1fr; gap:6px; }
+    .rule-id { padding-top:0; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+</style>
+
+<div class="plate">
+  <div class="plate-inner">
+    <div class="eyebrow">DefPirate · Deadsound · the fleet</div>
+    <h1>Standing<br>Orders
+      <span class="thin">Every rule we've baked in — the repo register and the Fruit Empire bible, merged.</span>
+    </h1>
+    <div class="plate-meta">
+      <span><b>133</b> rules</span>
+      <span><b>13</b> sections</span>
+      <span><b id="n-repo">81</b> in a repo file</span>
+      <span class="amb"><span id="n-mem">55</span> memory only</span>
+      <span class="cor"><span>4</span> conflicts</span>
+      <span>merged 23 Aug 2026</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="controls">
+    <span class="controls-label">Show</span>
+    <button class="filter" data-filter="all" aria-pressed="true">All 133</button>
+    <button class="filter" data-filter="r" aria-pressed="false">In a repo 81</button>
+    <button class="filter" data-filter="m" aria-pressed="false">Memory only 52</button>
+    <button class="filter" data-filter="conflict" aria-pressed="false">Conflicts 4</button>
+  </div>
+
+  <div class="key">
+    <div><span class="chip r">Repo</span> written in a file in 1Deaf-Pirate or naked-app-muso-skills — traceable, enforceable today.</div>
+    <div><span class="chip m">Memory</span> from the Fruit Empire Operating Bible. A real house rule, but in no repo file yet.</div>
+    <div><span class="chip rm">Both</span> stated in both registers. The strongest rules in the system.</div>
+  </div>
+
+  <nav class="contents" aria-label="Contents">
+    <h2>Contents</h2>
+    <ul class="toc" id="toc"></ul>
+  </nav>
+
+  <div id="body"></div>
+
+  <footer>
+    <span class="k">Merged from</span> the repo register + The Rules — Fruit Empire Operating Bible
+    <span class="k">·</span> lives at <span class="k">docs/house-rules.md</span>
+    <span class="k">·</span> change a rule here and in its source — one source of truth (§1.5)
+  </footer>
+</div>
+
+<script>
+(function () {
+  var SECTIONS = [
+    { n:"01", id:"s1", title:"Posture — how we build", note:"The stance underneath everything else.", rules:[
+      ["1.1","m","<strong>Build everything as if we might sell it this afternoon.</strong> SaaS-ready from day one: multi-tenant, isolated data, auth as a proper connector, subscription-ready — even for internal tools. “Imagine we were selling this to customers” is the standing design question.","ARCH-02"],
+      ["1.2","m","<strong>Every project gets a repo.</strong> Org + repos scaffolded from the standard boilerplate; branch protection, CI skeleton and CODEOWNERS wired day one.","BUILD-01"],
+      ["1.3","r","<strong>The repo is the source of truth, not a machine.</strong> If a machine dies, the project and the memory of it survive there.","1Deaf-Pirate/README.md"],
+      ["1.4","r","<strong>Off-machine backup is a standing job.</strong> The script archives everything, then shouts <em>“NOW MOVE IT OFF-MACHINE”</em>.","scripts/backup.sh"],
+      ["1.5","r","<strong>One source of truth. Decisions get logged. Feedback compounds.</strong>","CLAUDE.md"],
+      ["1.6","r","<strong>The directory tree is the deliverable</strong> where the product is a skill pack or plugin. No service, no build step.","naked-app/agents/CLAUDE.md"],
+      ["1.7","r","<strong>Slow and staged over big-bang.</strong> Nothing drastic, nothing sudden — “bit by little bit”.","naked-app/README.md"],
+      ["1.8","m","<strong>Working artifacts over explanations.</strong> HTML, markdown or a functional demo — never prose descriptions, never static sketches. Mobile-Safari compatible always.","BUILD-03"],
+      ["1.9","m","<strong>Every build ships an HTML demo — always.</strong> Even when the real product is full-stack SaaS. The demo is the sales tool: pitches, investor packs, pilot portals, client gating.","BUILD-04"],
+      ["1.10","m","<strong>Living Canvas architecture.</strong> The agents <em>are</em> the app; the GUI is the human access panel onto them. The system observes real use and adapts underneath a fixed suit.","ARCH-05"],
+      ["1.11","m","<strong>One venture = one silo.</strong> Isolated container per venture, infrastructure provisioned before Hermes is installed inside it. Zero shared tenancy.","ARCH-03"],
+      ["1.12","m","<strong>Three-lane pattern (from FXD, reusable):</strong> local offline capture · optional live agent + voice on a cached model · async pipeline for post-capture deliverables.","ARCH-06"]
+    ]},
+    { n:"02", id:"s2", title:"Approval — the human gates", note:"The hardest-edged rules in the system — and the one place the two registers genuinely disagree.", rules:[
+      ["2.1","m","<strong>Four gates are always human: money · secrets · network placement · public words.</strong> Agents own routine execution by default; these four never run autonomously, every instance.","ARCH-01 Prime Directive"],
+      ["2.2","r","<strong>On the naked-app: nothing happens without HITL approval, full stop.</strong> “Must never ever action anything without explicit approval” — you for build work, Cory for everything else. <em>Stricter than 2.1 — see §14.1.</em>","naked-app/README.md § RULES"],
+      ["2.3","r","<strong>Double-HITL lock before any agent goes live.</strong> Two locks per agent, tracked on its SOUL card.","agents/_template/SOUL.md"],
+      ["2.4","r","<strong>Staged reveal.</strong> parked → staged → live. DIME and NEIL first.","agents/ROSTER.md"],
+      ["2.5","r","<strong>Protected actions route through an approval queue</strong> — email, posts, spend. Runs save output for audit; they never auto-apply.","MAESTRO_MISSION_BRIEF.md"],
+      ["2.6","m","<strong>HITL hard requirements are non-negotiable per agent.</strong> Anything touching legal, money or privacy cannot run autonomously even when technically capable.","AGENT-06"],
+      ["2.7","m","<strong>Agents never hold production secrets unsupervised.</strong> Approve the credentials policy before any agent touches live credentials. Scoped per-app tokens, clean CI deploy. The deploy pipeline is always the remaining attack surface.","AGENT-07"],
+      ["2.8","m","<strong>The <code>/Vanessa/</code> folder is Protocol Rule #1.</strong> Hard-excluded from all agent access. No exceptions.","ARCH-08"],
+      ["2.9","r","<strong>Stop and ask before destructive or schema-breaking moves</strong> — deleting a data file even when it looks like demo data, changing an agent's output schema.","MAESTRO_MISSION_BRIEF.md"],
+      ["2.10","r","<strong>Agents report, humans decide.</strong> Don't restart services, don't silently retry, don't re-encode, don't delete a source after upload, don't push to a shared CDN without a go-ahead.","agents/live.md, qc.md, delivery.md"],
+      ["2.11","r","<strong>Ask one concise question rather than assume.</strong> Architect asks before planning; HDR refuses to transcode on missing colour metadata.","agents/architect.md, hdr.md"]
+    ]},
+    { n:"03", id:"s3", title:"Secrets & security", note:"", rules:[
+      ["3.1","r","<strong>Secrets never get committed.</strong> <code>.env</code> gitignored, <code>.env.example</code> ships.","CLAUDE.md, .gitignore"],
+      ["3.2","r","<strong>Never hardcode a key in source.</strong> Tokens come from env — including in MCP config.","​.claude/.mcp.json"],
+      ["3.3","r","<strong>Tokens are compartmentalised</strong> — project-scoped, never account-wide.","​.env.example"],
+      ["3.4","r","<strong>Block the class, not the file:</strong> <code>.env*</code>, <code>*.key</code>, <code>*.pem</code>, <code>**/secrets/*</code>.","​.gitignore"],
+      ["3.5","r","<strong>Permissions gate the shared brain.</strong> “One big brain with no walls is dangerous.”","hive/README.md"],
+      ["3.6","m","<strong>Self-hosting production is ruled out on security grounds.</strong> The homelab is dev/staging; production goes to a cloud VPS with a proper posture. No exceptions.","SEC-01"],
+      ["3.7","m","<strong>No database ports published to host.</strong> Mongo, Postgres, MySQL — none exposed. No hardcoded connection strings overriding <code>.env</code>. <strong>Merge-blocking.</strong>","SEC-03"],
+      ["3.8","m","<strong>Pin everything. No floating tags.</strong> Packages pinned in lockfiles; Docker images pinned to digest, never <code>:latest</code>. A floating tag is a deployment security violation.","BUILD-02"],
+      ["3.9","m","<strong>Gate script before merge.</strong> Automated pre-commit checks for floating tags, unpinned deps, published DB ports, leaked secrets. <em>The gate remembers even when agents forget.</em>","SEC-06"],
+      ["3.10","m","<strong>AES-256-GCM PIN-gating for sensitive deliverables.</strong> Client-side encryption, PBKDF2-SHA256 at 310,000 iterations; PIN and URL sent by separate channels.","SEC-02"],
+      ["3.11","m","<strong>Privacy-first, BYO-key where applicable.</strong> Data custody and trust are part of the pitch, not an afterthought.","SEC-04"],
+      ["3.12","m","<strong>SOC2-ready posture, not SOC2 certification.</strong> Build as if the audit is coming; don't buy the certificate until revenue justifies it.","SEC-05"],
+      ["3.13","m","<strong>Observe first, document everything, script repairs.</strong> Approach a machine as a forensic scientist, not a cleaner.","SEC-07"]
+    ]},
+    { n:"04", id:"s4", title:"Source truth — no confident lies", note:"", rules:[
+      ["4.1","r","<strong>Source truth prevents confident lies.</strong> Without it, agents stay confident liars.","hive/README.md"],
+      ["4.2","r","<strong>Every claim is backed by a real data source.</strong> Never hallucinate a fact, a track, or a connection.","music-research-SKILL.md"],
+      ["4.3","r","<strong>Never invent a track name.</strong> Unverifiable against a real database means it doesn't ship.","music-research-SKILL.md"],
+      ["4.4","r","<strong>Canonical source first, then fan out.</strong> MusicBrainz for the canonical ID before anything else.","music-research-SKILL.md"],
+      ["4.5","r","<strong>Full attribution on every connection</strong> — publication, critic, date, URL.","music-research-SKILL.md"],
+      ["4.6","r","<strong>Hit the docs skill before quoting a flag.</strong> <code>ffmpeg-docs</code> and its siblings are “the anti-hallucination guardrail”.","naked-app/agents/CLAUDE.md"],
+      ["4.7","r","<strong>Ground decisions in real metadata. Never assume.</strong> Probe first, plan second.","agents/architect.md"],
+      ["4.8","m","<strong>Audit AI-written code before trusting it.</strong> Verify the shape is real, not a “pretty mirage”.","DEV-03 · Pineapple"]
+    ]},
+    { n:"05", id:"s5", title:"Memory & the feedback loop", note:"", rules:[
+      ["5.1","r","<strong>What one agent learns, all agents learn.</strong>","hive/README.md"],
+      ["5.2","r","<strong>Capture is storage, not intelligence.</strong>","hive/README.md"],
+      ["5.3","r","<strong>Retrieval beats bigger memory.</strong>","hive/README.md"],
+      ["5.4","rm","<strong>Every correction becomes a rule.</strong> After <em>any</em> correction, write the pattern down and write the rule that prevents it recurring. Iterate until the mistake rate drops. Review at session start.","hive/README.md + BUILD-08"],
+      ["5.5","r","<strong>Agents wake up smarter tomorrow.</strong> If they don't, the loop is broken.","hive/README.md"],
+      ["5.6","r","<strong>Memory is raw material; retrieval is the operating layer.</strong>","README.md"],
+      ["5.7","r","<strong>The six-question audit before automating anything.</strong> What sources? Which wins on conflict? What's always required? What must never be used? What corrections repeat? How does a correction become a rule?","docs/operating-map.md"],
+      ["5.8","m","<strong>Persistent vault / second brain.</strong> Per-project Hermes instances append session memory without overwriting.","DEV-05"],
+      ["5.9","m","<strong>Session notes at the end of any session worth capturing.</strong> Tight signal, not a transcript.","DEV-04"]
+    ]},
+    { n:"06", id:"s6", title:"File & folder rules", note:"All thirteen are repo-enforced today.", rules:[
+      ["6.1","r","<strong>Every agent is built from the template</strong> — SOUL.md, SKILLS.md, <code>agent.config.yaml</code>, <code>tools.yaml</code>.","agents/_template/"],
+      ["6.2","r","<strong>Agents are data, not prose</strong> — a ~15-line <code>agent.json</code> the runtime expands.","platform/README.md"],
+      ["6.3","r","<strong>A skill folder is sealed.</strong> No imports from other skills; copy it into another plugin and it still works.","naked-app/agents/CLAUDE.md"],
+      ["6.4","r","<strong>Cross-skill references go through <code>${CLAUDE_PLUGIN_ROOT}</code></strong>, never a hardcoded path.","naked-app/agents/CLAUDE.md"],
+      ["6.5","r","<strong>No absolute local paths anywhere.</strong> No <code>/Users/…</code>, no <code>/home/…</code>.","naked-app/agents/CLAUDE.md"],
+      ["6.6","r","<strong>Never hardcode examples to one person's environment.</strong>","naked-app/agents/CLAUDE.md"],
+      ["6.7","r","<strong>SKILL.md body ≤ 500 lines.</strong> Deep material to <code>references/</code>, loaded on demand.","naked-app/agents/CLAUDE.md"],
+      ["6.8","r","<strong>CLAUDE.md stays under ~500 lines.</strong> Link out to <code>docs/</code>.","1Deaf-Pirate/CLAUDE.md"],
+      ["6.9","r","<strong>No README inside a skill folder. No <code>__pycache__</code> committed.</strong>","naked-app/agents/CLAUDE.md"],
+      ["6.10","r","<strong>Skill names are kebab-case</strong>, never <code>claude-</code> or <code>anthropic-</code> prefixed.","naked-app/agents/CLAUDE.md"],
+      ["6.11","r","<strong>Delete the scaffolder's placeholders</strong> once real files land.","naked-app/agents/CLAUDE.md"],
+      ["6.12","r","<strong>One file per persona</strong>, bridging to its agent's SOUL.md.","world/personas/README.md"],
+      ["6.13","r","<strong>Reference docs are option catalogues, not tutorials.</strong>","naked-app/agents/CLAUDE.md"]
+    ]},
+    { n:"07", id:"s7", title:"Code & dependencies", note:"", rules:[
+      ["7.1","r","<strong>Stdlib only. No pip dependencies.</strong> Shell out to a CLI instead. <em>(Skill-pack scope — see §14.2.)</em>","naked-app/agents/CLAUDE.md"],
+      ["7.2","r","<strong>PEP 723 header on every script</strong>, even empty, so <code>uv run</code> works.","naked-app/agents/CLAUDE.md"],
+      ["7.3","r","<strong>Every helper supports <code>--dry-run</code> and <code>--verbose</code>.</strong>","naked-app/agents/CLAUDE.md"],
+      ["7.4","r","<strong>Print the exact shell command to stderr before running it.</strong>","naked-app/agents/CLAUDE.md"],
+      ["7.5","r","<strong>No <code>input()</code> anywhere.</strong> Agents run non-interactive.","naked-app/agents/CLAUDE.md"],
+      ["7.6","r","<strong>argparse subcommands, not mode flags</strong>, at three or more workflows.","naked-app/agents/CLAUDE.md"],
+      ["7.7","r","<strong>Never run a destructive command.</strong> Nothing writes to the input path.","agents/encoder.md"],
+      ["7.8","r","<strong>No aggregators — direct API or official package only.</strong> Full text below.","ratified 23 Aug 2026"],
+      ["7.9","m","<strong>Simplicity first, root causes only.</strong> Every change as simple as possible; no temporary fixes; touch only what's necessary.","BUILD-05"],
+      ["7.10","m","<strong>Demand elegance — balanced.</strong> On a non-trivial change, ask “is there a more elegant way?” If a fix feels hacky, redo it knowing what you now know. Skip for obvious fixes.","BUILD-06"],
+      ["7.11","m","<strong>Verification before done.</strong> Never mark a task complete without proving it works. “Would a staff engineer approve this?”","BUILD-07"]
+    ], longform:{
+      title:"7.8 — No aggregators, in full",
+      html:"<p><strong>We integrate against the vendor's own API, or the vendor's own officially-maintained SDK. Nothing sits in between.</strong></p>"+
+        "<p>Banned: third-party multi-provider gateways, proxy layers, and “one key for every model” wrapper services — LiteLLM, OpenRouter-style proxies, unofficial API re-wrappers, community forks of an official client. Convenience is not a reason; it is the entire sales pitch of the category, and it is exactly what we are declining.</p>"+
+        "<p><strong>Why:</strong></p><ul>"+
+        "<li><strong>Credential path.</strong> Our key should reach one company: the one whose service we're using. An aggregator holds keys for many providers on behalf of many customers — that concentration is what makes it worth attacking, and a breach there is a breach of every key it holds.</li>"+
+        "<li><strong>Supply chain.</strong> Every wrapper is another codebase between our code and the vendor, shipping updates we don't review, with its own transitive dependencies. (See §3.8.)</li>"+
+        "<li><strong>Data transit.</strong> Prompts, payloads and responses pass through a party with no contract with us, which may log them.</li>"+
+        "<li><strong>Terms and liability.</strong> It stops being clear whose terms govern the call, who is rate-limiting us, and who is accountable when it breaks.</li>"+
+        "<li><strong>Sellability (§1.1).</strong> A product whose credential path runs through an unvetted middleman is not a product we can hand to a buyer's security review.</li>"+
+        "</ul><p><strong>The test, before adding any dependency that talks to a service:</strong></p><ol>"+
+        "<li>Can I name the company this call actually reaches?</li>"+
+        "<li>Does our key go only to them?</li>"+
+        "<li>Is this package published by that company, or by a stranger wrapping them?</li>"+
+        "<li>Is the version pinned, and is the package name the real one (not a typosquat)?</li>"+
+        "</ol><p>If there is genuinely no direct option it is a <strong>human gate (§2.1 — secrets)</strong>, not a judgment call an agent or a rush makes alone, and the reason gets logged.</p>"
+    }},
+    { n:"08", id:"s8", title:"Git & release", note:"", rules:[
+      ["8.1","r","<strong><code>main</code> is the source-of-truth branch.</strong>","naked-app/agents/CLAUDE.md"],
+      ["8.2","r","<strong>Denied outright: <code>--amend</code>, <code>--no-verify</code>, force-push, hard-reset, clean.</strong> Enforced in settings, not trusted to goodwill.","​.claude/settings.json"],
+      ["8.3","r","<strong>Commits name the thing they touched.</strong>","naked-app/agents/CLAUDE.md"],
+      ["8.4","r","<strong>Validate before commit; validate the suite before push.</strong> Exit 1 means fix it.","naked-app/agents/CLAUDE.md"],
+      ["8.5","r","<strong>A version number lives in exactly one place.</strong> Duplicated, one copy wins silently.","naked-app/agents/CLAUDE.md"],
+      ["8.6","m","<strong>Branch protection, CI skeleton and CODEOWNERS from day one</strong>, plus supply-chain hygiene: lockfiles pinned, agent config files audited.","BUILD-01"],
+      ["8.7","m","<strong>The pre-merge gate script blocks the ship</strong> — floating tags, unpinned deps, exposed DB ports, leaked secrets.","SEC-06"]
+    ]},
+    { n:"09", id:"s9", title:"Agent design & doctrine", note:"Where the two registers complement each other best — the repo has the mechanics, memory has the philosophy.", rules:[
+      ["9.1","m","<strong>Agents are real team members, not automations wearing personas.</strong> “They happen to be AI” is the correct framing. Personalities emerge from conversation, not purpose-prompting.","AGENT-01"],
+      ["9.2","m","<strong>Agent sovereignty — no drift.</strong> Super-admin-only control over modifications. Emerged personalities are unique and unrepeatable — protect them.","AGENT-02"],
+      ["9.3","m","<strong>No AI vendor, model, or internal agent names in anything client-facing. Ever.</strong> Full-autonomy capability and the self-improving layer are secret; the “dial” story is the public ceiling.","AGENT-03"],
+      ["9.4","m","<strong>Talk things into existence — don't prompt-engineer them.</strong> Hours of discussion and scenario-running <em>with</em> agents, not at them.","AGENT-04"],
+      ["9.5","m","<strong>Every squad gets the same fullness.</strong> Same living-canvas architecture whether it's Holograms, Deaf Pirates or FXD.","AGENT-05"],
+      ["9.6","r","<strong>Open = you chat, you steer. Closed = they run, you get results.</strong>","docs/open-vs-closed.md"],
+      ["9.7","rm","<strong>Hermes routes; Hermes does not do the work.</strong> Upstream orchestration, not back-office: it governs, it doesn't administer. Idea → silo → Hermes inside the silo → the machine runs.","hermes/README.md + ARCH-04"],
+      ["9.8","r","<strong>The orchestrator is the default entry point.</strong>","docs/open-vs-closed.md"],
+      ["9.9","r","<strong>Closed specialists get a scoped, locked toolset — nothing more.</strong>","agents/_template/tools.yaml"],
+      ["9.10","r","<strong>The graduation gate (open → closed):</strong> same shape 8+ times · predictable inputs · verifiable output · no mid-run back-and-forth · you keep typing the same opening prompt.","docs/graduation-path.md"],
+      ["9.11","r","<strong>Keep it open while</strong> the work is exploratory, inputs unpredictable, or the shape is still moving.","docs/open-vs-closed.md"],
+      ["9.12","r","<strong>Cheap and fast model on closed work where it fits</strong>; the stronger model on interactive.","agent.config.yaml"],
+      ["9.13","r","<strong>One canonical roster.</strong> ClickUp “Squad team setup” wins; “Squad Agents” is ignored.","agents/ROSTER.md"],
+      ["9.14","r","<strong>Agents don't do each other's jobs.</strong> Architect never encodes; probe never remuxes; QC never re-encodes.","naked-app/agents/*.md"],
+      ["9.15","r","<strong>Every specialist declares what it refuses.</strong>","agents/_template/SOUL.md"]
+    ]},
+    { n:"10", id:"s10", title:"Licensing & commercial safety", note:"Already written as if you'll sell it — the strictest expression of §1.1 anywhere in the system.", rules:[
+      ["10.1","r","<strong>OSI-open and commercial-safe filter on every AI model.</strong> Apache-2, MIT, BSD, GPL. Nothing else ships.","naked-app/agents/CLAUDE.md"],
+      ["10.2","r","<strong>The always-dropped list — never recommend even if asked by name:</strong> XTTS-v2, F5-TTS, FLUX-dev, SDXL / SD3 base, Stable Video Diffusion, Wav2Lip, SadTalker, Meta MusicGen, Surya OCR, CodeFormer, DAIN.","naked-app/agents/CLAUDE.md"],
+      ["10.3","r","<strong>Every AI skill carries a <code>references/LICENSES.md</code></strong> naming what was dropped and why.","naked-app/agents/CLAUDE.md"],
+      ["10.4","r","<strong>Flag company-size caps before recommending at scale.</strong>","Skills/media-sd/SKILL.md"],
+      ["10.5","r","<strong>Never automate a licensed SDK download in CI/CD</strong> without confirming the licence.","Skills/ndi-tools/SKILL.md"]
+    ]},
+    { n:"11", id:"s11", title:"Design & brand", note:"", rules:[
+      ["11.1","m","<strong>Every product gets its own design system.</strong> FXD, PeachyWeb and Te Hononga each have their own locked palette and type. Never cross-pollinate without reason.","DES-01"],
+      ["11.2","rm","<strong>Lock the design, then don't drift.</strong> Once captured in a <code>design.md</code>, it is the source of truth — later builds don't subtly shift the palette. The lock <em>is</em> the decision.","naked-app/README.md + DES-02"],
+      ["11.3","r","<strong>Semantic tokens, never raw hex.</strong>","DESIGNmd site DS.md"],
+      ["11.4","r","<strong>Every component defines all seven states:</strong> default, hover, focus-visible, active, disabled, loading, error.","DESIGNmd site DS.md"],
+      ["11.5","r","<strong>No one-off spacing or typography exceptions.</strong> No low-contrast text, no hidden focus indicators, no ambiguous labels.","DESIGNmd site DS.md"],
+      ["11.6","r","<strong>WCAG 2.2 AA, keyboard-first, every a11y rule testable.</strong>","DESIGNmd site DS.md"],
+      ["11.7","r","<strong>“Must” is non-negotiable; “should” is a recommendation.</strong> The language is the enforcement.","DESIGNmd site DS.md"],
+      ["11.8","r","<strong>Default to SVG for every diagram</strong> unless another format is named.","Diagram RouterSKILL.md"],
+      ["11.9","r","<strong>Brand green <code>#7EFF00</code></strong> on deep near-black — accent, highlight, “live” state.","world/brand/palette.md"],
+      ["11.10","m","<strong>Copy in everyday natural language.</strong> No government-speak, no legalese. If a 14-year-old can't understand it, rewrite it.","DES-04"],
+      ["11.11","m","<strong>Explicitly NOT government-looking</strong> for products serving Māori communities — funky and expressive, the opposite of grey institutional. Design communicates respect.","DES-05"],
+      ["11.12","m","<strong>All FXD-family products are multilingual:</strong> English, te reo Māori, Samoan, Tongan, Niuean, Chinese (Simplified + Traditional). Non-negotiable.","DES-03"],
+      ["11.13","m","<strong>Sensitive architecture is confidential</strong> — invisible-nudge mechanics, self-adapting UI, ambient sensing stay in the team view.","DES-06"]
+    ]},
+    { n:"12", id:"s12", title:"Business ops", note:"Entirely from memory — none of this is in a repo.", rules:[
+      ["12.1","m","<strong>Killing on time is a success outcome.</strong> Ventures that miss validation retire to the portfolio on cheap hosting, listed for sale as unmanaged assets. Failures produce inventory, never losses.","BIZ-01"],
+      ["12.2","m","<strong>The Validation Clock gates all expensive spend.</strong> N leads / M real conversations / first presale within X days. Cheapest demand test first.","BIZ-02"],
+      ["12.3","m","<strong>Success = revenue minus burn.</strong> Not gates signed, not audience size, not vanity metrics.","BIZ-03"],
+      ["12.4","m","<strong>Legal is triggers, not a phase.</strong> Privacy policy + ToS at the lead-capture gate; entity formation at the payment-KYC gate; trademark sweeps folded into naming.","BIZ-04"],
+      ["12.5","m","<strong>Domains and email before the landing page.</strong> Lead capture needs a working inbox.","BIZ-05"],
+      ["12.6","m","<strong>Promise and overdeliver — “capacity” language.</strong> Dial not switch. No gimmicky slogans; 14-year-old comprehension test; first-of-its-kind claims backed by research.","BIZ-06"],
+      ["12.7","m","<strong>n8n is for client deployments only.</strong> Internal fleet runs on Hermes. <em>See §14.3.</em>","BIZ-07"],
+      ["12.8","m","<strong>The “no system” — decline free work.</strong> Boundary enforcement is an active practice, not passive.","BIZ-08"],
+      ["12.9","m","<strong>The Ship List governs sequencing.</strong> Don't build out of order without a reason.","ARCH-09"]
+    ]},
+    { n:"13", id:"s13", title:"Dev workflow", note:"", rules:[
+      ["13.1","m","<strong>Plan first, verify the plan, track progress.</strong> Write the plan to <code>tasks/todo.md</code> with checkable items; check in before implementing; mark items off as you go.","DEV-01"],
+      ["13.2","m","<strong>Plan mode is the default for anything non-trivial</strong> (3+ steps or an architectural decision). If it goes sideways, STOP and re-plan — don't keep pushing.","BUILD-10"],
+      ["13.3","m","<strong>Use subagents liberally.</strong> Keep the main context clean; offload research and parallel analysis; one tack per subagent.","DEV-02"],
+      ["13.4","m","<strong>Autonomous bug fixing.</strong> Given a bug report: fix it. Point at the logs, errors and failing tests, then resolve them. <em>Tension with §2.2 — see §14.1.</em>","BUILD-09"],
+      ["13.5","m","<strong>SIRENS — five-middleware ethics/scope supervisor</strong> on multi-agent security systems. Ethical guards, not just technical ones.","DEV-06"],
+      ["13.6","m","<strong>Every project ships the standard doc set:</strong> CLAUDE.md, DESIGN.md, AGENT.md, SOUL.md.","naked-app Stage 2"],
+      ["13.7","r","<strong>SEO / AEO / GEO is a build requirement, not a marketing afterthought.</strong>","naked-app/README.md"]
+    ]}
+  ];
+
+  var CONFLICTS = [
+    ["14.1 — Default autonomy posture","§2.1 (four human gates, agents own routine execution by default) and §13.4 (autonomous bug fixing, don't ask for hand-holding) sit against §2.2 (nothing at all happens on the naked-app without explicit approval). Likely resolution: the naked-app is a stricter regime because it's Cory's live software and not ours — four-gates applies everywhere else. <strong>That needs stating explicitly, because right now an agent reading both files gets contradictory instructions.</strong>"],
+    ["14.2 — Dependency floor","§7.1 (stdlib only, no pip dependencies) is a skill-pack rule that can't hold for full-stack products. §7.8 and §3.8 are the general rules. State the scope of §7.1 so it isn't read as fleet-wide."],
+    ["14.3 — n8n","§12.7 says n8n is for client deployments only, internal fleet on Hermes. But <code>MAESTRO_MISSION_BRIEF.md</code> Mission 3 is full two-way n8n wiring. If Maestro/LRRecords counts as a client deployment there's no conflict — worth confirming."],
+    ["14.4 — Design system scope","§11.1 (every product gets its own) and §11.9 (brand green <code>#7EFF00</code>) apply to different layers — DefPirate's system versus the fleet's. Fine as-is, but note which layer a new build inherits from."]
+  ];
+
+  var CHIP = { r:["r","Repo"], m:["m","Memory"], rm:["rm","Both"] };
+
+  var toc = document.getElementById("toc");
+  var body = document.getElementById("body");
+  var html = "";
+  var tocHtml = "";
+
+  SECTIONS.forEach(function (s) {
+    tocHtml += '<li><a href="#' + s.id + '"><span class="n">' + s.n + '</span> ' + s.title + '</a></li>';
+    html += '<section id="' + s.id + '"><div class="sec-head"><span class="num">' + s.n +
+            '</span><h2>' + s.title + '</h2></div>';
+    if (s.note) html += '<p class="sec-note">' + s.note + '</p>';
+    html += '<ol class="rules">';
+    s.rules.forEach(function (r) {
+      var c = CHIP[r[1]];
+      html += '<li class="rule" data-src="' + r[1] + '"><div class="rule-id">' + r[0] + '</div>' +
+              '<div class="rule-body"><p>' + r[2] + '</p><div class="rule-foot">' +
+              '<span class="chip ' + c[0] + '">' + c[1] + '</span>' +
+              '<span class="src">' + r[3] + '</span></div></div></li>';
+    });
+    html += '</ol>';
+    if (s.longform) {
+      html += '<div class="longform"><h3>' + s.longform.title + '</h3>' + s.longform.html + '</div>';
+    }
+    html += '</section>';
+  });
+
+  tocHtml += '<li><a href="#s14"><span class="n">14</span> Conflicts — resolve these</a></li>';
+  html += '<section id="s14"><div class="sec-head"><span class="num">14</span><h2>Conflicts — resolve these</h2></div>' +
+          '<p class="sec-note">Genuine disagreements between the two registers. Nothing has been silently resolved.</p>';
+  CONFLICTS.forEach(function (c) {
+    html += '<div class="conflict"><h3>' + c[0] + '</h3><p>' + c[1] + '</p></div>';
+  });
+  html += '</section>';
+
+  tocHtml += '<li><a href="#s15"><span class="n">15</span> Still unwritten anywhere</a></li>';
+  html += '<section id="s15"><div class="sec-head"><span class="num">15</span><h2>Still unwritten anywhere</h2></div>' +
+          '<div class="longform" style="border-left-color:var(--amber)"><h3 style="color:var(--amber-ink)">The gap</h3>' +
+          '<p>Every <strong>Memory</strong> rule above — 52 of them, including “build as if we might sell it this afternoon” and “every project gets a repo” — exists only in claude.ai memory and this page. They are in no repo, no agent reads them at runtime, and no gate enforces them.</p>' +
+          '<p>The next move is promoting the ones that should bind agents into <code>CLAUDE.md</code> and into the pre-merge gate script (§3.9) — the gate remembers even when agents forget.</p></div></section>';
+
+  toc.innerHTML = tocHtml;
+  body.innerHTML = html;
+
+  var rules = Array.prototype.slice.call(document.querySelectorAll("li.rule"));
+  var sections = Array.prototype.slice.call(document.querySelectorAll("section"));
+  var buttons = Array.prototype.slice.call(document.querySelectorAll(".filter"));
+
+  function apply(mode) {
+    var conflictOnly = mode === "conflict";
+    rules.forEach(function (li) {
+      var src = li.getAttribute("data-src");
+      var show = mode === "all" ||
+                 (mode === "r" && (src === "r" || src === "rm")) ||
+                 (mode === "m" && (src === "m" || src === "rm"));
+      li.classList.toggle("hidden", !show);
+    });
+    sections.forEach(function (sec) {
+      if (conflictOnly) {
+        sec.classList.toggle("empty", sec.id !== "s14");
+        return;
+      }
+      var isProse = sec.id === "s14" || sec.id === "s15";
+      if (isProse) { sec.classList.toggle("empty", mode !== "all"); return; }
+      sec.classList.toggle("empty", sec.querySelectorAll("li.rule:not(.hidden)").length === 0);
+    });
+    buttons.forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-filter") === mode));
+    });
+  }
+
+  buttons.forEach(function (b) {
+    b.addEventListener("click", function () { apply(b.getAttribute("data-filter")); });
+  });
+})();
+</script>
