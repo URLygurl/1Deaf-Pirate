@@ -95,6 +95,41 @@ file yet — candidates for promotion to LAW.
 | 7.5 | **No `input()` anywhere.** Agents run non-interactive — the validator flags even the word in a docstring. | `naked-app/agents/CLAUDE.md` |
 | 7.6 | **argparse subcommands, not mode flags**, once there are 3+ workflows. | `naked-app/agents/CLAUDE.md` |
 | 7.7 | **Never run destructive commands** — no writing to the input path; confirm before any `-y` overwrite. | `naked-app/agents/encoder.md` |
+| 7.8 | **No aggregators — direct API or official package only.** See below. | ratified 23 Aug 2026 |
+
+### 7.8 — No aggregators (full text)
+
+**We integrate against the vendor's own API, or the vendor's own officially-maintained SDK. Nothing sits in between.**
+
+Banned: third-party multi-provider gateways, proxy layers, and "one key for every model" wrapper
+services — LiteLLM, OpenRouter-style proxies, unofficial API re-wrappers, community forks of an
+official client. Convenience is not a reason; it is the whole sales pitch of the category and it is
+exactly what we are declining.
+
+Why:
+- **Credential path.** Our key should reach one company: the one whose service we're using. An
+  aggregator holds keys for many providers on behalf of many customers — that concentration is
+  what makes it worth attacking, and a breach there is a breach of every key it holds.
+- **Supply chain.** Every wrapper is another codebase in the path between our code and the vendor,
+  shipping updates we don't review, with its own transitive dependencies.
+- **Data transit.** Prompts, payloads and responses pass through a party that has no contract with
+  us and may log them.
+- **Terms and liability.** Through an aggregator it stops being clear whose terms govern the call,
+  who is rate-limiting us, and who is accountable when it breaks.
+- **Sellability (§1.1).** A product whose credential path runs through an unvetted middleman is not
+  a product we can hand to a buyer's security review.
+
+The test, before adding any dependency that talks to a service:
+1. Can I name the company this call actually reaches?
+2. Does our key go only to them?
+3. Is this package published by that company, or by a stranger wrapping them?
+4. Is the version pinned, and is the package name the real one (not a typosquat)?
+
+If there is genuinely no direct option, it is a **HITL decision (§2.1)** — not a judgment call an
+agent or a rush makes on its own — and the reason gets logged.
+
+*Related: §6.3 (sealed skill folders — no shared junk-drawer modules), §7.1 (stdlib only, no pip
+deps), §3.2 (keys come from env, never hardcoded).*
 
 ## 8. Git & release
 
@@ -154,18 +189,14 @@ ratified into `CLAUDE.md` and enforced.
 |---|---|
 | 12.1 | **SaaS-ready by default.** Every project is built as if it could be sold this afternoon: no hardcoded tenant, no personal paths, config over constants, clean install path, README that a stranger can follow. (§6.5, §6.6 and §7 already enforce fragments of this — the principle itself isn't written.) |
 | 12.2 | **Every project gets a repo.** Day one, before code. No project lives only on a machine. |
-| 12.3 | **No aggregators.** *(Needs your definition — see the open question below.)* |
+| ~~12.3~~ | ~~**No aggregators.**~~ **Ratified 23 Aug 2026 → now written as §7.8.** |
 | 12.4 | **Every project ships with the standard doc set**: `CLAUDE.md`, `DESIGN.md`, `AGENT.md`, `SOUL.md` — currently listed as a Stage-2 task in the naked-app README, not as a rule. |
 | 12.5 | **SEO/AEO/GEO is a build requirement, not a marketing afterthought** — every task must raise domain/brand visibility. Currently phrased as a task, not a standing rule. |
 
-> **Open question — "no aggregators".** Nothing in either repo uses the word. Two readings both
-> match rules we already have, and they'd be written differently:
-> - **Research sense** — go to primary/canonical sources, never scrape aggregator sites. Already
->   half-baked in §4.2–4.5 (MusicBrainz first, every claim cited).
-> - **Code sense** — no barrel/index re-export files, no shared junk-drawer modules. Already
->   half-baked in §6.3 (sealed skill folders, no cross-skill imports).
->
-> Say which you meant and it gets written properly.
+> **Closed — "no aggregators" is now §7.8.** The rule is about the credential path and the supply
+> chain: we get the actual API or the actual package, never a middleman that holds our keys to make
+> life easy. §4.2–4.5 (canonical sources first) and §6.3 (sealed folders) remain separate rules
+> that rhyme with it.
 
 ---
 
